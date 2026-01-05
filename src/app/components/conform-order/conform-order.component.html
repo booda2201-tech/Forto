@@ -1,0 +1,134 @@
+<section class="cont">
+  <h1 class="d-flex justify-content-center p-4">معلومات الطلب</h1>
+  <div class="cont3 d-flex">
+    <!-- <div class="form-group2 text-center px-3">
+      <h2>ملخص الطلب</h2>
+
+      <div
+        class="d-flex justify-content-between align-items-center py-2 fw-bold"
+      >
+        <span class="fs-2 total">
+          <span>{{ overallTotal$ | async | currency: 'EGP ':'symbol':'1.0-0' }}</span>
+        </span>
+        <span class="fs-2 total fw-bold">: إجمالي المبلغ</span>
+      </div>
+    </div> -->
+
+    <div class="form-group text-center p-4 mb-5">
+      <div class="box-inputs mb-4">
+        <div class="mb-3">
+          <label
+            class="form-label d-flex align-items-center justify-content-start gap-1"
+          >
+            الاسم
+            <span class="text-danger fs-4">*</span>
+          </label>
+          <input type="text" formcontrolname="fullName" class="form-control" />
+        </div>
+        <div class="mb-3">
+          <label
+            class="form-label d-flex align-items-center justify-content-start gap-1"
+          >
+            رقم الهاتف
+            <span class="text-danger fs-4">*</span>
+          </label>
+          <input type="text" formcontrolname="fullName" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+          <label
+          class="form-label d-flex align-items-center justify-content-start gap-1"
+          >
+          رقم السيارة
+          <span class="text-danger fs-4">*</span>
+        </label>
+        <input type="text" formcontrolname="fullName" class="form-control" />
+      </div>
+      <div class="mb-3">
+        <label
+        class="form-label d-flex align-items-center justify-content-start gap-1"
+        >
+        نوع السيارة
+        <span class="text-danger fs-4">*</span>
+      </label>
+      <input type="text" formcontrolname="fullName" class="form-control" />
+        </div>
+      <div class="mb-3">
+        <label
+          class="form-label d-flex align-items-center justify-content-start gap-1"
+          > اسم العامل
+          <span class="text-danger fs-4">*</span>
+        </label>
+        <select
+          class="form-select"
+          formcontrolname="countryCode"
+          aria-label="اختر الدولة"
+        >
+          <option value="">اختر اسم العامل...</option>
+          <option value="EG">محمد</option>
+          <option value="SA">على </option>
+          <option value="AE">محمود</option>
+          <option value="KW">ايمن</option>
+        </select>
+      </div>
+  <div class="mb-4">
+    <label class="form-label d-flex align-items-center justify-content-start gap-2 mt-4 mb-5 fw-bold">
+                اختر الوقت المناسب
+            <i class="bi bi-clock-history text-danger"></i>
+    </label>
+
+    <div class="time-group mb-3">
+        <div class="row g-2">
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't10am'" (click)="selectTime('t10am')">10:00 ص</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't11am'" (click)="selectTime('t11am')">11:00 ص</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't12pm'" (click)="selectTime('t12pm')">12:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't01pm'" (click)="selectTime('t01pm')">01:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't02pm'" (click)="selectTime('t02pm')">02:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't03pm'" (click)="selectTime('t03pm')">03:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't04pm'" (click)="selectTime('t04pm')">04:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't05pm'" (click)="selectTime('t05pm')">05:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't06pm'" (click)="selectTime('t06pm')">06:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't07pm'" (click)="selectTime('t07pm')">07:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't08pm'" (click)="selectTime('t08pm')">08:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't09pm'" (click)="selectTime('t09pm')">09:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't10pm'" (click)="selectTime('t10pm')">10:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't11pm'" (click)="selectTime('t11pm')">11:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't12am'" (click)="selectTime('t12am')">12:00 ص</label>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+    <button type="button" class="btn send text-black">تأكيد الطلب</button>
+      </div>
+    </div>
+</section>

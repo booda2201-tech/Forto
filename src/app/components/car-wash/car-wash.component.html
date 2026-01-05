@@ -1,0 +1,202 @@
+<!-- <div class="container mt-4">
+  <div class="row">
+
+    <div class="col-md-8 border-end">
+      <h4 class="mb-4 text-end">الخدمات المتاحة</h4>
+      <div class="row row-cols-1 row-cols-md-3 g-4">
+
+        <div class="col">
+          <div class="card h-100 text-center shadow-sm btn-outline-primary clickable-card">
+            <div class="card-body">
+              <h5 class="card-title">غسيل سيارة</h5>
+              <p class="card-text">180 ج.م</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="card h-100 text-center shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">خدمة أخرى</h5>
+              <p class="card-text">---</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4 text-end" dir="rtl">
+
+      <h4 class="mb-4">ملخص الطلب</h4>
+
+      <div class="p-3 bg-light rounded border">
+
+        <ul class="list-unstyled p-3">
+          <li class="d-flex justify-content-between mb-2">
+            <span>غسيل سيارة</span>
+            <span>180</span>
+          </li>
+          <hr>
+          <li class="d-flex justify-content-between fw-bold">
+            <span>الإجمالي</span>
+            <span>200</span>
+          </li>
+        </ul>
+
+        <button class="btn btn-success w-100 mt-4"> تم </button>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<!-- <div class="cont">
+
+<div class="container mt-5" dir="rtl">
+  <div class="row">
+
+    <div class="col-md-8">
+      <h3 class="mb-4"><i class="fas fa-concierge-bell me-2"></i> اختر الخدمات</h3>
+      <div class="row g-3">
+        <div class="col-md-6" *ngFor="let item of allServices">
+          <div class="card h-100 service-card"
+              [class.selected]="item.selected"
+              (click)="toggleService(item)">
+            <div class="card-body d-flex justify-content-between align-items-center">
+              <div>
+                <h5 class="card-title mb-1">{{ item.name }}</h5>
+                <span class="text-muted">{{ item.price }} ج.م</span>
+              </div>
+              <div class="check-icon" *ngIf="item.selected">
+                <i class="bi bi-check-circle-fill fs-3"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="col-md-4">
+      <div class="sticky-top" style="top: 20px;">
+        <div class="card shadow border-0 rounded-4">
+          <div class="card-header py-3 rounded-top-4">
+            <h5 class="mb-0 text-center">ملخص الطلب</h5>
+          </div>
+          <div class="card-body">
+            <div *ngFor="let item of allServices">
+              <div class="d-flex justify-content-between mb-2" *ngIf="item.selected">
+                <span>{{ item.name }}</span>
+                <span>{{ item.price }} ج.م</span>
+              </div>
+            </div>
+
+            <hr *ngIf="getTotal() > 0">
+            <div class="d-flex justify-content-between fw-bold fs-5 mt-3">
+              <span>الإجمالي:</span>
+              <span class="fw-bold">{{ getTotal() }} ج.م</span>
+            </div>
+            <button routerLink="login"
+            class="btn btn-end w-100 mt-4 py-2 fw-bold"
+            [disabled]="getTotal() === 0"
+                >
+              تأكيد الطلب
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div> -->
+
+
+  <div class="cont">
+
+  <div class="services-container">
+    <h2 class="text-center mb-4">اختر نوع الخدمة</h2>
+
+    <div class="buttons-grid d-flex justify-content-center gap-2 flex-wrap">
+      <button class="service-btn" [class.active]="activeCategory === 'all'" (click)="filterCategory('all')">
+        <span>الكل</span>
+      </button>
+
+      <button class="service-btn" [class.active]="activeCategory === 'car-wash'" (click)="filterCategory('car-wash')">
+        <span>غسيل</span>
+      </button>
+
+      <button class="service-btn" [class.active]="activeCategory === 'ironing'" (click)="filterCategory('ironing')">
+        <span>مكواة</span>
+      </button>
+
+      <button class="service-btn" [class.active]="activeCategory === 'dry-clean'" (click)="filterCategory('dry-clean')">
+        <span>دراي كلين</span>
+      </button>
+
+      <button class="service-btn" [class.active]="activeCategory === 'carpets'" (click)="filterCategory('carpets')">
+        <span>طابقات</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="pointer">
+<div class="container mt-4" dir="rtl">
+  <div class="row">
+    <div class="col-md-8">
+      <h3 class="mb-4">
+        <i class="fas fa-concierge-bell me-2"></i>
+        الخدمات المتاحة ({{ services.length }})
+      </h3>
+      <div class="row g-3">
+        <div class="col-md-6" *ngFor="let item of services">
+          <div class="card h-100 service-card"
+                [class.selected]="item.selected"
+                (click)="toggleService(item)"
+                style="cursor: pointer;">
+            <div class="card-body d-flex justify-content-between align-items-center">
+              <div>
+                <h5 class="card-title mb-1">{{ item.name }}</h5>
+                <span class="text-muted">{{ item.price }} ج.م</span>
+              </div>
+              <div class="check-icon" *ngIf="item.selected">
+                <i class="bi bi-check-circle-fill fs-3"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="sticky-top" style="top: 20px;">
+        <div class="card shadow border-0 rounded-4">
+          <div class="card-header py-3  text-white rounded-top-4">
+            <h5 class="mb-0 text-center">ملخص الطلب</h5>
+          </div>
+          <div class="card-body">
+            <div *ngFor="let item of allServices">
+              <div class="d-flex justify-content-between mb-2" *ngIf="item.selected">
+                <span>{{ item.name }}</span>
+                <span>{{ item.price }} ج.م</span>
+              </div>
+            </div>
+
+            <hr *ngIf="getTotal() > 0">
+
+            <div class="d-flex justify-content-between fw-bold fs-5 mt-3">
+              <span>الإجمالي:</span>
+              <span>{{ getTotal() }} ج.م</span>
+            </div>
+
+            <button routerLink="/conform-order" class="btn w-100 mt-4 py-2 fw-bold" [disabled]="getTotal() === 0">
+              تأكيد الطلب
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+

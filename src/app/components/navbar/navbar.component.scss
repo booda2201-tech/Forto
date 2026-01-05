@@ -1,0 +1,127 @@
+.navbar {
+  background: linear-gradient(to left, rgba(0,0,0,0.8), rgb(0, 0, 0));
+  height: 120px;
+  width: 100%;
+  border-radius: 0 0 25px 25px ;
+  border-bottom: 1px solid #f0f0f0;
+  direction: rtl;
+  // position: sticky;
+  top: 0;
+  z-index: 1000;
+
+
+  .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    padding: 0 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  margin: -40px;
+
+
+
+  img {
+    height: 150px;
+    width: auto;
+    object-fit: contain;
+    
+  }
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 30px;
+
+  li {
+    a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      position: relative;
+      padding: 5px 0;
+
+      &.active-link {
+        color: #ff9a27;
+        &::after {
+          width: 100%;
+        }
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: 0;
+        right: 0;
+        background-color: #ff9a27;
+        transition: width 0.3s ease;
+      }
+
+      &:hover {
+        color: #ff9a27;
+        &::after {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
+
+.checkbtn {
+  display: none;
+  cursor: pointer;
+  font-size: 30px;
+}
+
+
+
+@media (max-width: 858px) {
+  .checkbtn {
+    display: block;
+    cursor: pointer;
+    font-size: 24px;
+  }
+
+  .nav-links {
+    position: fixed;
+    top: 80px;
+    right: -100%;
+    width: 60%;
+    height: 100vh;
+    border-radius: 20px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    transition: 0.4s ease-in-out;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    z-index: 999;
+    padding-top: 20px;
+  }
+
+
+  .nav-links.active {
+    right: 0;
+  }
+
+  .nav-links li {
+    margin: 15px 0;
+    width: 100%;
+    text-align: center;
+  }
+
+}
