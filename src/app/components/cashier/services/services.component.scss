@@ -1,27 +1,22 @@
 
-
-
-.cont {
-  background: linear-gradient(to left, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8));
-  border-radius: 30px 30px 0px 0px;
+.contt {
+  background: linear-gradient(to left,#f8f9fa);
   padding: 30px;
-  margin: 10px;
   display: flex;
   align-items: center;
 
 
   @media (max-width: 480px) {
     padding: 15px;
-    margin: 10px;
     border-radius: 20px;
   }
 }
 
 .pointer{
-  background: linear-gradient(to left, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8));
-  border-radius: 0px 0px 30px 30px;
+  background: linear-gradient(to left,#f8f9fa);
+  border-radius: 0px 0px 0px 0px;
   padding: 20px;
-  margin: -10px 10px 10px 10px;
+
   display: flex;
   align-items: center;
 
@@ -36,7 +31,7 @@
 
 
 .services-container {
-  padding: 20px;
+
   text-align: center;
   margin: auto;
   direction: rtl;
@@ -69,7 +64,7 @@
   }
 
   .service-btn {
-    padding: 20px 10px;
+    padding: 15px 35px !important;
     border: 2px solid  #ff9a27;
     background-color: white;
     color:  #ff9a27;
@@ -83,14 +78,21 @@
     align-items: center;
     gap: 10px;
 
-    &:hover {
+  &:hover {
       background-color: #ff9a27;
       color: white;
       transform: translateY(-5px);
       box-shadow: 0 5px 15px rgba(0, 217, 255, 0.3);
     }
 
-    @media (min-width: 768px) {
+  &.active {
+    background-color: #ff9800 !important;
+    color: #ffffff !important;
+    border-color: #ff9800;
+    box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+  }
+
+  @media (min-width: 768px) {
       padding: 20px 15px;
       font-size: 1.2rem;
     }
@@ -104,12 +106,12 @@
   border: 2px solid transparent;
   transition: all 0.3s ease;
   border-radius: 12px;
-  background-color: #f8f9fa;
+  background-color: #d3d3d3;
 
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    background-color: #fff;
+    background-color: #eeeeeee5;
   }
 
   &.selected {
@@ -133,18 +135,6 @@
 }
 
 
-
-.service-btn.active {
-  background-color: #ff9a27 !important;
-  color: white !important;
-  transform: scale(1.05);
-  border: 2px solid  white;
-}
-
-.service-card.selected {
-  border: 2px solid  white;
-  background-color: #f0f7ff;
-}
 
 @keyframes scaleIn {
   from { transform: scale(0); }

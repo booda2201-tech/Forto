@@ -1,0 +1,361 @@
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+
+
+export enum ServiceCategory {
+  All = 'all',
+  CarWash = 'car-wash',
+  Polishing = 'polishing',
+  Interior = 'interior',
+  Special = 'special'
+}
+
+export interface ServiceItem {
+  id: number;
+  name: string;
+  price: number;
+  category: ServiceCategory;
+  selected: boolean;
+}
+
+
+
+export interface Customer {
+  id: number;
+  customerName: string;
+  phone: string;
+  cars: any[];
+  selectedServices?: ServiceItem[];
+  totalAmount?: number;
+  date?: Date;
+  serviceItem?: ServiceItem[];
+  time?: string;
+  price?: number;
+  status?: 'waiting' | 'active' | 'completed' | 'canceled';
+  statusText?: string;
+  worker?: string;
+  role?: string | null;
+}
+@Injectable({
+  providedIn: 'root'
+})
+export class ServiceCatalogService {
+
+  private allServices: ServiceItem[] = [
+    { id: 1, name: 'غسيل سيارة خارجي', price: 200, category: ServiceCategory.CarWash , selected: false },
+    { id: 2, name: 'غسيل داخلي وبخار', price: 250, category: ServiceCategory.CarWash , selected: false },
+    { id: 3, name: 'تلميع إطارات', price: 150, category: ServiceCategory.CarWash , selected: false },
+    { id: 4, name: 'تلميع الفرش', price: 300, category: ServiceCategory.CarWash , selected: false },
+    { id: 5, name: 'غسبل المتور', price: 50, category: ServiceCategory.CarWash , selected: false },
+    { id: 6, name: 'غسيل مساحات', price: 50, category: ServiceCategory.CarWash , selected: false },
+    { id: 7, name: 'تعطير وتطهير', price: 120, category: ServiceCategory.CarWash , selected: false },
+    { id: 8, name: 'غسيل كامل ', price: 650, category: ServiceCategory.CarWash , selected: false },
+    { id: 9, name: 'غسيل المقاعد', price: 130, category: ServiceCategory.CarWash , selected: false },
+    { id: 10, name: 'تطهير المكيف', price: 130, category: ServiceCategory.CarWash , selected: false },
+    { id: 20, name: 'غسيل أسفل السيارة', price: 150, category: ServiceCategory.CarWash , selected: false },
+    { id: 11, name: 'غسيل الموتور بالبخار', price: 150, category: ServiceCategory.CarWash , selected: false },
+    { id: 12, name: 'تلميع بودي (واكس نانو)', price: 400, category: ServiceCategory. Polishing , selected: false },
+    { id: 13, name: 'تلميع الفوانيس الأمامية', price: 120, category: ServiceCategory. Polishing , selected: false },
+    { id: 14, name: 'تلميع الجنوط وإزالة الرايش', price: 150, category: ServiceCategory. Polishing , selected: false },
+    { id: 15, name: 'تلميع التابلوه والأبواب', price: 80, category: ServiceCategory. Polishing , selected: false },
+    { id: 16, name: 'تنظيف مراتب السيارة', price: 300, category: ServiceCategory.Interior, selected: false },
+    { id: 17, name: 'إزالة بقع السقف والشامواه', price: 200, category: ServiceCategory.Interior, selected: false },
+    { id: 18, name: 'تعقيم المكيف بالبخار', price: 100, category: ServiceCategory.Interior, selected: false },
+    { id: 19, name: 'طبقة حماية نانو سريعة', price: 600, category: ServiceCategory.Special, selected: false },
+    { id: 21, name: 'إزالة الروائح الكريهة', price: 250, category: ServiceCategory.Special, selected: false },
+    { id: 22, name: 'تغيير مسحات الزجاج', price: 50, category: ServiceCategory.Special, selected: false },
+  ];
+
+  private customers: Customer[] = [
+    {
+      id: 1,
+      customerName: 'أحمد محمد',
+      phone: '+966 50 123 4567',
+      cars: [
+        { carid: 1,
+          carModel: 'تويوتا كامري 2022',
+          plateNumber: 'ف ه د 1234',}],
+      serviceItem: [
+        { id: 1, name: 'غسيل سيارة خارجي', price: 200, category: ServiceCategory.CarWash , selected: true },
+            { id: 5, name: 'غسبل المتور', price: 50, category: ServiceCategory.CarWash , selected: false },
+                { id: 20, name: 'غسيل أسفل السيارة', price: 150, category: ServiceCategory.CarWash , selected: false },
+                    { id: 3, name: 'تلميع إطارات', price: 150, category: ServiceCategory.CarWash , selected: false },
+      ],
+      date: new Date('2026-01-11'),
+      time: '09:00 م',
+      status: 'waiting',
+      statusText: 'قيد الانتظار',
+      worker: 'أحمد محمد',
+      role: 'admin'
+    },
+    {
+      id: 2,
+      customerName: 'سارة أحمد',
+      phone: '+966 55 987 6543',
+      cars: [
+        { carid: 1,
+          carModel: 'تويوتا كامري 2025',
+          plateNumber: 'د ه ب 1234',}],
+      serviceItem: [
+        { id: 1, name: 'غسيل سيارة خارجي', price: 200, category: ServiceCategory.CarWash , selected: true },
+            { id: 4, name: 'تلميع الفرش', price: 300, category: ServiceCategory.CarWash , selected: false },
+      ],
+      date: new Date('2026-01-11'),
+      time: '06:00 م',
+      status: 'waiting',
+      statusText: 'قيد الانتظار',
+      worker: 'محمد علي',
+      role: 'cashier'
+    },
+    {
+      id: 3,
+      customerName: 'خالد مختار',
+      phone: '+966 54 000 1111',
+      cars: [
+        { carid: 1,
+          carModel: 'تويوتا كامري 2020',
+          plateNumber: 'د ج ع 1234',}],
+      serviceItem: [
+        { id: 2, name: 'غسيل داخلي وبخار', price: 250, category: ServiceCategory.CarWash , selected: true },
+            { id: 6, name: 'غسيل مساحات', price: 50, category: ServiceCategory.CarWash , selected: false },
+      ],
+      date: new Date('2026-01-10'),
+      time: '05:00 م',
+      status: 'waiting',
+      statusText: 'قيد الانتظار',
+      worker: 'ادهم الشرقاوي',
+      role: 'worker'
+    },
+    {
+      id: 4,
+      customerName: 'فهد العتيبي',
+      phone: '+966 54 586 1111',
+      cars: [
+        { carid: 1,
+          carModel: 'تويوتا كامري 2021',
+          plateNumber: ' ب ص ج 1234',}],
+      serviceItem: [
+        { id: 4, name: 'تلميع الفرش', price: 300, category: ServiceCategory.CarWash , selected: true },
+      ],
+      date: new Date('2026-01-05'),
+      time: '12:00 ص',
+      status: 'waiting',
+      statusText: 'قيد الانتظار',
+      worker: 'محمود كهربا',
+      role: 'client'
+    },
+    {
+      id: 5,
+      customerName: 'عصام الشوالي',
+      phone: '+962 54 654 1111',
+      cars: [
+        { carid: 1,
+          carModel: 'تويوتا كامري 2023',
+          plateNumber: ' ب ص ج 1234',}],
+      serviceItem: [
+        { id: 8, name: 'غسيل كامل ', price: 650, category: ServiceCategory.CarWash , selected: true },
+            { id: 12, name: 'تلميع بودي (واكس نانو)', price: 400, category: ServiceCategory. Polishing , selected: false },
+      ],
+      date: new Date('2026-01-1'),
+      time: '01:00 م',
+      status: 'waiting',
+      statusText: 'قيد الانتظار',
+      worker: 'تامر حسني ',
+      role: 'cashier'
+    },
+    {
+      id: 6,
+      customerName: 'حفيظ درااجي',
+      phone: '+966 54 235 1111',
+      cars: [
+        { carid: 1,
+          carModel: 'تويوتا كامري 2022',
+          plateNumber: ' ا س د 1234',}],
+      serviceItem: [
+        { id: 2, name: 'غسيل داخلي وبخار', price: 250, category: ServiceCategory.CarWash , selected: true },
+            { id: 7, name: 'تعطير وتطهير', price: 120, category: ServiceCategory.CarWash , selected: false },
+      ],
+      date: new Date('2026-01-02'),
+      time: '11:00 ص',
+      status: 'waiting',
+      statusText: 'قيد الانتظار',
+      worker: 'عمرو دياب ',
+      role: 'worker'
+
+    },
+    {
+      id: 7,
+      customerName: 'فارس عوض',
+      phone: '+966 54 852 1111',
+      cars: [
+        { carid: 1,
+          carModel: 'تويوتا كامري 2026',
+          plateNumber: 'ع س د 1234',}],
+      serviceItem: [
+                { id: 7, name: 'تعطير وتطهير', price: 120, category: ServiceCategory.CarWash , selected: false },
+      ],
+      date: new Date('2026-01-08'),
+      time: '10:00 م',
+      status: 'waiting',
+      statusText: 'قيد الانتظار',
+      worker: 'محمد رمضان ',
+      role: 'admin'
+    },
+    {
+      id: 8,
+      customerName: 'محمد عوض',
+      phone: '+966 54 852 1551',
+      cars: [
+        { carid: 1,
+          carModel: 'تويوتا كامري 2026',
+          plateNumber: 'ع س د 1234',}],
+      serviceItem: [
+                { id: 5, name: 'غسبل المتور', price: 50, category: ServiceCategory.CarWash , selected: false },
+      ],
+      date: new Date('2026-01-08'),
+      time: '10:00 م',
+      status: 'waiting',
+      statusText: 'قيد الانتظار',
+      worker: 'محمد رمضان ',
+      role: 'admin'
+    },
+    {
+      id: 9,
+      customerName: 'منصور عوض',
+      phone: '+966 54 852 1111',
+      cars: [
+        { carid: 1,
+          carModel: 'تويوتا كامري 2026',
+          plateNumber: 'ع س د 1234',}],
+      serviceItem: [
+                  { id: 4, name: 'تلميع الفرش', price: 300, category: ServiceCategory.CarWash , selected: false },
+      ],
+      date: new Date('2026-01-08'),
+      time: '10:00 م',
+      status: 'waiting',
+      statusText: 'قيد الانتظار',
+      worker: 'محمد رمضان ',
+      role: 'admin'
+    },
+    {
+      id: 10,
+      customerName: 'على القاسمي',
+      phone: '+966 54 852 1221',
+      cars: [
+        { carid: 1,
+          carModel: 'تويوتا كامري 2026',
+          plateNumber: 'ع س د 1234',}],
+      serviceItem: [
+                { id: 2, name: 'غسيل داخلي وبخار', price: 250, category: ServiceCategory.CarWash , selected: true },
+      ],
+      date: new Date('2026-01-08'),
+      time: '10:00 م',
+      status: 'waiting',
+      statusText: 'قيد الانتظار',
+      worker: 'محمد رمضان ',
+      role: 'cashier'
+    },
+  ];
+
+
+private customersSubject = new BehaviorSubject<Customer[]>(this.customers);
+
+
+constructor() {
+this.customers.forEach(customer => {
+
+  if (customer.serviceItem && customer.serviceItem.length > 0) {
+    customer.totalAmount = customer.serviceItem.reduce((sum, s) => sum + s.price, 0);
+  } else {
+    customer.totalAmount = customer.price || 0;
+  }
+
+
+    customer.status = customer.status || 'waiting';
+    customer.date = customer.date || new Date();
+    customer.statusText = customer.statusText || 'قيد الانتظار';
+    customer.worker = customer.worker || 'غير محدد';
+    customer.role = customer.role || null;
+  });
+  this.customersSubject.next([...this.customers]);
+}
+
+  getServices(): Observable<ServiceItem[]> {
+    return of(this.allServices);
+  }
+
+getCustomers(): Observable<Customer[]> {
+    return this.customersSubject.asObservable();
+  }
+
+
+addCustomer(customerData: any) {
+    const newCustomer: Customer = {
+      id: Date.now(),
+      customerName: customerData.name,
+      phone: customerData.phone,
+      cars: [
+        {
+          carid: Date.now() + 1,
+          carModel: customerData.carType || 'غير محدد',
+          plateNumber: customerData.carNumber || 'غير محدد'
+
+        }
+      ],
+      selectedServices: [],
+      totalAmount: 0,
+      date: new Date(),
+      worker: customerData.worker || 'غير محدد',
+      status: 'canceled',
+      statusText: 'ملغي',
+      role: null
+    };
+    this.customers.unshift(newCustomer);
+    this.customersSubject.next([...this.customers]);
+  }
+
+  deleteCustomer(id: number) {
+    this.customers = this.customers.filter(c => c.id !== id);
+    this.customersSubject.next([...this.customers]);
+  }
+
+
+
+updateCustomerStatus(id: number, newStatus: 'waiting' | 'active' | 'completed' | 'canceled') {
+  const index = this.customers.findIndex(c => c.id === id);
+  if (index !== -1) {
+    this.customers[index].status = newStatus;
+
+
+    const statusMap = {
+      'active': 'نشط',
+      'completed': 'مكتمل',
+      'canceled': 'ملغي',
+      'waiting': 'قيد الانتظار'
+    };
+    this.customers[index].statusText = statusMap[newStatus];
+
+
+    this.customersSubject.next([...this.customers]);
+  }
+}
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

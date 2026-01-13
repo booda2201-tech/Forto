@@ -1,0 +1,333 @@
+<!-- <nav class="navbar">
+  <div class="container">
+<div class="checkbtn" (click)="toggleMenu()">
+      <span>☰</span>
+    </div>
+    <div class="logo" routerLink="/">
+      <img src="../../../assets/imeg/logo forto.png" alt="#"> </div>
+
+<ul class="nav-links" [class.active]="isMenuOpen">
+          <li><a href="#" routerLinkActive="active-link" routerLink="/create-order">تسجيل الخروج</a></li>
+    </ul>
+  </div>
+</nav> -->
+
+
+<!-- <div class="cont">
+<div class="container bg-danger">
+<div class="row bg-info">
+    <h3 class="mb-5 text-center text-white">
+    <i class="fas fa-concierge-bell"></i>
+      الطلبات الحالية ({{ carRequests.length }})
+    </h3>
+  <div *ngFor="let car of carRequests" class="col-md-10 mx-auto mb-3">
+    <div class="card shadow-sm">
+      <div class="card-body d-flex align-items-center justify-content-between text-end">
+        <div>
+
+          <h6 class="card-subtitle mb-2 text-muted"> <strong class="text-black">نوع السيارة:</strong>
+                {{ car.carType }}</h6>
+          <p class="mb-1"><strong>فئة السيارة:</strong> {{ car.carCategory }}</p>
+          <p class="mb-0"><strong> نوع الخدمة: </strong>  {{ car.service }}</p>
+        </div>
+
+<div class="d-flex gap-2 mt-2" *ngIf="userRole === 1">
+    <button class="btn btn-success">
+        بدء الخدمة
+    </button>
+
+    <button class="btn btn-danger"
+            data-bs-toggle="modal"
+            data-bs-target="#detailsModal"
+            data-bs-backdrop="static"
+            data-bs-keyboard="false"
+            (click)="selectCar(car)">
+        انهاء الخدمه
+    </button>
+</div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-0" *ngIf="selectedCar">
+<div class="min mt-4 pt-3 text-end p-3 rounded-4" dir="rtl">
+
+    <label class="form-label fw-bold mb-3 text-black fs-5 d-flex align-items-center justify-content-between">
+        <span>مدى اتساخ السيارة <span class="text-danger">*</span></span>
+        <small class="text-muted fw-normal" *ngIf="!selectedCar.dirtLevel"> (يجب اختيار مستوى) </small>
+    </label>
+
+    <div class="dirt-list" dir="ltr">
+        <div class="dirt-item"
+            [class.active-normal]="selectedCar.dirtLevel === 'normal'"
+            (click)="selectedCar.dirtLevel = 'normal'"
+            data-bs-dismiss="modal">
+            <div class="d-flex align-items-center w-100">
+                <div class="status-indicator bg-success"></div>
+                <div class="flex-grow-1 ms-3 text-end px-3">
+                    <h6 class="mb-0 fw-bold">عادي</h6>
+
+                </div>
+                <i class="bi bi-check-circle-fill fs-4 check-icon" *ngIf="selectedCar.dirtLevel === 'normal'"></i>
+            </div>
+        </div>
+
+        <div class="dirt-item"
+            [class.active-medium]="selectedCar.dirtLevel === 'medium'"
+            (click)="selectedCar.dirtLevel = 'medium'"
+            data-bs-dismiss="modal">
+            <div class="d-flex align-items-center w-100">
+                <div class="status-indicator bg-warning"></div>
+                <div class="flex-grow-1 ms-3 text-end px-3">
+                    <h6 class="mb-0 fw-bold">متوسط</h6>
+                </div>
+                <i class="bi bi-check-circle-fill fs-4 check-icon" *ngIf="selectedCar.dirtLevel === 'medium'"></i>
+            </div>
+        </div>
+
+        <div class="dirt-item"
+            [class.active-hard]="selectedCar.dirtLevel === 'hard'"
+            (click)="selectedCar.dirtLevel = 'hard'"
+            data-bs-dismiss="modal">
+            <div class="d-flex align-items-center w-100">
+                <div class="status-indicator bg-danger"></div>
+                <div class="flex-grow-1 ms-3 text-end px-3">
+                    <h6 class="mb-0 fw-bold">صعب (متسخة جداً)</h6>
+                </div>
+                <i class="bi bi-check-circle-fill fs-4 check-icon" *ngIf="selectedCar.dirtLevel === 'hard'"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+</div>
+</div>
+
+
+
+
+</div>
+</div>
+</div> -->
+
+
+<div class="container mt-4" dir="rtl">
+  <h3 class="text-end mb-4 fw-bold">الحجوزات ({{ carRequests.length }})</h3>
+
+  <div *ngFor="let car of carRequests" class="card mb-4 shadow-sm border-0 position-relative">
+    <div class="position-absolute top-0 start-0 m-3 d-flex align-items-center">
+        <span [ngClass]="{'text-warning': car.status === 'waiting', 'text-primary': car.status === 'in-progress'
+          , 'text-success': car.status === 'completed', 'text-danger': car.status === 'canceled'
+        }" class="fw-bold small">
+            <i class="bi bi-circle-fill me-1" style="font-size: 8px;"></i> {{ car.statusText }}
+        </span>
+    </div>
+
+    <div class="card-body pt-5">
+      <div class="d-flex align-items-center mb-3">
+        <div class="bg-light p-3 rounded-3 me-3">
+          <i class="bi bi-person text-warning fs-4"></i>
+        </div>
+        <div>
+          <h5 class="mb-0 fw-bold">{{ car.customerName }}</h5>
+          <small class="text-muted">رقم الحجز: #{{ car.id }}</small>
+        </div>
+      </div>
+
+      <div class="row g-3 text-end">
+        <div class="col-md-4">
+          <div class="border rounded-3 p-2 bg-white d-flex align-items-center">
+              <div class="icon-box border rounded-3 d-flex align-items-center justify-content-center me-3 bg-white" style="width: 45px; height: 45px;">
+                <i class="bi bi-telephone text-front text-secondary fs-5"></i>
+              </div>
+            <div>
+              <small class="text-muted d-block">رقم الهاتف</small>
+              <span class="fw-bold small">{{ car.phone }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="border rounded-3 p-2 d-flex align-items-center bg-light-subtle">
+              <div class="icon-box border rounded-3 d-flex align-items-center justify-content-center me-3 bg-white" style="width: 45px; height: 45px;">
+                <i class="bi bi-car-front text-secondary fs-5"></i>
+              </div>
+            <div class="text-end flex-grow-1 px-2">
+              <small class="text-muted d-block mb-1" style="font-size: 0.8rem;">نوع السيارة</small>
+              <span class="fw-bold text-dark d-block">{{ car.carModel }}</span>
+          </div>
+            </div>
+          </div>
+        <div class="col-md-4">
+          <div class="border rounded-3 p-2 bg-white d-flex align-items-center">
+            <div class="icon-box border rounded-3 d-flex align-items-center justify-content-center me-3 bg-white" style="width: 45px; height: 45px;">
+                <i class="bi bi-map text-secondary fs-5"></i>
+              </div>
+            <div>
+              <small class="text-muted d-block">رقم اللوحة</small>
+              <span class="fw-bold small">{{ car.plateNumber }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="border rounded-3 p-2 bg-white d-flex align-items-center">
+              <div class="icon-box border rounded-3 d-flex align-items-center justify-content-center me-3 bg-white" style="width: 45px; height: 45px;">
+                  <i class="bi bi-tag text-secondary fs-5"></i>
+              </div>
+            <div>
+              <small class="text-muted d-block">الخدمة</small>
+              <span class="fw-bold small">{{ car.service }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="border rounded-3 p-2 bg-white d-flex align-items-center">
+              <div class="icon-box border rounded-3 d-flex align-items-center justify-content-center me-3 bg-white" style="width: 45px; height: 45px;">
+                <i class="bi bi-calendar text-secondary fs-5"></i>
+              </div>
+            <div>
+              <small class="text-muted d-block">التاريخ</small>
+              <span class="fw-bold small">{{ car.date }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="border rounded-3 p-2 bg-white d-flex align-items-center">
+            <div class="icon-box border rounded-3 d-flex align-items-center justify-content-center me-3 bg-white" style="width: 45px; height: 45px;">
+                <i class="bi bi-clock text-secondary fs-5"></i>
+              </div>
+            <div>
+              <small class="text-muted d-block">الوقت</small>
+              <span class="fw-bold small">{{ car.time }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3">
+
+
+  <div class="d-flex gap-2" *ngIf="userRole === 0">
+    <button *ngIf="car.status === 'waiting'"
+            class="btn btn-primary rounded-pill px-4 btn-sm fw-bold"
+            (click)="startExecution(car)">
+        بدء التنفيذ
+    </button>
+
+    <button class="btn btn-success rounded-pill px-4 btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#detailsModal"
+            (click)="selectCar(car)">
+        تعديل
+    </button>
+
+    <button class="btn btn-danger rounded-pill px-4 btn-sm"
+            (click)="finishCar(car)">
+        انهاء
+    </button>
+  </div>
+      </div>
+    </div>
+  </div>
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4" *ngIf="selectedCar">
+      <div class="modal-body p-4 text-end" dir="rtl">
+
+        <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+          <h5 class="fw-bold mb-0">تحديث تفاصيل الخدمة</h5>
+          <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <!-- <div class="mb-4">
+          <label class="form-label fw-bold text-dark mb-2">
+            <i class="bi bi-box-seam ms-2 text-primary"></i> أدوات/منظفات إضافية استخدمت:
+          </label>
+          <textarea class="form-control bg-light border-0 rounded-3"
+                    rows="2"
+                    [(ngModel)]="selectedCar.additionalTools"
+                    placeholder=""></textarea>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-bold text-dark mb-2">
+            <i class="bi bi-chat-dots ms-2 text-warning"></i> طلبات إضافية من العميل:
+          </label>
+          <input type="text" class="form-control bg-light border-0 rounded-3"
+                  [(ngModel)]="selectedCar.customerRequests"
+                  placeholder="">
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-bold text-dark mb-2">
+            <i class="bi bi-cash-stack ms-2 text-success"></i> رسوم إضافية:
+          </label>
+          <input type="number" class="form-control bg-light border-0 rounded-3"
+                  [(ngModel)]="selectedCar.extraCharge"
+                  placeholder="0.00">
+        </div> -->
+
+        <div class="mb-4">
+  <label class="form-label fw-bold text-dark mb-3">
+    <i class="bi bi-box-seam ms-2 text-primary"></i> أدوات/منظفات إضافية استخدمت:
+  </label>
+
+  <div class="row g-3">
+    <div class="col-6">
+      <div class="p-3 border rounded-3 bg-light d-flex align-items-center justify-content-between">
+        <span class="fw-bold">صابون:</span>
+        <span>جم</span>
+        <div class="input-group input-group-sm" style="width: 100px;">
+          <input type="number" class="form-control text-center border-2 bg-white"
+                  [(ngModel)]="selectedCar.soapCount" placeholder="0">
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6">
+      <div class="p-3 border rounded-3 bg-light d-flex align-items-center justify-content-between">
+        <span class="fw-bold">معطر:</span>
+
+        <div class="input-group input-group-sm" style="width: 100px;">
+          <input type="number" class="form-control text-center border-2 bg-white"
+                  [(ngModel)]="selectedCar.perfumeCount" placeholder="0">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mb-4">
+  <label class="form-label fw-bold text-dark mb-2">
+    <i class="bi bi-chat-dots ms-2 text-warning"></i> طلبات إضافية من العميل:
+  </label>
+  <textarea class="form-control bg-light border-0 rounded-3"
+            rows="2"
+            [(ngModel)]="selectedCar.customerRequests"
+            placeholder=""></textarea>
+</div>
+
+
+        <div class="d-grid gap-2 mt-4">
+          <button class="btn btn-success py-2 rounded-3 fw-bold"
+                  (click)="saveChanges()"
+                  data-bs-toggle="modal"
+                  data-bs-dismiss="modal">
+              تأكيد
+          </button>
+
+          <button class="btn btn-light py-2 rounded-3 text-muted" data-bs-dismiss="modal">
+            إلغاء
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,113 @@
+
+
+
+.card {
+  border: none;
+  border-radius:  10px;
+  transition: all 0.3s ease-in-out;
+
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+
+.form-check {
+  padding-right: 1.5em;
+  margin-bottom: 8px;
+
+  .form-check-input {
+    float: right;
+    margin-right: -1.5em;
+    cursor: pointer;
+
+    &:checked {
+      background-color: rgba(0, 16, 245, 0.973);
+      border-color: rgba(0, 233, 89, 0.945);
+    }
+  }
+
+  .form-check-label {
+    cursor: pointer;
+    font-weight: 500;
+  }
+}
+
+
+input[type="date"] {
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  padding: 8px;
+
+  &:focus {
+    border-color:   rgba(0, 123, 255, 0.1);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1);
+  }
+}
+
+
+
+$select-focus-border: #1057db;
+
+
+.custom-select {
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background-position: left 0.75rem center;
+
+  &:focus {
+    border-color: $select-focus-border;
+    box-shadow: 0 0 0 0.2rem rgba($select-focus-border, 0.15);
+  }
+
+  option {
+    padding: 10px;
+  }
+}
+
+
+.col-md-4 {
+  h6, .form-label {
+    margin-bottom: 0.5rem;
+    color: #444;
+    display: block;
+  }
+}
+
+
+
+.btn-primary {
+  background-color: #ff8800;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+
+  &:hover {
+    background-color: darken( #e67a00, 10%);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+
+.card-title {
+  font-weight: 800;
+  color: #000!important;
+}
+
+.badge.bg-success {
+  background-color:  #ff8800 !important;
+  padding: 8px 15px;
+  border-radius: 6px;
+}
+
+.bg-light {
+  background-color: lighten(#707070, 45%) !important;
+
+}

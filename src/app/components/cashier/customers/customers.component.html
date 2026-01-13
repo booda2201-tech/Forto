@@ -1,0 +1,170 @@
+<div class="contt">
+  <div class="container  mt-4   m-auto" dir="rtl">
+    <div class="row mb-5 p-4 m-1 search-section rounded shadow-sm align-items-center" style="background-color:#dddddde5;">
+      <div class="col-md-10">
+          <input type="text"
+            class="form-control search-input"
+            placeholder="رقم الهاتف"
+            (input)="onSearchChange($event)">
+      </div>
+  <div class="col-md-2">
+    <button class="btn btn-add-client w-100" routerLink="/cashier/add-client">
+      إضافة عميل
+    </button>
+  </div>
+</div>
+
+  <h3 class="text-end mb-4 fw-bold text-black">العملاء ({{ filteredCarRequests.length }})</h3>
+
+<div *ngFor="let car of filteredCarRequests" class="custom-card mb-4 shadow-sm">
+  <div class="d-flex align-items-center mb-3">
+    <div class="bg-light p-3 rounded-3 me-3">
+      <i class="bi bi-person text-warning fs-4"></i>
+    </div>
+    <div>
+      <h5 class="mb-2 fw-bold">{{ car.customerName }}</h5>
+      <span class="booking-id">#{{ car.id }}</span>
+    </div>
+  </div>
+
+  <div class="d-flex align-items-center mb-3">
+    <div class="bg-light p-3 rounded-3 me-3">
+      <i class="bi bi-telephone text-warning fs-5"></i>
+    </div>
+    <div>
+      <small class="text-muted d-block">رقم الهاتف</small>
+      <span class="fw-bold small">{{ car.phone }}</span>
+    </div>
+  </div>
+
+  <div class="text-start px-3 mb-2">
+    <button class="btn btn-success py-1 px-3 fw-bold small shadow-sm"
+            data-bs-toggle="modal" data-bs-target="#addCarModal" (click)="prepareNewCar(car)">
+      <i class="bi bi-plus-circle me-1"></i> إضافة سيارة جديدة
+    </button>
+  </div>
+
+  <hr class="divider w-75 mx-auto mb-3">
+
+  <div *ngFor="let carDetail of car.cars; let i = index" class="car-details-box p-3 rounded mb-2 border-bottom position-relative">
+    <div class="row gy-3 align-items-center">
+
+      <div class="col-6 col-md-3 border-left-custom">
+        <small class="text-muted d-block small-label mb-2">نوع السيارة :
+          <i class="bi bi-car-front text-secondary fs-6"></i>
+        </small>
+        <span class="fw-bold">{{ carDetail.carModel }}</span>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <small class="text-muted d-block small-label mb-2">رقم اللوحة :
+          <i class="bi bi-map text-secondary fs-6"></i>
+        </small>
+        <span class="fw-bold">{{ carDetail.plateNumber }}</span>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="d-flex flex-column flex-md-row gap-2 justify-content-md-end">
+          <button class="btn btn-outline-danger btn-sm px-3 py-2 rounded-3" (click)="deleteCarFromCustomer(car, i)">
+            <i class="bi bi-trash"></i> <span class="d-md-none mx -2"> حذف السيارة</span>
+          </button>
+
+          <button class="btn-new-booking w-100 w-md-auto py-2"
+                  data-bs-toggle="modal" data-bs-target="#detailsModal" (click)="selectCar(carDetail)">
+            حجز جديد
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  </div>
+
+
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4" *ngIf="selectedCar">
+      <div class="modal-body p-4 text-end" dir="rtl">
+
+        <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+          <h5 class="fw-bold mb-0 text-success">إضافة خدمة وتحديد موعد</h5>
+          <button type="button" class="btn-close m-0" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-bold text-dark mb-2">
+            <i class="bi bi-search ms-2 text-success"></i> اختر الخدمة:
+          </label>
+          <select class="form-select border-2 py-2"
+                  [(ngModel)]="selectedService"
+                  (change)="onServiceSelected()">
+            <option [ngValue]="null" disabled>-- ابحث عن خدمة --</option>
+            <option *ngFor="let service of allServices" [ngValue]="service">
+              {{ service.name }} - ({{ service.price }} ج.م)
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-4 animate__animated animate__fadeIn" *ngIf="selectedService">
+          <label class="form-label fw-bold text-dark mb-2">
+            <i class="bi bi-clock ms-2 text-warning"></i> المواعيد المتاحة لهذه الخدمة:
+          </label>
+          <div class="row g-2">
+            <div class="col-6" *ngFor="let time of availableTimes">
+              <input type="radio" class="btn-check" name="timeSlot"
+                      [id]="time" [value]="time"
+                      [(ngModel)]="selectedCar.selectedTime">
+              <label class="btn btn-outline-scondary w-100 border-2" [for]="time">
+                {{ time }}
+              </label>
+            </div>
+          </div>
+        </div>
+
+
+
+        <div class="d-grid gap-2">
+          <button class="btn btn-success py-2 fw-bold shadow-sm"
+                  [disabled]="!selectedService || !selectedCar.selectedTime"
+                  (click)="saveChanges()"
+                  data-bs-dismiss="modal">
+            تأكيد الحجز
+          </button>
+          <button class="btn btn-link text-muted" data-bs-dismiss="modal">إلغاء</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="addCarModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header bg-success text-white rounded-top-4">
+        <h5 class="modal-title fw-bold">إضافة سيارة لـ {{ selectedCar?.customerName }}</h5>
+        <button type="button" class="btn-close btn-close-white ms-0 me-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4 text-end">
+        <div class="mb-3">
+          <label class="form-label fw-bold">نوع السيارة</label>
+          <input type="text" class="form-control" placeholder="مثال: C200" [(ngModel)]="newCarData.carModel">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">رقم اللوحة</label>
+          <input type="text" class="form-control" placeholder="مثال: أ ب ج 123" [(ngModel)]="newCarData.plateNumber">
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">إلغاء</button>
+        <button type="button" class="btn btn-success px-4 fw-bold" (click)="confirmAddNewCar()" data-bs-dismiss="modal">
+          حفظ السيارة
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+

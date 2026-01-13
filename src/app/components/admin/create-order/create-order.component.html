@@ -1,66 +1,46 @@
-<!-- <div class="container mt-4">
-  <div class="row">
+  <!-- <div class="cont">
 
-    <div class="col-md-8 border-end">
-      <h4 class="mb-4 text-end">الخدمات المتاحة</h4>
-      <div class="row row-cols-1 row-cols-md-3 g-4">
+  <div class="services-container">
+    <h2 class="text-center mb-4">اختر نوع الخدمة</h2>
 
-        <div class="col">
-          <div class="card h-100 text-center shadow-sm btn-outline-primary clickable-card">
-            <div class="card-body">
-              <h5 class="card-title">غسيل سيارة</h5>
-              <p class="card-text">180 ج.م</p>
-            </div>
-          </div>
-        </div>
+<div class="buttons-grid d-flex justify-content-center gap-2 flex-wrap">
+  <button class="service-btn" [class.active]="activeCategory === 'all'" (click)="filterCategory('all')">
+    <span>الكل</span>
+  </button>
 
-        <div class="col">
-          <div class="card h-100 text-center shadow-sm">
-            <div class="card-body">
-              <h5 class="card-title">خدمة أخرى</h5>
-              <p class="card-text">---</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <button class="service-btn" [class.active]="activeCategory === 'car-wash'" (click)="filterCategory('car-wash')">
+    <span>غسيل</span>
+  </button>
 
-    <div class="col-md-4 text-end" dir="rtl">
+  <button class="service-btn" [class.active]="activeCategory === 'polishing'" (click)="filterCategory('polishing')">
+    <span>تلميع وبوليش</span>
+  </button>
 
-      <h4 class="mb-4">ملخص الطلب</h4>
+  <button class="service-btn" [class.active]="activeCategory === 'interior'" (click)="filterCategory('interior')">
+    <span>عناية داخلية</span>
+  </button>
 
-      <div class="p-3 bg-light rounded border">
-
-        <ul class="list-unstyled p-3">
-          <li class="d-flex justify-content-between mb-2">
-            <span>غسيل سيارة</span>
-            <span>180</span>
-          </li>
-          <hr>
-          <li class="d-flex justify-content-between fw-bold">
-            <span>الإجمالي</span>
-            <span>200</span>
-          </li>
-        </ul>
-
-        <button class="btn btn-success w-100 mt-4"> تم </button>
-      </div>
-    </div>
+  <button class="service-btn" [class.active]="activeCategory === 'special'" (click)="filterCategory('special')">
+    <span>خدمات خاصة</span>
+  </button>
+</div>
   </div>
-</div> -->
+</div>
 
-<!-- <div class="cont">
-
-<div class="container mt-5" dir="rtl">
+<div class="pointer">
+<div class="container mt-4" dir="rtl">
   <div class="row">
-
     <div class="col-md-8">
-      <h3 class="mb-4"><i class="fas fa-concierge-bell me-2"></i> اختر الخدمات</h3>
+      <h3 class="mb-4">
+        <i class="fas fa-concierge-bell me-2"></i>
+        الخدمات المتاحة ({{ services.length }})
+      </h3>
       <div class="row g-3">
-        <div class="col-md-6" *ngFor="let item of allServices">
+        <div class="col-md-6" *ngFor="let item of services">
           <div class="card h-100 service-card"
-              [class.selected]="item.selected"
-              (click)="toggleService(item)">
+                [class.selected]="item.selected"
+                (click)="toggleService(item)"
+                style="cursor: pointer;">
             <div class="card-body d-flex justify-content-between align-items-center">
               <div>
                 <h5 class="card-title mb-1">{{ item.name }}</h5>
@@ -75,11 +55,10 @@
       </div>
     </div>
 
-
     <div class="col-md-4">
       <div class="sticky-top" style="top: 20px;">
         <div class="card shadow border-0 rounded-4">
-          <div class="card-header py-3 rounded-top-4">
+          <div class="card-header py-3  text-white rounded-top-4">
             <h5 class="mb-0 text-center">ملخص الطلب</h5>
           </div>
           <div class="card-body">
@@ -91,50 +70,59 @@
             </div>
 
             <hr *ngIf="getTotal() > 0">
+
             <div class="d-flex justify-content-between fw-bold fs-5 mt-3">
               <span>الإجمالي:</span>
-              <span class="fw-bold">{{ getTotal() }} ج.م</span>
+              <span>{{ getTotal() }} ج.م</span>
             </div>
-            <button routerLink="login"
-            class="btn btn-end w-100 mt-4 py-2 fw-bold"
-            [disabled]="getTotal() === 0"
-                >
-              تأكيد الطلب
+
+            <button routerLink="/order-information" class="btn w-100 mt-4 py-2 fw-bold" [disabled]="getTotal() === 0">
+              التالي
             </button>
           </div>
         </div>
       </div>
     </div>
-
+  </div>
   </div>
 </div>
-</div> -->
+ -->
 
 
-  <div class="cont">
 
+  <div class="cont mt-2">
   <div class="services-container">
-    <h2 class="text-center mb-4">اختر نوع الخدمة</h2>
+    <h2 class="text-center mb-4 fw-bold">اختر نوع الخدمة</h2>
 
-    <div class="buttons-grid d-flex justify-content-center gap-2 flex-wrap">
-      <button class="service-btn" [class.active]="activeCategory === 'all'" (click)="filterCategory('all')">
+    <div class="buttons-grid d-flex justify-content-center gap-2 flex-wrap mb-5">
+      <button class="service-btn"
+              [class.active]="activeCategory === Category.All"
+              (click)="filterCategory(Category.All)">
         <span>الكل</span>
       </button>
 
-      <button class="service-btn" [class.active]="activeCategory === 'car-wash'" (click)="filterCategory('car-wash')">
+      <button class="service-btn"
+              [class.active]="activeCategory === Category.CarWash"
+              (click)="filterCategory(Category.CarWash)">
         <span>غسيل</span>
       </button>
 
-      <button class="service-btn" [class.active]="activeCategory === 'ironing'" (click)="filterCategory('ironing')">
-        <span>مكواة</span>
+      <button class="service-btn"
+              [class.active]="activeCategory === Category.Polishing"
+              (click)="filterCategory(Category.Polishing)">
+        <span>تلميع وبوليش</span>
       </button>
 
-      <button class="service-btn" [class.active]="activeCategory === 'dry-clean'" (click)="filterCategory('dry-clean')">
-        <span>دراي كلين</span>
+      <button class="service-btn"
+              [class.active]="activeCategory === Category.Interior"
+              (click)="filterCategory(Category.Interior)">
+        <span>عناية داخلية</span>
       </button>
 
-      <button class="service-btn" [class.active]="activeCategory === 'carpets'" (click)="filterCategory('carpets')">
-        <span>طابقات</span>
+      <button class="service-btn"
+              [class.active]="activeCategory === Category.Special"
+              (click)="filterCategory(Category.Special)">
+        <span>خدمات خاصة</span>
       </button>
     </div>
   </div>
@@ -189,8 +177,8 @@
               <span>{{ getTotal() }} ج.م</span>
             </div>
 
-            <button routerLink="/conform-order" class="btn w-100 mt-4 py-2 fw-bold" [disabled]="getTotal() === 0">
-              تأكيد الطلب
+            <button routerLink="/cashier/order-info" class="btn w-100 mt-4 py-2 fw-bold" [disabled]="getTotal() === 0">
+              التالي
             </button>
           </div>
         </div>
@@ -199,4 +187,3 @@
   </div>
   </div>
 </div>
-

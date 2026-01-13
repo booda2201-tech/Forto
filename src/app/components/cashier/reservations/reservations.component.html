@@ -1,0 +1,206 @@
+
+
+  <div class="reservations-wrapper" dir="rtl">
+    <div class="header-section d-flex justify-content-center align-items-center mb-3 mt-3">
+      <div>
+        <h2 class="fw-bold">إدارة الحجوزات</h2>
+        <p class="text-muted">لديك {{ (filteredCustomers$ | async)?.length }} عملاء في هذا القسم</p>
+      </div>
+    </div>
+
+  <div class="status-tabs mb-4 d-flex justify-content-center align-items-center">
+  <button class="tab-btn" [class.active]="currentTab === 'waiting'" (click)="setTab('waiting')">
+    قائمة الانتظار ({{ (customers$ | async | filterStatus:'waiting')?.length || 0 }})
+  </button>
+
+  <button class="tab-btn" [class.active]="currentTab === 'active'" (click)="setTab('active')">
+    نشط ({{ (customers$ | async | filterStatus:'active')?.length || 0 }})
+  </button>
+
+  <button class="tab-btn" [class.active]="currentTab === 'completed'" (click)="setTab('completed')">
+    مكتمل ({{ (customers$ | async | filterStatus:'completed')?.length || 0 }})
+  </button>
+
+  <button class="tab-btn" [class.active]="currentTab === 'canceled'" (click)="setTab('canceled')">
+    ملغي ({{ (customers$ | async | filterStatus:'canceled')?.length || 0 }})
+  </button>
+  </div>
+
+
+  <div class="booking-grid">
+      <div class="booking-card shadow-sm" *ngFor="let customer of ( filteredCustomers$ | async)">
+<div class="card-top">
+  <span class="badge rounded-pill px-3 border"
+        [ngClass]="{
+          'bg-light text-warning border-warning': customer.status === 'waiting',
+          'bg-primary-subtle text-primary border-primary': customer.status === 'active',
+          'bg-success-subtle text-success border-success': customer.status === 'completed',
+          'bg-danger-subtle text-danger border-danger': customer.status === 'canceled'
+        }">
+    {{ customer.statusText || getStatusDisplayName(customer.status || 'waiting') }}
+  </span>
+  <span class="price-tag">{{ customer.totalAmount || customer.price || 0 }} ج.م</span>
+</div>
+
+      <div class="client-info">
+        <h4 class="fw-bold mb-2">{{ customer.customerName }}</h4>
+        <span class="text-secondary"><i class="bi bi-telephone ms-1"></i> {{ customer.phone }}</span>
+      </div>
+
+      <hr class="my-3 opacity-25">
+
+      <div class="details-list">
+        <div class="detail-item">
+          <span><i class="bi bi-car-front ms-1"></i> السيارة :</span>
+          <strong>{{ customer.cars[0]?.carModel }}</strong>
+        </div>
+        <div class="detail-item">
+          <span><i class="bi bi-map ms-1"></i> اللوحة :</span>
+          <strong>{{ customer.cars[0]?.plateNumber }}</strong>
+        </div>
+        <div class="detail-item">
+          <span><i class="bi bi-calendar3 ms-1"></i> التاريخ :</span>
+          <strong>{{ customer.date | date:'shortDate' }}</strong>
+        </div>
+        <div class="detail-item">
+          <span><i class="bi bi-clock ms-1"></i> الوقت :</span>
+          <strong>{{ customer.time }}</strong>
+        </div>
+      <div class="detail-item align-items-start flex-column gap-2">
+        <div class="d-flex align-items-center mb-1">
+          <span class="text-secondary"><i class="bi bi-wrench ms-1"></i> الخدمات المطلوبة :</span>
+        </div>
+
+        <div class="services-container w-100">
+          <div *ngFor="let service of customer.serviceItem"
+                class="d-flex justify-content-between align-items-center mb-2 py-1 border-bottom border-light">
+            <strong class="text-dark small">{{ service.name }}</strong>
+            <span class="badge bg-light text-dark border-0 fw-bold" style="font-size: 0.75rem;">
+              {{ service.price }} ج.م
+            </span>
+          </div>
+
+         <div *ngIf="!customer.serviceItem || customer.serviceItem.length === 0" class="text-muted small italic">
+            لا توجد خدمات مضافة
+          </div>
+        </div>
+      </div>
+        <div class="detail-item">
+          <span><i class="bi bi-person ms-1"></i> العامل :</span>
+          <strong>{{ customer.worker }} </strong>
+        </div>
+      </div>
+
+    <hr class="my-0">
+
+    <div class="details-list">
+        <div class="detail-item">
+          <span><i class="bi bi-person ms-1"></i> تم الحجز بواسطة :</span>
+          <strong>{{ customer.role ? getRoleDisplayNamee(customer.role) : 'Unknown Role' }} </strong>
+        </div>
+        </div>
+
+<div class="card-actions mt-0 d-flex gap-2">
+
+  <button class="btn btn-sm btn-outline-danger rounded-3"
+          *ngIf="customer.status !== 'canceled'"
+          (click)="onCancel(customer.id)">
+          <i class="bi bi-trash"></i>
+  </button>
+
+  <button class="btn btn-update flex-grow-1 text-white fw-bold"
+          *ngIf="customer.status === 'waiting'"
+          (click)="onActivate(customer.id)">
+    تفعيل الحجز <i class="bi bi-check2-circle ms-1"></i>
+  </button>
+
+  <button class="btn btn-success flex-grow-1 text-white fw-bold"
+          *ngIf="customer.status === 'active'"
+          (click)="onComplete(customer.id)">
+        انهاء <i class="bi bi-check-circle ms-1"></i>
+  </button>
+
+  <span class="text-muted w-100 text-center" *ngIf="customer.status === 'completed'">
+    تم الانتهاء بنجاح ✅
+  </span>
+  <span class="text-danger w-100 text-center" *ngIf="customer.status === 'canceled'">
+    حجز ملغي
+  </span>
+
+</div>
+    </div>
+  </div>
+
+
+</div>
+
+
+
+
+
+<!-- <div class="reservations-wrapper" dir="rtl">
+  <div class="header-section d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold">إدارة الحجوزات</h2>
+      <p class="text-muted">متابعة حالة حجوزات مغسلة Forto</p>
+    </div>
+    <button class="btn btn-dark btn-lg shadow-sm">تصدير CSV <i class="bi bi-download ms-2"></i></button>
+  </div>
+
+  <div class="search-container mb-4">
+    <div class="input-group">
+      <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-warning"></i></span>
+      <input
+        type="text"
+        [formControl]="searchControl"
+        class="form-control border-start-0 shadow-none py-3"
+        placeholder="ابحث باسم العميل أو رقم الجوال...">
+    </div>
+  </div>
+
+  <div class="status-tabs mb-4">
+    <button class="tab-btn" [class.active]="currentTab === 'waiting'" (click)="setTab('waiting')">قائمة الانتظار</button>
+    <button class="tab-btn" [class.active]="currentTab === 'active'" (click)="setTab('active')">نشط</button>
+    <button class="tab-btn" [class.active]="currentTab === 'completed'" (click)="setTab('completed')">مكتمل</button>
+    <button class="tab-btn" [class.active]="currentTab === 'canceled'" (click)="setTab('canceled')">ملغي</button>
+  </div>
+
+  <div class="booking-grid">
+    <div class="booking-card shadow-sm" *ngFor="let customer of (filteredCustomers$ | async)">
+      <div class="card-top d-flex justify-content-between mb-3">
+        <span class="status-badge waiting">قيد الانتظار</span>
+        <span class="price fw-bold text-success">{{ customer.totalAmount || 0 }} ج.م</span>
+      </div>
+
+      <div class="client-info mb-3">
+        <h5 class="fw-bold m-0">{{ customer.customerName }}</h5>
+        <small class="text-muted">{{ customer.phone }}</small>
+      </div>
+
+      <div class="car-info p-2 bg-light rounded-3 mb-3">
+        <div class="d-flex justify-content-between small mb-1">
+          <span class="text-secondary">السيارة:</span>
+          <span class="fw-bold">{{ customer.cars[0]?.carModel }}</span>
+        </div>
+        <div class="d-flex justify-content-between small">
+          <span class="text-secondary">اللوحة:</span>
+          <span class="fw-bold text-primary">{{ customer.cars[0]?.plateNumber }}</span>
+        </div>
+      </div>
+
+      <div class="card-footer-actions d-flex gap-2">
+        <button class="btn btn-warning flex-grow-1 text-white fw-bold">تحديث</button>
+        <button class="btn btn-outline-danger" (click)="deleteCustomer(customer.id)">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="(filteredCustomers$ | async)?.length === 0" class="text-center py-5">
+    <div class="empty-state">
+      <i class="bi bi-search-heart display-1 text-light"></i>
+      <p class="text-muted mt-3">لم يتم العثور على أي حجوزات تطابق بحثك</p>
+    </div>
+  </div>
+</div> -->

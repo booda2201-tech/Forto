@@ -1,0 +1,242 @@
+<!-- <section class="cont">
+  <h1 class="d-flex justify-content-center p-4"> طلب جدید </h1>
+  <div class="cont3 d-flex">
+    <div class="form-group text-center p-4 mb-5">
+
+      <div class="box-inputs mb-4">
+        <div class="mb-3">
+      <label class="form-label d-flex align-items-center justify-content-start gap-1">
+        الاسم <span class="text fs-3 mt-2">*</span>
+      </label>
+      <input type="text" formControlName="fullName" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label d-flex align-items-center justify-content-start gap-1">
+        رقم الهاتف <span class="text fs-3 mt-2">*</span>
+      </label>
+      <input type="text" formControlName="phone" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label d-flex align-items-center justify-content-start gap-1">
+        رقم السيارة <span class="text fs-3 mt-2">*</span>
+      </label>
+      <input type="text" formControlName="carNumber" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label d-flex align-items-center justify-content-start gap-1">
+        نوع السيارة <span class="text fs-3 mt-2">*</span>
+      </label>
+      <input type="text" formControlName="carType" class="form-control" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label d-flex align-items-center justify-content-start gap-1">
+        فئة السيارة <span class="text fs-3 mt-2">*</span>
+      </label>
+      <input type="text" formControlName="carType" class="form-control" />
+    </div>
+
+<div class="mb-4" [formGroup]="orderForm">
+  <label class="form-label d-flex align-items-center justify-content-start gap-1 fw-bold text-white mb-2">
+    اختر الخدمة <i class="bi bi-search text ms-2"></i>
+  </label>
+
+  <select class="form-select border-2 py-2"
+          [(ngModel)]="selectedService"
+          [ngModelOptions]="{standalone: true}"
+          (change)="onServiceSelected()">
+    <option [ngValue]="null" disabled>-- ابحث عن خدمة --</option>
+    <option *ngFor="let service of allServices" [ngValue]="service">
+      {{ service.name }} - ({{ service.price }} ج.م)
+    </option>
+  </select>
+</div>
+
+<div class="mb-4 animate__animated animate__fadeIn" *ngIf="selectedService">
+  <label class="form-label d-flex align-items-center justify-content-start gap-1 fw-bold text-white mb-2">
+          المواعيد المتاحة  <i class="bi bi-clock ms-2 text"></i>
+  </label>
+  <div class="row g-2">
+    <div class="col-6" *ngFor="let time of availableTimes">
+      <input type="radio" class="btn-check" name="timeSlot"
+            [id]="time" [value]="time"
+            [(ngModel)]="selectedTimeId"
+            [ngModelOptions]="{standalone: true}">
+      <label class="submt" [class.active-time]="selectedTimeId === time" [for]="time">
+        {{ time }}
+      </label>
+    </div>
+  </div>
+</div>
+
+
+</div>
+  <button type="submit"
+          class="btn send"
+          routerLink="/conform-order"
+          (click)="onSubmit()"
+          [disabled]="orderForm.invalid || !selectedTimeId">
+    تأكيد الطلب
+  </button>
+      </div>
+    </div>
+</section> -->
+
+
+
+<section class="cont">
+  <h1 class="d-flex justify-content-center p-4"> طلب جديد </h1>
+
+  <div class="cont3 d-flex">
+    <form [formGroup]="orderForm" class="form-group text-center p-4 mb-5 w-100">
+
+      <div class="box-inputs mb-4">
+        <div class="mb-3">
+          <label class="form-label d-flex align-items-center justify-content-start gap-1">
+            الاسم <span class="text fs-3 mt-2">*</span>
+          </label>
+          <input type="text" formControlName="fullName" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label d-flex align-items-center justify-content-start gap-1">
+            رقم الهاتف <span class="text fs-3 mt-2">*</span>
+          </label>
+          <input type="text" formControlName="phone" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label d-flex align-items-center justify-content-start gap-1">
+            رقم السيارة <span class="text fs-3 mt-2">*</span>
+          </label>
+          <input type="text" formControlName="carNumber" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label d-flex align-items-center justify-content-start gap-1">
+            نوع السيارة <span class="text fs-3 mt-2">*</span>
+          </label>
+          <input type="text" formControlName="carType" class="form-control" />
+        </div>
+
+<div class="mb-4">
+  <label class="form-label d-flex align-items-center justify-content-start gap-1 fw-bold text-white mb-3">
+    اختر الخدمات المطلوبة <i class="bi bi-grid-fill ms-1 text"></i>
+  </label>
+
+  <div class="services-grid">
+    <div *ngFor="let service of allServices"
+          (click)="toggleService(service)"
+          class="service-card"
+          [class.selected-active]="isServiceSelected(service.id)">
+
+      <div class="service-name">{{ service.name }}</div>
+
+      <div class="service-price">{{ service.price }} ج.م</div>
+
+      <div class="check-mark" *ngIf="isServiceSelected(service.id)">
+        <i class="bi bi-check-lg"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mb-4 animate__animated animate__fadeIn" *ngIf="selectedServices.length > 0">
+  </div>
+
+<div class="mb-4 animate__animated animate__fadeIn" *ngIf="selectedServices.length > 0">
+  <label class="form-label d-flex align-items-center justify-content-start gap-1 fw-bold text-white mb-2">
+    المواعيد المتاحة <i class="bi bi-clock ms-2 text"></i>
+  </label>
+
+  <div class="row g-2">
+    <div class="col-6 col-md-4" *ngFor="let time of availableTimes">
+      <input type="radio" class="btn-check" name="timeSlot"
+              [id]="time" [value]="time"
+              [(ngModel)]="selectedTimeId"
+              [ngModelOptions]="{standalone: true}">
+
+      <label class="submt w-100 text-center"
+              [class.active-time]="selectedTimeId === time"
+              [for]="time">
+        {{ time }}
+      </label>
+    </div>
+  </div>
+</div>
+
+        <button type="submit"
+                class="btn send"
+                (click)="onSubmit()"
+                [disabled]="orderForm.invalid || !selectedTimeId">
+          تأكيد الطلب
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+
+
+
+
+
+
+
+      <!-- <div class="mb-4">
+    <label class="form-label d-flex align-items-center justify-content-start gap-2 mt-4 mb-5 fw-bold">
+                اختر الوقت المناسب
+            <i class="bi bi-clock-history text"></i>
+    </label>
+
+    <div class="time-group mb-3">
+        <div class="row g-2">
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't10am'" (click)="selectTime('t10am')">10:00 ص</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't11am'" (click)="selectTime('t11am')">11:00 ص</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't12pm'" (click)="selectTime('t12pm')">12:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't01pm'" (click)="selectTime('t01pm')">01:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't02pm'" (click)="selectTime('t02pm')">02:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't03pm'" (click)="selectTime('t03pm')">03:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't04pm'" (click)="selectTime('t04pm')">04:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't05pm'" (click)="selectTime('t05pm')">05:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't06pm'" (click)="selectTime('t06pm')">06:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't07pm'" (click)="selectTime('t07pm')">07:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't08pm'" (click)="selectTime('t08pm')">08:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't09pm'" (click)="selectTime('t09pm')">09:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't10pm'" (click)="selectTime('t10pm')">10:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't11pm'" (click)="selectTime('t11pm')">11:00 م</label>
+            </div>
+            <div class="col-4 col-md-3">
+                <label class="submt" [class.active-time]="selectedTimeId === 't12am'" (click)="selectTime('t12am')">12:00 ص</label>
+            </div>
+        </div>
+    </div>
+</div> -->

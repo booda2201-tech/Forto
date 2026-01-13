@@ -29,7 +29,7 @@
 </div>
 </nav> -->
 
-<nav class="navbar">
+<!-- <nav class="navbar">
   <div class="container">
 <div class="checkbtn" (click)="toggleMenu()">
       <span>☰</span>
@@ -38,9 +38,54 @@
       <img src="../../../assets/imeg/logo forto.png" alt="#"> </div>
 
 <ul class="nav-links" [class.active]="isMenuOpen">
-          <li><a href="#" routerLinkActive="active-link">طلبات المستخدم</a></li>
-          <li><a href="#" routerLink="/car-wash" routerLinkActive="active-link">عمل طلب</a></li>
+          <li><a href="#" routerLinkActive="active-link" routerLink="/requests"> الطلبات </a></li>
+          <li><a href="#" routerLinkActive="active-link" routerLink="/create-order">اطلب هنا </a></li>
+    </ul>
+
+  </div>
+</nav> -->
+
+
+<nav class="navbar" dir="rtl">
+  <div class="container">
+    <div class="checkbtn" (click)="toggleMenu()" *ngIf="userRole$ | async">
+        <span>☰</span>
+      </div>
+
+    <div class="logo" [routerLink]="getLogoRoute()">
+      <img src="../../../assets/imeg/logo forto.png" alt="Forto Logo">
+    </div>
+
+    <ul class="nav-links" [class.active]="isMenuOpen" *ngIf="{ role: userRole$ | async } as data">
+
+      <li class="welcome-msg" style="color: #4a4a4a; padding: 0 15px; font-weight: bold;">
+          مرحباً، {{ getRoleDisplayName(data.role) }}
+      </li>
+
+      <ng-container *ngIf="data.role === 'admin'">
+        <li><a routerLink="/admin/requests" routerLinkActive="active-link">طلباتي ( {{ carRequests.length }} )</a></li>
+        <li><a routerLink="/admin/create-order" routerLinkActive="active-link">اطلب هنا </a></li>
+      </ng-container>
+
+
+      <ng-container *ngIf="data.role === 'cashier'">
+        <li><a routerLink="/cashier/" routerLinkActive="active-link"> الرئيسية </a></li>
+        <li><a routerLink="/cashier/" routerLinkActive="active-link"> الرسائل </a></li>
+      </ng-container>
+
+
+      <ng-container *ngIf="data.role === 'worker'">
+        <li><a routerLink="/worker-page" routerLinkActive="active-link">مهامي</a></li>
+
+      </ng-container>
+
+         <li *ngIf="data.role">
+        <a (click)="logout()" style="cursor: pointer; color: #ff4d4d; font-weight: bold;">تسجيل الخروج
+        </a>
+      </li>
+      <li *ngIf="!data.role">
+        <a routerLink="/login">تسجيل الدخول</a>
+      </li>
     </ul>
   </div>
 </nav>
-

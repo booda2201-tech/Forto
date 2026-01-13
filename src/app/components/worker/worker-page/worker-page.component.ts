@@ -1,54 +1,19 @@
-import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../../services/auth.service';
-import { Observable } from 'rxjs';
-import { Subject } from 'rxjs';
-import { Router } from '@angular/router';
+import { Component } from '@angular/core';
 
 @Component({
-  selector: 'app-navbar',
-  templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.scss']
+  selector: 'app-worker-page',
+  templateUrl: './worker-page.component.html',
+  styleUrls: ['./worker-page.component.scss']
 })
-export class NavbarComponent implements OnInit {
+export class WorkerPageComponent {
+  selectedCar: any = null;
   isMenuOpen = false;
-  userRole$: Observable<string | null>;
-  data: any;
+  userRole: number = 0;
 
-  constructor(private authService: AuthService, private router: Router) {
-
-    this.userRole$ = this.authService.userRole$;
-  }
-
-  ngOnInit(): void {}
-
-  getRoleDisplayName(role: string | null): string {
-    if (!role) return 'زائر';
-    if (role === 'admin') return 'أحمد';
-    if (role === 'cashier') return 'محمد';
-    if (role === 'worker') return 'على';
-    return 'زائر';
-  }
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
   }
-
-  getLogoRoute(): string {
-
-    const role = localStorage.getItem('userRole');
-    if (role === 'admin') return '/admin/dashboard';
-    if (role === 'cashier') return '/cashier/reservations';
-    if (role === 'worker') return '/worker-page';
-    return '/login';
-  }
-
-
-
-  logout() {
-
-    this.authService.logout();
-  }
-
 
   carRequests = [
     {
@@ -144,5 +109,35 @@ export class NavbarComponent implements OnInit {
     }
   ];
 
+  selectCar(car: any) {
+    this.selectedCar = car;
+  }
+
+startExecution(car: any) {
+  car.status = 'in-progress';
+  car.statusText = 'نشط';
+  console.log(`بدأ العمل على حجز رقم: ${car.id}`);
+}
+
+
+finishCar(car: any) {
+  this.carRequests = this.carRequests.filter(item => item.id !== car.id);
+  console.log(`تم إنهاء وحذف حجز رقم: ${car.id}`);
+
+  this.selectedCar = null;
+}
+
+
+saveChanges() {
+  if (this.selectedCar) {
+    console.log('بيانات الإضافات:', {
+        soap: this.selectedCar.soapCount,
+        perfume: this.selectedCar.perfumeCount,});
+  }
+}
 
 }
+
+
+
+

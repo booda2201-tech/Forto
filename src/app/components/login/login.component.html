@@ -1,11 +1,12 @@
 <div class="cont">
+
   <div class="login-cont">
-    <img routerLink="/" src="../../../assets/imeg/forto logo.png" alt="logo" class="logo w-25 m-auto my-3">
+    <img src="../../../assets/imeg/logo forto.png" alt="logo" class="logo w-50 m-auto my-3">
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="text-center">
 
       <div class="mb-3">
-        <label class="form-label fw-normal d-flex justify-content-start">البريد الالكتروني أو رقم الهاتف</label>
+        <label class="form-label text-white fw-normal d-flex justify-content-start">البريد الالكتروني أو رقم الهاتف</label>
         <input
           type="text"
           formControlName="userData"
@@ -14,7 +15,7 @@
       </div>
 
       <div class="mb-1">
-        <label class="form-label fw-normal d-flex justify-content-start">كلمه السر</label>
+        <label class="form-label text-white fw-normal d-flex justify-content-start">كلمه السر</label>
         <input
           type="password"
           formControlName="password"
