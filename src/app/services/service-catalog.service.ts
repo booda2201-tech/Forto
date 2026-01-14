@@ -18,8 +18,6 @@ export interface ServiceItem {
   selected: boolean;
 }
 
-
-
 export interface Customer {
   id: number;
   customerName: string;
@@ -27,15 +25,24 @@ export interface Customer {
   cars: any[];
   selectedServices?: ServiceItem[];
   totalAmount?: number;
-  date?: Date;
   serviceItem?: ServiceItem[];
-  time?: string;
+  createdAt:Date;
+      appointmentDate:string;
+      appointmentTime:string;
   price?: number;
   status?: 'waiting' | 'active' | 'completed' | 'canceled';
   statusText?: string;
   worker?: string;
   role?: string | null;
 }
+
+export interface Worker {
+  id: number;
+  name: string;
+}
+
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -81,8 +88,9 @@ export class ServiceCatalogService {
                 { id: 20, name: 'غسيل أسفل السيارة', price: 150, category: ServiceCategory.CarWash , selected: false },
                     { id: 3, name: 'تلميع إطارات', price: 150, category: ServiceCategory.CarWash , selected: false },
       ],
-      date: new Date('2026-01-11'),
-      time: '09:00 م',
+      createdAt: new Date(),
+      appointmentDate: '2026-01-25',
+      appointmentTime: '011:00 ص',
       status: 'waiting',
       statusText: 'قيد الانتظار',
       worker: 'أحمد محمد',
@@ -100,8 +108,9 @@ export class ServiceCatalogService {
         { id: 1, name: 'غسيل سيارة خارجي', price: 200, category: ServiceCategory.CarWash , selected: true },
             { id: 4, name: 'تلميع الفرش', price: 300, category: ServiceCategory.CarWash , selected: false },
       ],
-      date: new Date('2026-01-11'),
-      time: '06:00 م',
+      createdAt: new Date(),
+      appointmentDate: '2026-01-25',
+      appointmentTime: '011:00 ص',
       status: 'waiting',
       statusText: 'قيد الانتظار',
       worker: 'محمد علي',
@@ -119,8 +128,9 @@ export class ServiceCatalogService {
         { id: 2, name: 'غسيل داخلي وبخار', price: 250, category: ServiceCategory.CarWash , selected: true },
             { id: 6, name: 'غسيل مساحات', price: 50, category: ServiceCategory.CarWash , selected: false },
       ],
-      date: new Date('2026-01-10'),
-      time: '05:00 م',
+      createdAt: new Date(),
+      appointmentDate: '2026-01-25',
+      appointmentTime: '011:00 ص',
       status: 'waiting',
       statusText: 'قيد الانتظار',
       worker: 'ادهم الشرقاوي',
@@ -137,8 +147,9 @@ export class ServiceCatalogService {
       serviceItem: [
         { id: 4, name: 'تلميع الفرش', price: 300, category: ServiceCategory.CarWash , selected: true },
       ],
-      date: new Date('2026-01-05'),
-      time: '12:00 ص',
+      createdAt: new Date(),
+      appointmentDate: '2026-01-25',
+      appointmentTime: '011:00 ص',
       status: 'waiting',
       statusText: 'قيد الانتظار',
       worker: 'محمود كهربا',
@@ -156,8 +167,9 @@ export class ServiceCatalogService {
         { id: 8, name: 'غسيل كامل ', price: 650, category: ServiceCategory.CarWash , selected: true },
             { id: 12, name: 'تلميع بودي (واكس نانو)', price: 400, category: ServiceCategory. Polishing , selected: false },
       ],
-      date: new Date('2026-01-1'),
-      time: '01:00 م',
+      createdAt: new Date(),
+      appointmentDate: '2026-01-25',
+      appointmentTime: '011:00 ص',
       status: 'waiting',
       statusText: 'قيد الانتظار',
       worker: 'تامر حسني ',
@@ -175,8 +187,9 @@ export class ServiceCatalogService {
         { id: 2, name: 'غسيل داخلي وبخار', price: 250, category: ServiceCategory.CarWash , selected: true },
             { id: 7, name: 'تعطير وتطهير', price: 120, category: ServiceCategory.CarWash , selected: false },
       ],
-      date: new Date('2026-01-02'),
-      time: '11:00 ص',
+      createdAt: new Date(),
+      appointmentDate: '2026-01-25',
+      appointmentTime: '011:00 ص',
       status: 'waiting',
       statusText: 'قيد الانتظار',
       worker: 'عمرو دياب ',
@@ -194,8 +207,9 @@ export class ServiceCatalogService {
       serviceItem: [
                 { id: 7, name: 'تعطير وتطهير', price: 120, category: ServiceCategory.CarWash , selected: false },
       ],
-      date: new Date('2026-01-08'),
-      time: '10:00 م',
+      createdAt: new Date(),
+      appointmentDate: '2026-01-25',
+      appointmentTime: '011:00 ص',
       status: 'waiting',
       statusText: 'قيد الانتظار',
       worker: 'محمد رمضان ',
@@ -212,8 +226,9 @@ export class ServiceCatalogService {
       serviceItem: [
                 { id: 5, name: 'غسبل المتور', price: 50, category: ServiceCategory.CarWash , selected: false },
       ],
-      date: new Date('2026-01-08'),
-      time: '10:00 م',
+      createdAt: new Date(),
+      appointmentDate: '2026-01-25',
+      appointmentTime: '011:00 ص',
       status: 'waiting',
       statusText: 'قيد الانتظار',
       worker: 'محمد رمضان ',
@@ -230,8 +245,9 @@ export class ServiceCatalogService {
       serviceItem: [
                   { id: 4, name: 'تلميع الفرش', price: 300, category: ServiceCategory.CarWash , selected: false },
       ],
-      date: new Date('2026-01-08'),
-      time: '10:00 م',
+      createdAt: new Date(),
+      appointmentDate: '2026-01-25',
+      appointmentTime: '011:00 ص',
       status: 'waiting',
       statusText: 'قيد الانتظار',
       worker: 'محمد رمضان ',
@@ -248,8 +264,9 @@ export class ServiceCatalogService {
       serviceItem: [
                 { id: 2, name: 'غسيل داخلي وبخار', price: 250, category: ServiceCategory.CarWash , selected: true },
       ],
-      date: new Date('2026-01-08'),
-      time: '10:00 م',
+      createdAt: new Date(),
+      appointmentDate: '2026-01-25',
+      appointmentTime: '011:00 ص',
       status: 'waiting',
       statusText: 'قيد الانتظار',
       worker: 'محمد رمضان ',
@@ -257,26 +274,39 @@ export class ServiceCatalogService {
     },
   ];
 
+  private workersList: Worker[] = [
+    { id: 1, name: 'أحمد محمد'},
+    { id: 2, name: 'محمد علي'},
+    { id: 3, name: 'ادهم الشرقاوي'},
+    { id: 4, name: 'محمود كهربا'},
+    { id: 5, name: 'تامر حسني'},
+    { id: 6, name: 'عمرو دياب'},
+    { id: 7, name: 'محمد رمضان'},
+  ];
 
 private customersSubject = new BehaviorSubject<Customer[]>(this.customers);
 
-
 constructor() {
-this.customers.forEach(customer => {
+  this.customers.forEach(customer => {
 
-  if (customer.serviceItem && customer.serviceItem.length > 0) {
-    customer.totalAmount = customer.serviceItem.reduce((sum, s) => sum + s.price, 0);
-  } else {
-    customer.totalAmount = customer.price || 0;
-  }
+    if (customer.serviceItem && customer.serviceItem.length > 0) {
+      customer.totalAmount = customer.serviceItem.reduce((sum, s) => sum + s.price, 0);
+    } else {
+      customer.totalAmount = customer.price || 0;
+    }
 
 
     customer.status = customer.status || 'waiting';
-    customer.date = customer.date || new Date();
     customer.statusText = customer.statusText || 'قيد الانتظار';
-    customer.worker = customer.worker || 'غير محدد';
-    customer.role = customer.role || null;
+
+
+    customer.createdAt = customer.createdAt || new Date();
+
+
+    customer.appointmentDate = customer.appointmentDate || new Date().toISOString().split('T')[0];
+    customer.appointmentTime = customer.appointmentTime || 'غير محدد';
   });
+
   this.customersSubject.next([...this.customers]);
 }
 
@@ -284,34 +314,48 @@ this.customers.forEach(customer => {
     return of(this.allServices);
   }
 
-getCustomers(): Observable<Customer[]> {
+  getCustomers(): Observable<Customer[]> {
     return this.customersSubject.asObservable();
   }
 
+  getWorkers(): Observable<Worker[]> {
+    return of(this.workersList);
+  }
 
-addCustomer(customerData: any) {
-    const newCustomer: Customer = {
-      id: Date.now(),
-      customerName: customerData.name,
-      phone: customerData.phone,
-      cars: [
-        {
-          carid: Date.now() + 1,
-          carModel: customerData.carType || 'غير محدد',
-          plateNumber: customerData.carNumber || 'غير محدد'
+  addWorker(name: string, role: string) {
+    const newWorker = { id: Date.now(), name, role };
+    this.workersList.push(newWorker);
+  }
 
-        }
-      ],
-      selectedServices: [],
-      totalAmount: 0,
-      date: new Date(),
-      worker: customerData.worker || 'غير محدد',
-      status: 'canceled',
-      statusText: 'ملغي',
-      role: null
-    };
-    this.customers.unshift(newCustomer);
-    this.customersSubject.next([...this.customers]);
+  addCustomer(customerData: any) {
+  const newCustomer: Customer = {
+    id: Date.now(),
+    customerName: customerData.name,
+    phone: customerData.phone,
+    cars: [
+      {
+        carid: Date.now() + 1,
+        carModel: customerData.carType || 'غير محدد',
+        plateNumber: customerData.carNumber || 'غير محدد'
+      }
+    ],
+    selectedServices: [],
+    totalAmount: customerData.totalAmount || 0,
+    serviceItem: customerData.serviceItem || [],
+
+
+    createdAt: new Date(),
+    appointmentDate: customerData.appointmentDate || new Date().toISOString().split('T')[0],
+    appointmentTime: customerData.appointmentTime || 'غير محدد',
+
+    worker: customerData.worker || 'غير محدد',
+    status: 'waiting',
+    statusText: 'قيد الانتظار',
+    role: 'admin'
+  };
+
+  this.customers.unshift(newCustomer);
+  this.customersSubject.next([...this.customers]);
   }
 
   deleteCustomer(id: number) {
@@ -319,9 +363,7 @@ addCustomer(customerData: any) {
     this.customersSubject.next([...this.customers]);
   }
 
-
-
-updateCustomerStatus(id: number, newStatus: 'waiting' | 'active' | 'completed' | 'canceled') {
+  updateCustomerStatus(id: number, newStatus: 'waiting' | 'active' | 'completed' | 'canceled') {
   const index = this.customers.findIndex(c => c.id === id);
   if (index !== -1) {
     this.customers[index].status = newStatus;
@@ -338,10 +380,7 @@ updateCustomerStatus(id: number, newStatus: 'waiting' | 'active' | 'completed' |
 
     this.customersSubject.next([...this.customers]);
   }
-}
-
-
-
+  }
 
 
 }

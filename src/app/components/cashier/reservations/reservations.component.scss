@@ -179,7 +179,7 @@
 
     .card-actions {
         margin-top: auto;
-        padding-top: 1rem;
+
     }
 }
 
@@ -233,47 +233,6 @@
 }
 
 
-
-
-// .tabs-wrapper {
-//   display: flex;
-//   justify-content: center;
-//   padding: 20px 0;
-
-// }
-
-// .tabs-container {
-//   display: flex;
-//   width: 60%;
-//   justify-content: space-around;
-//   background-color: #c7c7c7;
-//   padding: 10px;
-//   border-radius: 30px;
-//   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-// }
-
-// .tab-item {
-//   padding: 10px 60px;
-//   border-radius: 25px;
-//   text-decoration: none;
-//   color: #000000;
-//   font-weight: 500;
-//   font-size: 14px;
-//   transition: all 0.3s ease;
-
-
-//   &.active {
-//     background-color: #ffffff;
-//     color: #000;
-//     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-//   }
-
-//   &:hover:not(.active) {
-//     background-color: rgba(255, 255, 255, 0.900);
-//   }
-// }
-
-
 @media screen  and (max-width: 768px) {
 
   .tabs-container {
@@ -295,38 +254,187 @@
 
 
 
+// .forto-invoice-container {
+//   direction: rtl;
+//   font-family: 'Segoe UI', Arial, sans-serif;
+//   $forto-orange: #f99f1b;
 
+//   .brand-orange {
+//     color: $forto-orange !important;
+//   }
 
+//   .brand-orange-bg {
+//     background-color: $forto-orange !important;
+//   }
 
+//   .final-total-box {
+//     background: linear-gradient(135deg, #f99f1b 0%, #e68a00 100%) !important;
+//   }
 
+//   .brand-logo { width: 85px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
 
+//   .invoice-table {
+//     border-collapse: separate;
+//     border-spacing: 0 8px;
 
+//     thead th { border: none; font-size: 0.8rem; letter-spacing: 0.5px; }
+//     tbody tr { background-color: #fcfcfc; transition: 0.3s; }
+//   }
 
+//   .cashier-box {
+//     background-color: #fafafa;
+//     border: 1px dashed #ddd !important;
+//     .extra-small { font-size: 0.7rem; }
+//   }
 
-
-
-
-// .booking-card {
-//   background: #fff;
-//   border-radius: 15px;
-//   padding: 20px;
-//   display: flex;
-//   flex-direction: column;
-//   height: auto;           /* لضمان أن الطول تلقائي */
-//   min-height: fit-content; /* لضمان أقل طول ممكن حسب المحتوى */
-//   transition: all 0.3s ease;
-
+//   .totals-area {
+//     max-width: 280px;
+//     .final-total-box {
+//       background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+//     }
+//   }
 // }
 
-// .booking-grid {
-//   display: grid;
-//   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-//   gap: 20px;
-//   align-items: start; /* هام جداً: لجعل الكروت لا تتساوى في الطول إجبارياً */
+// .print-btn {
+//   background-color: #f99f1b !important;
+//   &:hover {
+//     background-color: #e68a00 !important;
+//   }
 // }
 
-// .services-container {
-//   // إضافة لمسة جمالية للقائمة
-//   max-height: 200px; // اختياري: إذا زادت الخدمات جداً يظهر سكرول داخلي
-//   overflow-y: auto;
+// /* تنسيقات الشاشة العادية */
+// .forto-invoice-container {
+//   direction: rtl;
+//   background: white;
+//   max-height: 80vh; /* تحديد ارتفاع للمودال في الشاشة */
+//   overflow-y: auto; /* سكروول للشاشة فقط */
 // }
+
+// /* التنسيق الخاص بالطباعة (الحل النهائي) */
+// @media print {
+//   /* 1. إخفاء كل شيء وإلغاء السكروول */
+//   body, html {
+//     overflow: hidden !important;
+//     height: 100% !important;
+//     margin: 0 !important;
+//     padding: 0 !important;
+//   }
+
+//   body * {
+//     visibility: hidden !important;
+//   }
+
+//   /* 2. إظهار الفاتورة وحدها وعزلها تماماً */
+//   #printableInvoice, #printableInvoice * {
+//     visibility: visible !important;
+//   }
+
+//   #printableInvoice {
+//     position: fixed !important;
+//     top: 0 !important;
+//     left: 0 !important;
+//     width: 100% !important;
+//     height: 100vh !important;
+//     background-color: white !important;
+//     margin: 0 !important;
+//     padding: 2cm !important; /* هوامش طباعة احترافية */
+//     z-index: 999999 !important;
+//     overflow: hidden !important; /* إلغاء السكروول نهائياً في الطباعة */
+//     display: block !important;
+//   }
+
+//   /* 3. ضبط الألوان (البرتقالي الهادئ #f99f1b) */
+//   .brand-orange { color: #f99f1b !important; }
+//   .total-box {
+//     background-color: #f99f1b !important;
+//     -webkit-print-color-adjust: exact; /* إجبار المتصفح على طباعة اللون */
+//   }
+
+//   /* 4. تصغير حجم المحتوى لضمان صفحة واحدة */
+//   .invoice-table { font-size: 14px !important; }
+//   .no-print, .modal-backdrop, .btn-close { display: none !important; }
+
+//   @page {
+//     size: auto;
+//     margin: 0mm;
+//   }
+// }
+
+
+
+.forto-invoice-container {
+  direction: rtl;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: white;
+  max-height: 80vh;
+  overflow-y: auto;
+
+  $forto-orange: #f99f1b;
+
+  .brand-orange { color: $forto-orange !important; }
+  .brand-orange-bg { background-color: $forto-orange !important; }
+  .brand-logo { width: 130px; }
+
+  .invoice-table {
+    font-size: 0.9rem;
+    tbody tr { background-color: #fcfcfc; }
+  }
+
+  .final-total-box {
+    background: linear-gradient(135deg, #f99f1b 0%, #e68a00 100%) !important;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .cashier-box {
+    background-color: #fafafa;
+    border: 1px dashed #ddd !important;
+    font-size: 0.8rem;
+  }
+}
+
+.print-btn {
+  background-color: #f99f1b !important;
+  &:hover { background-color: #e68a00 !important; }
+}
+
+
+@media print {
+  body, html {
+    overflow: hidden !important;
+    height: 100% !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  #printableInvoice, #printableInvoice * {
+    visibility: visible !important;
+  }
+
+  #printableInvoice {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100vh !important;
+    background-color: white !important;
+    padding: 1.5cm !important;
+    z-index: 999999 !important;
+    overflow: hidden !important;
+    display: block !important;
+  }
+
+  .no-print, .modal-backdrop, .btn-close, .modal-footer {
+    display: none !important;
+  }
+
+  @page {
+    size: auto;
+    margin: 0mm;
+  }
+}
+
+
+
+

@@ -13,6 +13,7 @@ import { AddClientComponent } from './components/cashier/add-client/add-client.c
 import { ReservationsComponent } from './components/cashier/reservations/reservations.component';
 import { CustomersComponent } from './components/cashier/customers/customers.component';
 import { ServicesComponent } from './components/cashier/services/services.component';
+import { InvoicesComponent } from './components/cashier/invoices/invoices.component';
 
 
 const routes: Routes = [
@@ -39,6 +40,7 @@ const routes: Routes = [
     { path: 'reservations', component: ReservationsComponent },
     { path: 'customers', component: CustomersComponent },
     { path: 'services', component: ServicesComponent },
+    { path: 'invoices', component: InvoicesComponent },
     { path: '', redirectTo: 'customers', pathMatch: 'full' }
   ]
 },

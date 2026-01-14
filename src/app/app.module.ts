@@ -7,6 +7,8 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
+import Swal from 'sweetalert2';
+
 
 import { AppComponent } from './app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
@@ -23,6 +25,7 @@ import { ReservationsComponent } from './components/cashier/reservations/reserva
 import { FilterStatusPipe } from './pipes/filter-status.pipe';
 import { CustomersComponent } from './components/cashier/customers/customers.component';
 import { ServicesComponent } from './components/cashier/services/services.component';
+import { InvoicesComponent } from './components/cashier/invoices/invoices.component';
 
 
 @NgModule({
@@ -38,6 +41,7 @@ import { ServicesComponent } from './components/cashier/services/services.compon
     CashierPageComponent,
     CustomersComponent,
     ServicesComponent,
+
 
 
 

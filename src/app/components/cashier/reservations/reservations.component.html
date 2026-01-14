@@ -1,46 +1,69 @@
-
-
-  <div class="reservations-wrapper" dir="rtl">
-    <div class="header-section d-flex justify-content-center align-items-center mb-3 mt-3">
-      <div>
-        <h2 class="fw-bold">إدارة الحجوزات</h2>
-        <p class="text-muted">لديك {{ (filteredCustomers$ | async)?.length }} عملاء في هذا القسم</p>
-      </div>
+<div class="reservations-wrapper" dir="rtl">
+  <div
+    class="header-section d-flex justify-content-center align-items-center mb-3 mt-3"
+  >
+    <div>
+      <h2 class="fw-bold">إدارة الحجوزات</h2>
+      <p class="text-muted">
+        لديك {{ (filteredCustomers$ | async)?.length }} عملاء في هذا القسم
+      </p>
     </div>
-
-  <div class="status-tabs mb-4 d-flex justify-content-center align-items-center">
-  <button class="tab-btn" [class.active]="currentTab === 'waiting'" (click)="setTab('waiting')">
-    قائمة الانتظار ({{ (customers$ | async | filterStatus:'waiting')?.length || 0 }})
-  </button>
-
-  <button class="tab-btn" [class.active]="currentTab === 'active'" (click)="setTab('active')">
-    نشط ({{ (customers$ | async | filterStatus:'active')?.length || 0 }})
-  </button>
-
-  <button class="tab-btn" [class.active]="currentTab === 'completed'" (click)="setTab('completed')">
-    مكتمل ({{ (customers$ | async | filterStatus:'completed')?.length || 0 }})
-  </button>
-
-  <button class="tab-btn" [class.active]="currentTab === 'canceled'" (click)="setTab('canceled')">
-    ملغي ({{ (customers$ | async | filterStatus:'canceled')?.length || 0 }})
-  </button>
   </div>
 
+  <div
+    class="status-tabs mb-4 d-flex justify-content-center align-items-center"
+  >
+    <button
+      class="tab-btn"
+      [class.active]="currentTab === 'waiting'"
+      (click)="setTab('waiting')"
+    >
+      قائمة الانتظار ({{
+        (customers$ | async | filterStatus : "waiting")?.length || 0
+      }})
+    </button>
 
-  <div class="booking-grid">
+    <button
+      class="tab-btn"
+      [class.active]="currentTab === 'active'"
+      (click)="setTab('active')"
+    >
+      نشط ({{ (customers$ | async | filterStatus : "active")?.length || 0 }})
+    </button>
+
+    <button
+      class="tab-btn"
+      [class.active]="currentTab === 'completed'"
+      (click)="setTab('completed')"
+    >
+      مكتمل ({{
+        (customers$ | async | filterStatus : "completed")?.length || 0
+      }})
+    </button>
+
+    <button
+      class="tab-btn"
+      [class.active]="currentTab === 'canceled'"
+      (click)="setTab('canceled')"
+    >
+      ملغي ({{ (customers$ | async | filterStatus : "canceled")?.length || 0 }})
+    </button>
+  </div>
+
+  <!-- <div class="booking-grid">
       <div class="booking-card shadow-sm" *ngFor="let customer of ( filteredCustomers$ | async)">
-<div class="card-top">
-  <span class="badge rounded-pill px-3 border"
-        [ngClass]="{
-          'bg-light text-warning border-warning': customer.status === 'waiting',
-          'bg-primary-subtle text-primary border-primary': customer.status === 'active',
-          'bg-success-subtle text-success border-success': customer.status === 'completed',
-          'bg-danger-subtle text-danger border-danger': customer.status === 'canceled'
-        }">
-    {{ customer.statusText || getStatusDisplayName(customer.status || 'waiting') }}
-  </span>
-  <span class="price-tag">{{ customer.totalAmount || customer.price || 0 }} ج.م</span>
-</div>
+          <div class="card-top">
+              <span class="badge rounded-pill px-3 border"
+                    [ngClass]="{
+                      'bg-light text-warning border-warning': customer.status === 'waiting',
+                      'bg-primary-subtle text-primary border-primary': customer.status === 'active',
+                      'bg-success-subtle text-success border-success': customer.status === 'completed',
+                      'bg-danger-subtle text-danger border-danger': customer.status === 'canceled'
+                    }">
+                {{ customer.statusText || getStatusDisplayName(customer.status || 'waiting') }}
+              </span>
+              <span class="price-tag">{{ customer.totalAmount || customer.price || 0 }} ج.م</span>
+          </div>
 
       <div class="client-info">
         <h4 class="fw-bold mb-2">{{ customer.customerName }}</h4>
@@ -58,14 +81,10 @@
           <span><i class="bi bi-map ms-1"></i> اللوحة :</span>
           <strong>{{ customer.cars[0]?.plateNumber }}</strong>
         </div>
-        <div class="detail-item">
-          <span><i class="bi bi-calendar3 ms-1"></i> التاريخ :</span>
-          <strong>{{ customer.date | date:'shortDate' }}</strong>
-        </div>
-        <div class="detail-item">
-          <span><i class="bi bi-clock ms-1"></i> الوقت :</span>
-          <strong>{{ customer.time }}</strong>
-        </div>
+      <div class="detail-item py-2">
+        <span><i class="bi bi-calendar-check ms-1"></i> موعد الغسيل:</span>
+        <strong class="text">{{ customer.appointmentDate }} | {{ customer.appointmentTime }}</strong>
+      </div>
       <div class="detail-item align-items-start flex-column gap-2">
         <div class="d-flex align-items-center mb-1">
           <span class="text-secondary"><i class="bi bi-wrench ms-1"></i> الخدمات المطلوبة :</span>
@@ -98,6 +117,12 @@
           <span><i class="bi bi-person ms-1"></i> تم الحجز بواسطة :</span>
           <strong>{{ customer.role ? getRoleDisplayNamee(customer.role) : 'Unknown Role' }} </strong>
         </div>
+
+        <div class="detail-item">
+          <span><i class="bi bi-calendar-check ms-1"></i> تاريخ الحجز:</span>
+        <span class="text-dark small fw-bold" style="font-size: 0.75rem;">
+          {{ customer.createdAt | date:'dd/MM/yyyy - hh:mm a' }}
+        </span>
         </div>
 
 <div class="card-actions mt-0 d-flex gap-2">
@@ -130,77 +155,530 @@
 </div>
     </div>
   </div>
+  </div> -->
+
+  <div class="booking-grid">
+    <div
+      class="booking-card shadow-sm"
+      *ngFor="let customer of filteredCustomers$ | async"
+    >
+      <div class="card-top">
+        <span
+          class="badge rounded-pill px-3 border"
+          [ngClass]="{
+            'bg-light text-warning border-warning':
+              customer.status === 'waiting',
+            'bg-primary-subtle text-primary border-primary':
+              customer.status === 'active',
+            'bg-success-subtle text-success border-success':
+              customer.status === 'completed',
+            'bg-danger-subtle text-danger border-danger':
+              customer.status === 'canceled'
+          }"
+        >
+          {{
+            customer.statusText ||
+              getStatusDisplayName(customer.status || "waiting")
+          }}
+        </span>
+        <span class="price-tag">{{ customer.totalAmount || 0 }} ج.م</span>
+      </div>
+
+      <div class="client-info">
+        <h4 class="fw-bold mb-2">{{ customer.customerName }}</h4>
+        <span class="text-secondary"
+          ><i class="bi bi-telephone ms-1"></i> {{ customer.phone }}</span
+        >
+      </div>
+
+      <hr class="my-3 opacity-25" />
+
+      <div class="details-list">
+        <div class="detail-item">
+          <span><i class="bi bi-car-front ms-1"></i> السيارة :</span>
+          <strong>{{ customer.cars[0]?.carModel }}</strong>
+        </div>
+        <div class="detail-item">
+          <span><i class="bi bi-map ms-1"></i> اللوحة :</span>
+          <strong>{{ customer.cars[0]?.plateNumber }}</strong>
+        </div>
+
+        <div class="detail-item py-2">
+          <span><i class="bi bi-calendar-check ms-1"></i> موعد الغسيل:</span>
+          <strong class="text"
+            >{{ customer.appointmentDate }} |
+            {{ customer.appointmentTime }}</strong
+          >
+        </div>
+
+        <div class="detail-item align-items-start flex-column gap-2 mt-2">
+          <div class="d-flex align-items-center mb-1">
+            <span class="text-secondary"
+              ><i class="bi bi-wrench ms-1"></i> الخدمات المطلوبة :</span
+            >
+          </div>
+
+          <div class="services-container w-100">
+            <div
+              *ngFor="let service of customer.serviceItem"
+              class="d-flex justify-content-between align-items-center mb-2 py-1 border-bottom border-light"
+            >
+              <strong class="text-dark small">{{ service.name }}</strong>
+              <span
+                class="badge bg-light text-dark border-0 fw-bold"
+                style="font-size: 0.75rem"
+              >
+                {{ service.price }} ج.م
+              </span>
+            </div>
+            <div
+              *ngIf="!customer.serviceItem || customer.serviceItem.length === 0"
+              class="text-muted small italic"
+            >
+              لا توجد خدمات مضافة
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <span><i class="bi bi-person ms-1"></i> العامل :</span>
+          <strong>{{ customer.worker }} </strong>
+        </div>
+      </div>
+
+      <hr class="my-2 opacity-25" />
+
+      <div class="details-list pb-2">
+        <div class="detail-item mb-1">
+          <span class="small text-secondary"
+            ><i class="bi bi-person-badge ms-1"></i>تم الحجز بواسطة :</span
+          >
+          <strong class="small">{{
+            customer.role ? getRoleDisplayNamee(customer.role) : "المدير"
+          }}</strong>
+        </div>
+        <div class="detail-item">
+          <span class="small text-secondary"
+            ><i class="bi bi-clock-history ms-1"></i> تم التسجيل في:</span
+          >
+          <span class="text-dark small fw-bold" style="font-size: 0.75rem">
+            {{ customer.createdAt | date : "dd/MM/yyyy - hh:mm a" }}
+          </span>
+        </div>
+      </div>
+
+      <div class="card-actions mt-0 d-flex gap-2">
+          <button
+              class="btn btn-sm btn-outline-danger rounded-3"
+              *ngIf="customer.status !== 'canceled'"
+              (click)="onCancel(customer.id)"
+                >
+                <i class="bi bi-trash"></i>
+          </button>
+
+        <button
+          class="btn btn-update flex-grow-1 text-white fw-bold"
+          *ngIf="customer.status === 'waiting'"
+          (click)="onActivate(customer.id)"
+        >
+          تفعيل الحجز <i class="bi bi-check2-circle ms-1"></i>
+        </button>
+
+        <button
+          class="btn btn-success flex-grow-1 text-white fw-bold"
+          *ngIf="customer.status === 'active'"
+          (click)="onComplete(customer.id)"
+        >
+          انهاء <i class="bi bi-check-circle ms-1"></i>
+        </button>
+
+        <div class="w-100 mt-2" *ngIf="customer.status === 'completed'">
+          <button
+            class="btn btn-success w-100 fw-bold rounded-3"
+            (click)="openInvoice(customer)"
+            data-bs-toggle="modal"
+            data-bs-target="#invoiceModal"
+          >
+            عرض الفاتورة <i class="bi bi-eye ms-1"></i>
+          </button>
+        </div>
+        <span
+          class="text-danger w-100 text-center py-2"
+          *ngIf="customer.status === 'canceled'"
+        >
+          حجز ملغي
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
 
 
+
+
+<div class="modal fade" id="cancelModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-3">
+      <div class="modal-header">
+        <h5 class="modal-title">إلغاء الطلب</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">لماذا تريد إلغاء هذا الطلب؟</label>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+        <button type="button" class="btn btn-danger" (click)="confirmCancel()" data-bs-dismiss="modal">تأكيد الإلغاء</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 
 
 
 
-<!-- <div class="reservations-wrapper" dir="rtl">
-  <div class="header-section d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h2 class="fw-bold">إدارة الحجوزات</h2>
-      <p class="text-muted">متابعة حالة حجوزات مغسلة Forto</p>
-    </div>
-    <button class="btn btn-dark btn-lg shadow-sm">تصدير CSV <i class="bi bi-download ms-2"></i></button>
-  </div>
 
-  <div class="search-container mb-4">
-    <div class="input-group">
-      <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-warning"></i></span>
-      <input
-        type="text"
-        [formControl]="searchControl"
-        class="form-control border-start-0 shadow-none py-3"
-        placeholder="ابحث باسم العميل أو رقم الجوال...">
-    </div>
-  </div>
 
-  <div class="status-tabs mb-4">
-    <button class="tab-btn" [class.active]="currentTab === 'waiting'" (click)="setTab('waiting')">قائمة الانتظار</button>
-    <button class="tab-btn" [class.active]="currentTab === 'active'" (click)="setTab('active')">نشط</button>
-    <button class="tab-btn" [class.active]="currentTab === 'completed'" (click)="setTab('completed')">مكتمل</button>
-    <button class="tab-btn" [class.active]="currentTab === 'canceled'" (click)="setTab('canceled')">ملغي</button>
-  </div>
+<!-- <div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
 
-  <div class="booking-grid">
-    <div class="booking-card shadow-sm" *ngFor="let customer of (filteredCustomers$ | async)">
-      <div class="card-top d-flex justify-content-between mb-3">
-        <span class="status-badge waiting">قيد الانتظار</span>
-        <span class="price fw-bold text-success">{{ customer.totalAmount || 0 }} ج.م</span>
+      <div class="text-end p-3 no-print">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
-      <div class="client-info mb-3">
-        <h5 class="fw-bold m-0">{{ customer.customerName }}</h5>
-        <small class="text-muted">{{ customer.phone }}</small>
-      </div>
+      <div class="modal-body p-5 forto-invoice-container" id="printableInvoice">
 
-      <div class="car-info p-2 bg-light rounded-3 mb-3">
-        <div class="d-flex justify-content-between small mb-1">
-          <span class="text-secondary">السيارة:</span>
-          <span class="fw-bold">{{ customer.cars[0]?.carModel }}</span>
+        <div class="invoice-header text-center">
+          <img src="assets/imeg/logo forto.png" class="brand-logo mb-2" onerror="this.src='https:'//via.placeholder.com/80?text=FORTO'">
+          <h1 class="text-black fw-800 m-0">FORTO</h1>
+          <div class="text-muted small mt-2">رقم الحجز: #{{selectedInvoice?.id}}</div>
         </div>
-        <div class="d-flex justify-content-between small">
-          <span class="text-secondary">اللوحة:</span>
-          <span class="fw-bold text-primary">{{ customer.cars[0]?.plateNumber }}</span>
+
+        <div class="row g-4 data-section">
+          <div class="col-md-6">
+            <h6 class="fw-bold text-black mb-3">بيانات العميل</h6>
+            <div class="mb-2">
+              <div class="info-label">الاسم:</div>
+              <div class="info-value">{{selectedInvoice?.customerName}}</div>
+            </div>
+            <div class="mb-2">
+              <div class="info-label">رقم الموبايل:</div>
+              <div class="info-value">{{selectedInvoice?.customerPhone}}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <h6 class="fw-bold text-black mb-3">بيانات المركبة والوقت</h6>
+            <div class="mb-2">
+              <div class="info-label">السيارة:</div>
+              <div class="info-value">{{selectedInvoice?.cars[0]?.carModel}} - <span class="text-black">{{selectedInvoice?.cars[0]?.plateNumber}}</span></div>
+            </div>
+            <div class="mb-2">
+              <div class="info-label">تاريخ الحجز:</div>
+              <div class="info-value">{{selectedInvoice?.appointmentDate}}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-header">الخدمات المنفذة</div>
+        <table class="invoice-table">
+          <thead>
+            <tr>
+              <th class="text-start">الخدمة</th>
+              <th>الكمية</th>
+              <th>السعر</th>
+              <th class="text-end">المجموع</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let service of selectedInvoice?.serviceItem">
+              <td class="text-start fw-500">{{service.name}}</td>
+              <td class="text-center">1</td>
+              <td class="text-center">{{service.price}} ج.م</td>
+              <td class="text-end fw-bold">{{service.price}} ج.م</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="row mt-4 align-items-start">
+          <div class="col-6 mt-4">
+            <div class="p-3 border rounded shadow-sm" style="background-color: #fafafa; border-style: dashed !important;">
+              <div class="mb-1 small"><strong style="color: #ff6b00;">الكاشير:</strong> {{selectedInvoice?.cashierName || 'إبراهيم'}}</div>
+              <div class="mb-1 small"><strong style="color: #ff6b00;">الوردية:</strong> {{selectedInvoice?.shiftPeriod || 'الصباحية'}}</div>
+              <div class="text-muted" style="font-size: 0.7rem;">تم استخراج الفاتورة بنظام فورتو الإلكتروني</div>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="ms-auto" style="max-width: 250px;">
+              <div class="d-flex justify-content-between py-2 border-bottom small">
+                <span class="text-muted">المجموع الفرعي:</span>
+                <span class="fw-bold">{{ subTotal | number:'1.2-2' }} ج.م</span>
+              </div>
+              <div class="d-flex justify-content-between py-2 border-bottom small">
+                <span class="text-muted">ضريبة القيمة المضافة (14%):</span>
+                <span class="fw-bold">{{ taxAmount | number:'1.2-2' }} ج.م</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mt-3 p-3 text-white shadow-sm" style="background-color: #ff6b00; border-radius: 8px;">
+                <div class="fw-bold">الإجمالي النهائي:</div>
+                <div class="h4 fw-bold mb-0 text-white">{{ finalTotal | number:'1.2-2' }} <small style="font-size: 0.8rem;">ج.م</small></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="text-center mt-5 pt-4 border-top">
+          <h6 class="text-black fw-bold">شكراً لزيارتكم فورتو!</h6>
+          <p class="text-muted small">نتمنى أن نكون دائماً عند حسن ظنكم</p>
         </div>
       </div>
 
-      <div class="card-footer-actions d-flex gap-2">
-        <button class="btn btn-warning flex-grow-1 text-white fw-bold">تحديث</button>
-        <button class="btn btn-outline-danger" (click)="deleteCustomer(customer.id)">
-          <i class="bi bi-trash"></i>
+      <div class="modal-footer no-print border-0 bg-light justify-content-center">
+        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">إغلاق</button>
+        <button type="button" class="btn btn-warning text-white px-4 rounded-pill shadow-sm" style="background-color: #ff6b00;" (click)="downloadInvoice()">
+          <i class="bi bi-printer me-2"></i> طباعة الفاتورة
         </button>
       </div>
     </div>
   </div>
+  </div>
+ -->
 
-  <div *ngIf="(filteredCustomers$ | async)?.length === 0" class="text-center py-5">
-    <div class="empty-state">
-      <i class="bi bi-search-heart display-1 text-light"></i>
-      <p class="text-muted mt-3">لم يتم العثور على أي حجوزات تطابق بحثك</p>
+<div
+  class="modal fade forto-modal"
+  id="invoiceModal"
+  tabindex="-1"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="text-end p-3 no-print">
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+
+      <div class="modal-body p-5 forto-invoice-container" id="printableInvoice">
+        <div class="invoice-header text-center mb-5">
+          <img
+            src="../../../../assets/imeg/logo forto.png"
+            class="brand-logo mb-2"
+            onerror="this.src='https:'//via.placeholder.com/80?text=FORTO'"
+          />
+          <!-- <h1 class="text-black fw-bold m-0">FORTO</h1> -->
+          <div class="text-black mt-2">
+            رقم الفاتورة:
+            <span class="fw-bold fs-6">#{{ selectedInvoice?.id }}</span>
+          </div>
+        </div>
+
+        <!-- <div class="row g-4 mb-4 text-end"> -->
+        <!-- <div class="border-start"> -->
+        <h6 class="fw-bold text-black mb-3 pb-2">بيانات العميل</h6>
+
+        <hr />
+
+        <div class="mb-2">
+          <span class="text-black small fw-bold d-inline-block mx-1">
+            الاسم:
+          </span>
+          <div class="fw-bold fs-6 d-inline-block">
+            {{ selectedInvoice?.customerName }}
+          </div>
+        </div>
+        <div class="mb-2">
+          <span class="text-black small fw-bold d-inline-block mx-1"
+            >رقم الموبايل:</span
+          >
+          <div class="fw-bold fs-6 d-inline-block">
+            {{ selectedInvoice?.phone }}
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <span class="text-black small fw-bold d-inline-block mx-1"
+            >السيارة:</span
+          >
+          <div class="fw-bold fs-6 d-inline-block">
+            {{ selectedInvoice?.cars[0]?.carModel }} -
+            <span class="text-black">{{
+              selectedInvoice?.cars[0]?.plateNumber
+            }}</span>
+          </div>
+        </div>
+        <div class="mb-2">
+          <span class="text-black small fw-bold d-inline-block mx-1"
+            >تاريخ الحجز:</span
+          >
+          <div class="fw-bold fs-6 d-inline-block">
+            {{ selectedInvoice?.appointmentDate }}
+          </div>
+        </div>
+
+        <!-- <hr> -->
+        <!-- <div class="border-start"> -->
+        <!-- <h6 class="fw-bold text-black mb-3  pb-2">
+          بيانات الكاشير
+        </h6>
+
+        <hr>
+
+
+        <div class="mb-2  text-black">
+          <strong class="text-black">الكاشير:</strong>
+          {{ selectedInvoice?.cashierName || "اسم الكاشير" }}
+        </div>
+        <div class="mb-2  text-black">
+          <strong class="text-black">الوردية:</strong>
+          {{ selectedInvoice?.shiftPeriod || "الصباحية" }}
+        </div> -->
+        <!-- </div> -->
+        <!-- <div class="col-md-6"> -->
+        <!-- <h6 class="fw-bold text-black mb-3 border-bottom pb-2">بيانات السيارة والوقت</h6> -->
+        <!-- <div class="mb-2">
+            <span class="text-black small fw-bold">السيارة:</span>
+            <div class="fw-bold fs-6">
+              {{ selectedInvoice?.cars[0]?.carModel }} -
+              <span class="text-black">{{
+                selectedInvoice?.cars[0]?.plateNumber
+              }}</span>
+            </div>
+          </div>
+          <div class="mb-2">
+            <span class="text-black small fw-bold">تاريخ الحجز:</span>
+            <div class="fw-bold fs-6">
+              {{ selectedInvoice?.appointmentDate }}
+            </div>
+          </div> -->
+        <!-- </div> -->
+        <!-- </div> -->
+
+        <!-- <div
+          class="section-title text-black-bg text-white p-2 mb-3 rounded-2 fw-bold text-center"
+        >
+          الخدمات المنفذة
+        </div> -->
+
+        <div class="table-responsive mt-5">
+          <table
+            class="table table-hover text-center align-middle invoice-table"
+          >
+            <thead class="table-light text-black small fw-bold">
+              <tr>
+                <th class="text-end">الخدمة</th>
+                <th>الكمية</th>
+                <th>السعر</th>
+                <th class="text-end">المجموع</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let service of selectedInvoice?.serviceItem">
+                <td class="text-end fw-bold py-3">{{ service.name }}</td>
+                <td>1</td>
+                <td>{{ service.price | number : "1.2-2" }} ج.م</td>
+                <td class="text-end fw-bold">
+                  {{ service.price | number : "1.2-2" }} ج.م
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="totals-area ms-auto">
+            <div class="d-flex justify-content-between py-2 border-bottom">
+              <span class="text-black fs-5">المجموع الفرعي:</span>
+              <span class="fw-bold">{{ subTotal | number : "1.2-2" }} ج.م</span>
+            </div>
+            <div class="d-flex justify-content-between py-2 border-bottom">
+              <span class="text-black fs-5">ضريبة القيمة المضافة (14%):</span>
+              <span class="fw-bold"
+                >{{ taxAmount | number : "1.2-2" }} ج.م</span
+              >
+            </div>
+            <div
+              class="mt-3 text-white rounded d-flex justify-content-between align-items-center"
+            >
+              <span class="fw-bold text-black fs-5">الإجمالي النهائي:</span>
+              <span class="h6 fw-bold mb-0 text-black"
+                >{{ finalTotal | number : "1.2-2" }} ج.م</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 align-items-center">
+          <!-- <div class="col-md-6"> -->
+          <div class="p-3 rounded">
+            <!-- <div class="mb-2 small">
+              <strong class="text-black">الكاشير:</strong>
+              {{ selectedInvoice?.cashierName || "اسم الكاشير" }}
+            </div>
+            <div class="mb-2 small">
+              <strong class="text-black">الوردية:</strong>
+              {{ selectedInvoice?.shiftPeriod || "الصباحية" }}
+            </div> -->
+
+            <!-- <div class="text-black extra-small">
+              تم استخراج الفاتورة بنظام فورتو الإلكتروني
+            </div> -->
+          </div>
+          <!-- </div> -->
+
+          <!-- <div class="col-md-6"> -->
+          <!-- <div class="totals-area ms-auto">
+            <div
+              class="d-flex justify-content-between py-2 border-bottom small"
+            >
+              <span class="text-black">المجموع الفرعي:</span>
+              <span class="fw-bold">{{ subTotal | number : "1.2-2" }} ج.م</span>
+            </div>
+            <div
+              class="d-flex justify-content-between py-2 border-bottom small"
+            >
+              <span class="text-black">ضريبة القيمة المضافة (14%):</span>
+              <span class="fw-bold"
+                >{{ taxAmount | number : "1.2-2" }} ج.م</span
+              >
+            </div>
+            <div
+              class=" mt-3 p-3 text-white rounded d-flex justify-content-between align-items-center"
+            >
+              <span class="fw-bold text-black">الإجمالي النهائي:</span>
+              <span class="h4 fw-bold mb-0 text-black"
+                >{{ finalTotal | number : "1.2-2" }} ج.م</span
+              >
+            </div>
+          </div> -->
+          <!-- </div> -->
+        </div>
+
+        <div class="text-center pt-3">
+          <h6 class="text-black fw-bold">شكراً لزيارتكم فورتو!</h6>
+          <p class="text-black">نتمنى أن نكون دائماً عند حسن ظنكم</p>
+        </div>
+      </div>
+
+      <div
+        class="modal-footer no-print border-0 bg-light justify-content-center"
+      >
+        <button
+          type="button"
+          class="btn btn-outline-secondary px-5 rounded-pill"
+          data-bs-dismiss="modal"
+        >
+          إغلاق
+        </button>
+        <button
+          type="button"
+          class="btn btn-warning text-white px-5 rounded-pill shadow-sm fw-bold print-btn"
+          (click)="downloadInvoice()"
+        >
+          <i class="bi bi-printer me-2"></i> طباعة الفاتورة
+        </button>
+      </div>
     </div>
   </div>
-</div> -->
+</div>
