@@ -10,10 +10,164 @@
 }
 
 .text-orange {
-  color: #fd7e14; 
+  color: #fd7e14;
 }
 
 .btn-orange {
   background-color: #fd7e14;
   border-color: #fd7e14;
 }
+
+.print-btn {
+  background-color: #f99f1b !important;
+  &:hover { background-color: #e68a00 !important; }
+}
+
+
+
+
+
+
+
+
+// @media print {
+
+//   body * {
+//     visibility: hidden;
+//     margin: 0;
+//     padding: 0;
+//   }
+
+
+//   #printableInvoice, #printableInvoice * {
+//     visibility: visible;
+//   }
+
+
+//   #printableInvoice {
+//     position: fixed;
+//     left: 0;
+//     top: 0;
+//     width: 100%;
+//     margin: 0;
+//     padding: 10px;
+//     background-color: white;
+//   }
+
+
+//   .modal-content {
+//     border: none !important;
+//     box-shadow: none !important;
+//   }
+
+
+//   .no-print, .btn, .btn-close, .modal-footer, .modal-header {
+//     display: none !important;
+//   }
+
+
+//   table {
+//     width: 100% !important;
+//     border-collapse: collapse;
+//   }
+// }
+
+
+
+
+@media print {
+
+  body * {
+    visibility: hidden;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+
+  #printableInvoice, #printableInvoice * {
+    visibility: visible;
+    color: #000000 !important;
+    text-shadow: 0 0 0 #000;
+  }
+
+  #printableInvoice {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 10px;
+    background-color: white !important;
+  }
+
+
+  .fw-bold, strong, th {
+    font-weight: 900 !important;
+  }
+
+  span, div, td {
+    font-weight: 700 !important;
+  }
+
+
+  .no-print, .btn, .btn-close, .modal-footer, .modal-header {
+    display: none !important;
+  }
+
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse;
+  }
+
+  hr, .border-bottom {
+    border-top: 2px solid #000 !important;
+    opacity: 1 !important;
+  }
+
+
+  .brand-logo {
+    filter: grayscale(1) contrast(2) brightness(0.5);
+  }
+}
+
+
+
+
+
+
+
+
+// @media print {
+//   /* 1. إخفاء الشاشة بالكامل */
+//   body, html, #app-root, .main-layout, .modal-backdrop {
+//     visibility: hidden !important;
+//     background: white !important; /* إجبار الخلفية تكون بيضاء */
+//   }
+
+//   /* 2. إظهار الفاتورة فقط في أعلى الصفحة */
+//   #printableInvoice {
+//     visibility: visible !important;
+//     position: fixed !important; /* ثابتة في أعلى الورقة */
+//     top: 0 !important;
+//     left: 0 !important;
+//     width: 100% !important; /* تأخذ عرض الورقة المتاحة */
+//     margin: 0 !important;
+//     padding: 0 !important;
+//     background: white !important;
+//     z-index: 9999;
+//   }
+
+//   /* 3. ضمان ظهور النصوص بوضوح عالي (أسود غامق) */
+//   #printableInvoice * {
+//     visibility: visible !important;
+//     color: black !important;
+//     font-weight: bold !important;
+//     font-size: 14px; /* حجم مناسب لماكينات الكاشير */
+//   }
+
+//   /* 4. إخفاء أي أزرار أو أشرطة تمرير */
+//   .no-print, .btn, .modal-footer, .modal-header, ::-webkit-scrollbar {
+//     display: none !important;
+//   }
+// }

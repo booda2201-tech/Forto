@@ -1,181 +1,307 @@
-<!-- <section class="cont">
-  <h1 class="d-flex justify-content-center p-4"> طلب جدید </h1>
-  <div class="cont3 d-flex">
-    <div class="form-group text-center p-4 mb-5">
 
-      <div class="box-inputs mb-4">
-        <div class="mb-3">
-      <label class="form-label d-flex align-items-center justify-content-start gap-1">
-        الاسم <span class="text fs-3 mt-2">*</span>
-      </label>
-      <input type="text" formControlName="fullName" class="form-control" />
+
+<!-- <section class="contt py-4">
+  <div class="container col-lg-8">
+    <div class="header-box mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2 px-3">
+      <h3 class="fw-bold text-dark mb-0">إنشاء طلب جديد</h3>
+      <span class="badge bg-warning text-dark rounded-pill px-3 py-2">خطوة الحجز</span>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label d-flex align-items-center justify-content-start gap-1">
-        رقم الهاتف <span class="text fs-3 mt-2">*</span>
-      </label>
-      <input type="text" formControlName="phone" class="form-control" />
-    </div>
+    <div class="cont3">
+      <form [formGroup]="orderForm" class="custom-card-form p-4 mb-5 w-100 shadow-sm">
 
-    <div class="mb-3">
-      <label class="form-label d-flex align-items-center justify-content-start gap-1">
-        رقم السيارة <span class="text fs-3 mt-2">*</span>
-      </label>
-      <input type="text" formControlName="carNumber" class="form-control" />
-    </div>
+        <div class="row mb-4">
+          <div class="col-md-6 mb-3">
+            <label class="form-label-custom"><i class="bi bi-person me-1"></i> اسم العميل <span class="text-danger">*</span></label>
+            <input type="text" formControlName="fullName" class="form-control custom-input" placeholder="أدخل الاسم بالكامل" />
+          </div>
 
-    <div class="mb-3">
-      <label class="form-label d-flex align-items-center justify-content-start gap-1">
-        نوع السيارة <span class="text fs-3 mt-2">*</span>
-      </label>
-      <input type="text" formControlName="carType" class="form-control" />
-    </div>
-    <div class="mb-3">
-      <label class="form-label d-flex align-items-center justify-content-start gap-1">
-        فئة السيارة <span class="text fs-3 mt-2">*</span>
-      </label>
-      <input type="text" formControlName="carType" class="form-control" />
-    </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label-custom"><i class="bi bi-telephone me-1"></i> رقم الهاتف <span class="text-danger">*</span></label>
+            <input type="text" formControlName="phone" class="form-control custom-input" placeholder="01xxxxxxxxx" />
+          </div>
 
-<div class="mb-4" [formGroup]="orderForm">
-  <label class="form-label d-flex align-items-center justify-content-start gap-1 fw-bold text-white mb-2">
-    اختر الخدمة <i class="bi bi-search text ms-2"></i>
-  </label>
+          <div class="col-md-6 mb-3">
+            <label class="form-label-custom"><i class="bi bi-card-text me-1"></i> رقم لوحة السيارة <span class="text-danger">*</span></label>
+            <input type="text" formControlName="carNumber" class="form-control custom-input" placeholder="أ ب ج 123" />
+          </div>
 
-  <select class="form-select border-2 py-2"
-          [(ngModel)]="selectedService"
-          [ngModelOptions]="{standalone: true}"
-          (change)="onServiceSelected()">
-    <option [ngValue]="null" disabled>-- ابحث عن خدمة --</option>
-    <option *ngFor="let service of allServices" [ngValue]="service">
-      {{ service.name }} - ({{ service.price }} ج.م)
-    </option>
-  </select>
-</div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label-custom"><i class="bi bi-car-front me-1"></i> نوع السيارة <span class="text-danger">*</span></label>
+            <input type="text" formControlName="carType" class="form-control custom-input" placeholder="مثال: مرسيدس C200" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label-custom"><i class="bi bi-cash me-1"></i> طريقة الدفع <span class="text-danger">*</span></label>
+            <input type="text" formControlName="paymentMethod" class="form-control custom-input" placeholder="" />
+          </div>
+        </div>
 
-<div class="mb-4 animate__animated animate__fadeIn" *ngIf="selectedService">
-  <label class="form-label d-flex align-items-center justify-content-start gap-1 fw-bold text-white mb-2">
-          المواعيد المتاحة  <i class="bi bi-clock ms-2 text"></i>
-  </label>
-  <div class="row g-2">
-    <div class="col-6" *ngFor="let time of availableTimes">
-      <input type="radio" class="btn-check" name="timeSlot"
-            [id]="time" [value]="time"
-            [(ngModel)]="selectedTimeId"
-            [ngModelOptions]="{standalone: true}">
-      <label class="submt" [class.active-time]="selectedTimeId === time" [for]="time">
-        {{ time }}
-      </label>
+        <hr class="divider mb-4">
+
+        <div class="mb-4">
+          <label class="form-label-custom mb-3 fw-bold"><i class="bi bi-grid-fill me-2 text-warning"></i> اختر الخدمات المطلوبة</label>
+          <div class="services-grid">
+            <div *ngFor="let service of allServices"
+                  (click)="toggleService(service)"
+                  class="service-card"
+                  [class.selected-active]="isServiceSelected(service.id)">
+              <div class="service-name">{{ service.name }}</div>
+              <div class="service-price">{{ service.price }} ج.م</div>
+              <div class="check-mark" *ngIf="isServiceSelected(service.id)">
+                <i class="bi bi-check-circle-fill"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-4 animate__animated animate__fadeIn" *ngIf="selectedServices.length > 0">
+          <label class="form-label-custom mb-3 fw-bold"><i class="bi bi-clock me-2 text-warning"></i> المواعيد المتاحة</label>
+          <div class="row g-2">
+            <div class="col-6 col-md-3" *ngFor="let time of availableTimes">
+              <input type="radio" class="btn-check" name="timeSlot"
+                     [id]="time" [value]="time"
+                     [(ngModel)]="selectedTimeId"
+                     [ngModelOptions]="{standalone: true}">
+              <label class="time-label w-100"
+                     [class.active-time]="selectedTimeId === time"
+                     [for]="time">
+                {{ time }}
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mt-5">
+          <button type="submit"
+                  class="btn-submit-order shadow"
+                  (click)="onSubmit()"
+                  [disabled]="orderForm.invalid || !selectedTimeId || selectedServices.length === 0">
+            تأكيد وحفظ الطلب
+          </button>
+        </div>
+      </form>
     </div>
   </div>
-</div>
 
+  <div class="col-lg-4">
+<div class="sticky-top" style="top: 20px;">
+  <div class="summary-card shadow-sm p-4 rounded-4 bg-white border-0">
+    <h5 class="fw-bold mb-4 border-bottom pb-2">
+      <i class="bi bi-receipt-cutoff me-2 text-warning"></i> ملخص الطلب
+    </h5>
 
-</div>
-  <button type="submit"
-          class="btn send"
-          routerLink="/conform-order"
-          (click)="onSubmit()"
-          [disabled]="orderForm.invalid || !selectedTimeId">
-    تأكيد الطلب
-  </button>
+    <div class="selected-services-mini mb-3">
+      <div *ngFor="let s of selectedServices" class="d-flex justify-content-between small mb-2 animate__animated animate__fadeInRight">
+        <span class="text-muted">- {{ s.name }}</span>
+        <span class="fw-bold">{{ s.price }} ج.م</span>
+      </div>
+      <div *ngIf="selectedServices.length === 0" class="text-center py-3 text-muted italic">
+        <small>لم يتم اختيار خدمات بعد</small>
       </div>
     </div>
+
+    <div class="calculation-details bg-light p-3 rounded-3">
+      <div class="d-flex justify-content-between mb-2">
+        <span>الإجمالي الفرعي:</span>
+        <span class="fw-bold">{{ totalServicesPrice }} ج.م</span>
+      </div>
+      <div class="d-flex justify-content-between mb-2 text-danger">
+        <span>الضريبة (14%):</span>
+        <span>+ {{ taxAmount | number:'1.1-2' }} ج.م</span>
+      </div>
+      <hr>
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="fw-bold">الإجمالي النهائي:</span>
+        <h4 class="fw-bold text-success mb-0">{{ finalTotal | number:'1.1-2' }} ج.م</h4>
+      </div>
+    </div>
+
+    <button type="submit"
+            class="btn btn-success w-100 mt-4 py-3 fw-bold rounded-3 shadow-sm"
+            (click)="onSubmit()"
+            [disabled]="orderForm.invalid || !selectedTimeId || selectedServices.length === 0">
+      تأكيد وحفظ الطلب <i class="bi bi-check2-circle ms-1"></i>
+    </button>
+
+    <p class="text-center small text-muted mt-3 mb-0" *ngIf="orderForm.invalid">
+      * يرجى إكمال البيانات واختيار الموعد
+    </p>
+  </div>
+</div>
+</div>
 </section> -->
 
 
+<section class="contt py-4 bg-light min-vh-100" dir="rtl">
+  <div class="container-fluid px-4 py-4">
+    <div class="row ">
 
-<section class="contt">
-  <h1 class="d-flex justify-content-center p-4"> طلب جديد </h1>
+    <div class="header-box mb-4 d-flex justify-content-between align-items-center flex-wrap px-2">
+      <h3 class="fw-bold text-dark mx-5">إنشاء طلب جديد</h3>
+      <span class="badge bg-warning text-dark rounded-pill px-3 py-2">خطوة الحجز</span>
+    </div>
 
-  <div class="cont3 d-flex">
-    <form [formGroup]="orderForm" class="form-group text-center p-4 mb-5 w-100">
+      <!-- <div class="col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-clock-history fs-4 me-2 text-dark"></i>
+            <h6 class="fw-bold mb-0">إدارة الورديات</h6>
+          </div>
+          <p class="text-muted small">إدارة ورديات نقطة البيع</p>
 
-      <div class="box-inputs mb-4">
-        <div class="mb-3">
-          <label class="form-label d-flex align-items-center justify-content-start gap-1">
-            الاسم <span class="text fs-3 mt-2">*</span>
-          </label>
-          <input type="text" formControlName="fullName" class="form-control" />
+          <div class="alert alert-light border text-center py-2 mb-3">
+              <small class="text-muted">يوجد وردية نشطة قيد التشغيل حالياً</small>
+          </div>
+
+          <div class="shift-details p-3 bg-white border rounded-3 mb-3">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted small">رقم الوردية:</span>
+              <span class="badge bg-dark">#1</span>
+            </div>
+            <div class="mb-1"><small class="text-muted">بدأت في:</small> <small class="fw-bold">1/13/2026</small></div>
+            <div class="mb-1"><small class="text-muted">بواسطة:</small> <small class="fw-bold">ibrahim</small></div>
+          </div>
+
+          <button class="btn btn-danger w-100 rounded-3 py-2 fw-bold">
+            <i class="bi bi-power me-1"></i> إنهاء الوردية
+          </button>
+        </div>
+      </div> -->
+
+      <div class="col-lg-8 m-auto">
+      <form [formGroup]="orderForm" class="custom-card-form p-4 mb-5 w-100 shadow-sm">
+        <div class="row mb-4">
+          <div class="col-md-6 mb-3">
+            <label class="form-label-custom"><i class="bi bi-person mx-1"></i> اسم العميل <span class="text-danger">*</span></label>
+            <input type="text" formControlName="fullName" class="form-control custom-input" placeholder="أدخل الاسم بالكامل" />
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label-custom"><i class="bi bi-telephone mx-1"></i> رقم الهاتف <span class="text-danger">*</span></label>
+            <input type="text" formControlName="phone" class="form-control custom-input" placeholder="01xxxxxxxxx" />
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label-custom"><i class="bi bi-card-text mx-1"></i> رقم لوحة السيارة <span class="text-danger">*</span></label>
+            <input type="text" formControlName="carNumber" class="form-control custom-input" placeholder="أ ب ج 123" />
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label-custom"><i class="bi bi-car-front mx-1"></i> نوع السيارة <span class="text-danger">*</span></label>
+            <input type="text" formControlName="carType" class="form-control custom-input" placeholder="مثال: مرسيدس C200" />
+          </div>
+          <div class="col-md-6 mb-3">
+              <label class="form-label-custom mb-4 d-block">
+                <i class="bi bi-cash mx-1"></i> طريقة الدفع <span class="text-danger">*</span>
+              </label>
+
+              <div class="d-flex gap-3 payment-toggle">
+                <input type="radio"
+                        class="btn-check"
+                        formControlName="paymentMethod"
+                        id="payCash"
+                        value="cash"
+                        name="paymentMethodGroup">
+                <label class="btn payment-btn w-100" for="payCash">
+                  <i class="bi bi-wallet2 mb-1"></i>
+                  <span>نقدي</span>
+                </label>
+
+                <input type="radio"
+                        class="btn-check"
+                        formControlName="paymentMethod"
+                        id="payVisa"
+                        value="visa"
+                        name="paymentMethodGroup">
+                <label class="btn payment-btn w-100" for="payVisa">
+                  <i class="bi bi-credit-card mb-1"></i>
+                  <span>فيزا</span>
+                </label>
+              </div>
+            </div>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label d-flex align-items-center justify-content-start gap-1">
-            رقم الهاتف <span class="text fs-3 mt-2">*</span>
-          </label>
-          <input type="text" formControlName="phone" class="form-control" />
+        <hr class="divider mb-4">
+
+        <div class="mb-4">
+          <label class="form-label-custom mb-3 fw-bold"><i class="bi bi-grid-fill me-2 text-warning"></i> اختر الخدمات المطلوبة</label>
+          <div class="services-grid">
+            <div *ngFor="let service of allServices"
+                  (click)="toggleService(service)"
+                  class="service-card"
+                  [class.selected-active]="isServiceSelected(service.id)">
+              <div class="service-name">{{ service.name }}</div>
+              <div class="service-price">{{ service.price }} ج.م</div>
+              <div class="check-mark" *ngIf="isServiceSelected(service.id)">
+                <i class="bi bi-check-circle-fill"></i>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label d-flex align-items-center justify-content-start gap-1">
-            رقم السيارة <span class="text fs-3 mt-2">*</span>
-          </label>
-          <input type="text" formControlName="carNumber" class="form-control" />
+        <div class="mb-4 animate__animated animate__fadeIn" *ngIf="selectedServices.length > 0">
+          <label class="form-label-custom mb-3 fw-bold"><i class="bi bi-clock me-2 text-warning"></i> المواعيد المتاحة</label>
+          <div class="row g-2">
+            <div class="col-6 col-md-3" *ngFor="let time of availableTimes">
+              <input type="radio" class="btn-check" name="timeSlot"
+                      [id]="time" [value]="time"
+                      [(ngModel)]="selectedTimeId"
+                      [ngModelOptions]="{standalone: true}">
+                <label class="time-label w-100"
+                      [class.active-time]="selectedTimeId === time"
+                      [for]="time">
+                  {{ time }}
+              </label>
+            </div>
+          </div>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label d-flex align-items-center justify-content-start gap-1">
-            نوع السيارة <span class="text fs-3 mt-2">*</span>
-          </label>
-          <input type="text" formControlName="carType" class="form-control" />
+        <!-- <div class="text-center mt-5">
+          <button type="submit"
+                  class="btn-submit-order shadow"
+                  (click)="onSubmit()"
+                  [disabled]="orderForm.invalid || !selectedTimeId || selectedServices.length === 0">
+            تأكيد وحفظ الطلب
+          </button>
+              </div> -->
+
+            </form>
+
         </div>
 
-<div class="mb-4">
-  <label class="form-label d-flex align-items-center justify-content-start gap-1 fw-bold text-white mb-3">
-    اختر الخدمات المطلوبة <i class="bi bi-grid-fill ms-1 text"></i>
-  </label>
+      <div class="col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden sticky-top" style="top: 20px;">
+          <div class="p-4">
+            <h5 class="fw-bold mb-4">ملخص الطلب</h5>
 
-  <div class="services-grid">
-    <div *ngFor="let service of allServices"
-          (click)="toggleService(service)"
-          class="service-card"
-          [class.selected-active]="isServiceSelected(service.id)">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted small">المجموع الفرعي</span>
+              <span class="fw-bold">{{ totalServicesPrice | number:'1.2-2' }} ج.م</span>
+            </div>
 
-      <div class="service-name">{{ service.name }}</div>
+            <div class="d-flex justify-content-between mb-4 border-bottom pb-3">
+              <span class="text-muted small">الضريبة (14%)</span>
+              <span class="fw-bold text-secondary">{{ taxAmount | number:'1.2-2' }} ج.م</span>
+            </div>
 
-      <div class="service-price">{{ service.price }} ج.م</div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h5 class="fw-bold mb-0">المجموع الكلي</h5>
+              <h4 class="fw-bold mb-0 text-dark">{{ finalTotal | number:'1.2-2' }} ج.م</h4>
+            </div>
 
-      <div class="check-mark" *ngIf="isServiceSelected(service.id)">
-        <i class="bi bi-check-lg"></i>
+        <div class="text-center mt-5">
+          <button type="submit"
+                  class="btn-submit-order shadow"
+                  (click)="onSubmit()"
+                  [disabled]="orderForm.invalid || !selectedTimeId || selectedServices.length === 0">
+            تأكيد وحفظ الطلب
+          </button>
+              </div>
+          </div>
+        </div>
+      </div>
       </div>
     </div>
-  </div>
-</div>
-
-<div class="mb-4 animate__animated animate__fadeIn" *ngIf="selectedServices.length > 0">
-  </div>
-
-<div class="mb-4 animate__animated animate__fadeIn" *ngIf="selectedServices.length > 0">
-  <label class="form-label d-flex align-items-center justify-content-start gap-1 fw-bold text-white mb-2">
-    المواعيد المتاحة <i class="bi bi-clock ms-2 text"></i>
-  </label>
-
-  <div class="row g-2">
-    <div class="col-6 col-md-4" *ngFor="let time of availableTimes">
-      <input type="radio" class="btn-check" name="timeSlot"
-              [id]="time" [value]="time"
-              [(ngModel)]="selectedTimeId"
-              [ngModelOptions]="{standalone: true}">
-
-      <label class="submt w-100 text-center"
-              [class.active-time]="selectedTimeId === time"
-              [for]="time">
-        {{ time }}
-      </label>
-    </div>
-  </div>
-</div>
-
-        <button type="submit"
-                class="btn send"
-                (click)="onSubmit()"
-                [disabled]="orderForm.invalid || !selectedTimeId">
-          تأكيد الطلب
-        </button>
-      </div>
-    </form>
-  </div>
 </section>
 
 
@@ -240,3 +366,61 @@
         </div>
     </div>
 </div> -->
+
+
+
+
+
+
+
+
+
+      <!-- <div class="col-lg-8 m-auto">
+        <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+          <h5 class="fw-bold mb-4 border-bottom pb-3">تفاصيل السيارة & بيانات العميل</h5>
+
+          <form [formGroup]="orderForm">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">رقم اللوحة *</label>
+                <input type="text" formControlName="carNumber" class="form-control bg-light border-0 py-2" placeholder="أدخل رقم اللوحة">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">موديل السيارة *</label>
+                <input type="text" formControlName="carType" class="form-control bg-light border-0 py-2" placeholder="أدخل موديل السيارة">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">اسم العميل *</label>
+                <input type="text" formControlName="fullName" class="form-control bg-light border-0 py-2" placeholder="أدخل اسم العميل">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">رقم الهاتف *</label>
+                <input type="text" formControlName="phone" class="form-control bg-light border-0 py-2" placeholder="أدخل رقم الهاتف">
+              </div>
+              <div class="col-md-12">
+                <label class="form-label small fw-bold">طريقة الدفع *</label>
+                <select formControlName="paymentMethod" class="form-select bg-light border-0 py-2">
+                  <option value="نقدي">نقدي</option>
+                  <option value="شبكة">شبكة / فيزا</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="bg-white rounded-4 shadow-sm p-4">
+          <h5 class="fw-bold mb-4 border-bottom pb-3">اختيار الخدمات</h5>
+          <div class="services-grid">
+            <div *ngFor="let service of allServices"
+                  (click)="toggleService(service)"
+                  class="service-item p-3 border rounded-3 mb-2 d-flex justify-content-between align-items-center cursor-pointer"
+                  [class.selected-bg]="isServiceSelected(service.id)">
+              <div>
+                <span class="fw-bold d-block">{{ service.name }}</span>
+                <small class="text-muted">{{ service.price }} ج.م</small>
+              </div>
+              <i class="bi bi-check-circle-fill text-success fs-5" *ngIf="isServiceSelected(service.id)"></i>
+            </div>
+          </div>
+        </div>
+      </div> -->

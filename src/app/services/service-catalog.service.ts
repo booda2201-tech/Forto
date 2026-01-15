@@ -363,24 +363,34 @@ constructor() {
     this.customersSubject.next([...this.customers]);
   }
 
-  updateCustomerStatus(id: number, newStatus: 'waiting' | 'active' | 'completed' | 'canceled') {
+
+
+
+updateCustomerStatus(id: number, newStatus: 'waiting' | 'active' | 'completed' | 'canceled', workerName?: string) {
   const index = this.customers.findIndex(c => c.id === id);
   if (index !== -1) {
     this.customers[index].status = newStatus;
+    if (workerName) this.customers[index].worker = workerName;
 
 
-    const statusMap = {
-      'active': 'نشط',
-      'completed': 'مكتمل',
-      'canceled': 'ملغي',
-      'waiting': 'قيد الانتظار'
-    };
+    const statusMap = { 'active': 'نشط', 'completed': 'مكتمل', 'canceled': 'ملغي', 'waiting': 'قيد الانتظار' };
     this.customers[index].statusText = statusMap[newStatus];
-
 
     this.customersSubject.next([...this.customers]);
   }
+}
+
+
+updateCustomerDetails(id: number, data: { carModel: string, plateNumber: string, services: ServiceItem[] }) {
+  const index = this.customers.findIndex(c => c.id === id);
+  if (index !== -1) {
+    this.customers[index].cars[0].carModel = data.carModel;
+    this.customers[index].cars[0].plateNumber = data.plateNumber;
+    this.customers[index].serviceItem = data.services;
+    this.customers[index].totalAmount = data.services.reduce((sum, s) => sum + s.price, 0);
+    this.customersSubject.next([...this.customers]);
   }
+}
 
 
 }

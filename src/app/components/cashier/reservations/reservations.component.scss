@@ -366,20 +366,23 @@
   direction: rtl;
   font-family: 'Segoe UI', Arial, sans-serif;
   background: white;
-  max-height: 80vh;
+  // max-height: 80vh;
   overflow-y: auto;
 
   $forto-orange: #f99f1b;
 
   .brand-orange { color: $forto-orange !important; }
   .brand-orange-bg { background-color: $forto-orange !important; }
-  .brand-logo { width: 130px; }
+  .brand-logo { width: 150px; }
 
   .invoice-table {
     font-size: 0.9rem;
     tbody tr { background-color: #fcfcfc; }
   }
 
+  .custom-orange{
+    background-color: #f99f1b;
+  }
   .final-total-box {
     background: linear-gradient(135deg, #f99f1b 0%, #e68a00 100%) !important;
     -webkit-print-color-adjust: exact;

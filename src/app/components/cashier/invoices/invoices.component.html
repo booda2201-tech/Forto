@@ -53,10 +53,25 @@
 
 
 <div class="invoices-page p-2 p-md-4" dir="rtl">
-  <div class="header-box mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-    <h3 class="fw-bold text-dark mb-0">سجل الفواتير</h3>
-    <span class="badge bg-success rounded-pill px-3 py-2">مكتمل</span>
-  </div>
+    <div class="header-box mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h3 class="fw-bold text-dark mb-0">سجل الفواتير</h3>
+        <span class="badge bg-success rounded-pill px-3 py-2">مكتمل</span>
+      </div>
+
+      <div class="row g-3 mb-4 no-print">
+        <div class="col-6 col-md-3">
+          <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="text-muted small mb-1">إجمالي الفواتير</div>
+            <div class="h4 fw-bold text-dark mb-0">{{ totalInvoicesCount }}</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card border-0 shadow-sm rounded-4 p-3 bg-orange-light">
+            <div class="text-muted small mb-1">إجمالي الإيراد (شامل الضريبة)</div>
+            <div class="h4 fw-bold text-success mb-0">{{ totalDailyAmount | number:'1.1-1' }} <small style="font-size: 12px;">ج.م</small></div>
+          </div>
+        </div>
+      </div>
 
   <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
     <div class="table-responsive">
@@ -97,9 +112,12 @@
                   <i class="bi bi-file-earmark-excel"></i>
                   <span class="d-none d-xl-inline ms-1">Excel</span>
                 </button>
-                <button class="btn btn-sm btn-orange text-white rounded-3">
-                  <i class="bi bi-printer"></i>
-                </button>
+                  <button class="btn btn-sm btn-orange text-white rounded-3"
+                          (click)="openInvoice(invoice)"
+                          data-bs-toggle="modal"
+                          data-bs-target="#invoiceModal">
+                    <i class="bi bi-printer"></i>
+                  </button>
               </div>
             </td>
           </tr>
@@ -108,3 +126,144 @@
     </div>
   </div>
 </div>
+
+
+
+<div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;"> <div class="modal-content border-0 shadow-lg">
+
+      <div class="text-end p-2 no-print">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4 forto-invoice-container" id="printableInvoice">
+        <div class="text-center mb-3">
+          <img src="../../../../assets/imeg/logo forto.png" class="brand-logo mb-1" style="max-width: 70px;">
+
+          <div class="small">#{{ selectedInvoice?.id }}</div>
+        </div>
+
+        <hr class="my-2" style="border-top: 1px dashed #000;">
+
+        <div class="client-data mb-3 fw-bold" style="font-size: 12px;">
+          <div><strong>العميل:</strong> {{ selectedInvoice?.customerName }}</div>
+          <div><strong>الهاتف:</strong> {{ selectedInvoice?.phone }}</div>
+          <div><strong>السيارة:</strong> {{ selectedInvoice?.cars?.[0]?.carModel }}</div>
+          <div><strong>التاريخ:</strong> {{ selectedInvoice?.appointmentDate }}</div>
+        </div>
+
+        <table class="table table-sm invoice-table mb-2" style="font-size: 12px;">
+          <thead class="border-bottom">
+            <tr>
+              <th class="text-end">الخدمة</th>
+              <th class="text-center">الكمية</th>
+              <th class="text-center">السعر</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let service of selectedInvoice?.serviceItem">
+              <td class="text-end">{{ service.name }}</td>
+              <td class="text-center">1</td>
+              <td class="text-center fw-bold">{{ service.price }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <hr class="my-2" style="border-top: 1px dashed #000;">
+
+        <div style="font-size: 13px; font-weight: bold;">
+          <div class="d-flex justify-content-between">
+            <span>المجموع:</span>
+            <span>{{ subTotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="d-flex justify-content-between fw-bold">
+            <span>الضريبة (14%):</span>
+            <span>{{ taxAmount | number:'1.2-2' }}</span>
+          </div>
+          <div class="d-flex justify-content-between fw-bold mt-1" style="font-size: 15px;">
+            <span>الإجمالي:</span>
+            <span>{{ finalTotal | number:'1.2-2' }} ج.م</span>
+          </div>
+        </div>
+
+        <div class="text-center mt-4" style="font-size: 11px;">
+          <div>شكراً لزيارتكم فورتو</div>
+          <div class="mt-1">نظام فورتو لإدارة المغاسل</div>
+        </div>
+      </div>
+
+      <div class="modal-footer no-print justify-content-center bg-light">
+        <button type="button" class="btn btn-warning text-white px-5 rounded-pill shadow-sm fw-bold print-btn" (click)="downloadInvoice()">
+          <i class="bi bi-printer me-2"></i> طباعة الفاتورة
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- <div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+    <div class="modal-content border-0 shadow-lg">
+
+      <div class="text-end p-2 no-print">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+        <div class="modal-body p-4" id="printableInvoice" style="background: white !important; border: none !important;">
+          <div class="text-center mb-2">
+            <img src="../../../../assets/imeg/logo forto.png" style="max-width: 80px; filter: brightness(0.5) contrast(2);">
+            <h5 style="color: black !important; font-weight: 900 !important; margin-top: 5px;">فاتورة ضريبية مبسطة</h5>
+            <p style="color: black !important; font-weight: bold;">رقم الفاتورة: #{{ selectedInvoice?.id }}</p>
+          </div>
+
+          <div style="border-top: 1px dashed black; margin: 10px 0;"></div>
+
+          <div style="color: black !important; font-size: 13px; line-height: 1.5;">
+            <div><strong>العميل:</strong> {{ selectedInvoice?.customerName }}</div>
+            <div><strong>الهاتف:</strong> {{ selectedInvoice?.phone }}</div>
+            <div><strong>السيارة:</strong> {{ selectedInvoice?.cars?.[0]?.carModel }}</div>
+            <div><strong>التاريخ:</strong> {{ selectedInvoice?.appointmentDate }}</div>
+          </div>
+
+          <div style="border-top: 1px dashed black; margin: 10px 0;"></div>
+
+          <table style="width: 100%; color: black !important; border-collapse: collapse;">
+            <tr style="border-bottom: 1px solid black;">
+              <th style="text-align: right; padding: 5px;">الخدمة</th>
+              <th style="text-align: center; padding: 5px;">الكمية</th>
+              <th style="text-align: left; padding: 5px;">السعر</th>
+            </tr>
+            <tr *ngFor="let service of selectedInvoice?.serviceItem">
+              <td style="text-align: right; padding: 5px;">{{ service.name }}</td>
+              <td style="text-align: center; padding: 5px;">1</td>
+              <td style="text-align: left; padding: 5px;">{{ service.price }}</td>
+            </tr>
+          </table>
+
+          <div style="border-top: 2px solid black; margin: 10px 0;"></div>
+
+          <div style="color: black !important;">
+            <div style="display: flex; justify-content: space-between;">
+              <span>المجموع:</span> <span>{{ subTotal }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 16px; margin-top: 5px;">
+              <span>الإجمالي:</span> <span>{{ finalTotal }} ج.م</span>
+            </div>
+          </div>
+
+          <div class="text-center mt-3" style="font-size: 11px; color: black !important;">
+            <strong>شكراً لزيارتكم فورتو</strong>
+          </div>
+        </div>
+
+      <div class="modal-footer no-print justify-content-center border-0 pb-4">
+        <button type="button" class="btn btn-warning text-white px-5 rounded-pill fw-bold shadow-sm" (click)="downloadInvoice()">
+          <i class="bi bi-printer me-2"></i> طباعة الريسيت
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div> -->

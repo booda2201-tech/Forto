@@ -1,233 +1,337 @@
-.contt{
+// .contt{
+//   background-color: #f8f9fa;
+//   padding: 5px;
+// }
+
+// .form-control{
+//   background-color: #ffffffe5;
+// }
+
+// .status-indicator {
+//     width: 10px;
+//     height: 10px;
+//     border-radius: 50%;
+// }
+
+// .info-card {
+//   background-color: #dddddde5;
+//   border: 1px solid #e9ecef !important;
+
+//   .icon-box {
+//     border: 1px solid #dee2e6 !important;
+//     color: #495057;
+//   }
+
+//   small {
+//     color: #6c757d !important;
+//   }
+
+//   span {
+//     color: #212529;
+//     font-size: 0.95rem;
+//   }
+// }
+
+
+// [dir="rtl"] {
+//   .me-3 {
+//     margin-left: 1rem !important;
+//     margin-right: 0 !important;
+//   }
+// }
+
+
+
+
+// .custom-card {
+//   background-color: #dddddde5;
+//   border-radius: 15px;
+//   overflow: hidden;
+//   padding: 20px;
+//   border-right: 10px solid #ffa807;
+//   transition: all 0.4s ease;
+//   animation: slideIn 0.5s ease-out;
+// }
+
+// .customer-name {
+//   color: #2c3e50;
+//   font-weight: 600;
+// }
+
+// .booking-id {
+//   background: #eee;
+//   padding: 5px 15px;
+//   border-radius: 20px;
+//   font-size: 0.9rem;
+//   color: #666;
+// }
+
+// .icon-gold {
+//   color: #f39c12;
+//   font-size: 1.2rem;
+// }
+
+// .car-details-box {
+//   background-color: #f8f9fa;
+//   border: 1px solid #e9ecef;
+// }
+
+// .border-left-custom {
+//   border-left: 1px solid #dee2e6;
+// }
+
+// .divider {
+//   margin: 15px 0;
+//   opacity: 0.1;
+// }
+
+
+// .btn-new-booking {
+//   background-color: transparent;
+//   border: 2px solid #f39c12;
+//   color: #f39c12;
+//   padding: 8px 30px;
+//   border-radius: 10px;
+//   font-weight: bold;
+//   transition: 0.3s;
+// }
+
+// .btn-new-booking:hover {
+//   background-color: #f39c12;
+//   color: white;
+// }
+
+
+// .search-section {
+//   background-color: rgba(255, 255, 255, 0.1);
+//   backdrop-filter: blur(5px);
+// }
+
+// .btn-add-client {
+//   background-color: #f39c12;
+//   color: white;
+//   border: none;
+//   padding: 10px;
+//   border-radius: 8px;
+//   font-weight: bold;
+// }
+
+
+
+// .small-text-mobile {
+//   font-size: 0.9rem;
+// }
+
+// .border-left-custom {
+//   border-left: 1px solid #dee2e6;
+// }
+
+
+// .btn-add-car, .btn-new-booking {
+//   padding: 10px 15px;
+//   border-radius: 8px;
+//   font-weight: bold;
+//   font-size: 0.85rem;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   transition: all 0.3s ease;
+// }
+
+// .btn-add-car {
+//   background-color: #2ecc71;
+//   color: white;
+//   border: none;
+// }
+
+// .btn-new-booking {
+//   background-color: transparent;
+//   border: 2px solid #f39c12;
+//   color: #f39c12;
+// }
+
+
+// @media (max-width: 767px) {
+//   .border-left-custom {
+//     border-left: 1px solid #dee2e6;
+//   }
+
+//   .btn1{
+//     margin-top: 10px;
+//   }
+
+
+//   .car-details-box {
+//     padding: 10px !important;
+//   }
+
+//   .small-text-mobile {
+//     font-size: 0.8rem;
+//   }
+
+
+//   .flex-column.gap-2 button {
+//     margin-bottom: 5px;
+//   }
+// }
+
+
+// @media (min-width: 768px) {
+//   .w-md-auto {
+//     width: auto !important;
+//   }
+// }
+
+
+
+
+
+// @keyframes slideIn {
+//   from { opacity: 0; transform: translateY(-20px); }
+//   to { opacity: 1; transform: translateY(0); }
+// }
+
+// .modal-content {
+//   text-align: right;
+// }
+
+
+// .small-label {
+//   display: flex;
+//   align-items: center;
+//   gap: 5px;
+//   font-size: 0.75rem;
+// }
+
+// @media (max-width: 767px) {
+
+//   .flex-column.gap-2 button {
+//     width: 100% !important;
+//     display: flex;
+//     justify-content: center;
+//     align-items: center;
+//   }
+
+//   .border-left-custom {
+//     border-left: none !important;
+//     border-bottom: 1px solid #eee;
+//     padding-bottom: 10px;
+//   }
+
+// }
+
+// .car-details-box {
+//   background-color: #fafafa;
+//   border-radius: 8px;
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+.contt {
   background-color: #f8f9fa;
-  padding: 5px;
-}
-
-.form-control{
-  background-color: #ffffffe5;
-}
-
-.status-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-
-.info-card {
-  background-color: #dddddde5;
-  border: 1px solid #e9ecef !important;
-
-  .icon-box {
-    border: 1px solid #dee2e6 !important;
-    color: #495057;
-  }
-
-  small {
-    color: #6c757d !important;
-  }
-
-  span {
-    color: #212529;
-    font-size: 0.95rem;
-  }
-}
-
-
-[dir="rtl"] {
-  .me-3 {
-    margin-left: 1rem !important;
-    margin-right: 0 !important;
-  }
-}
-
-
-
-
-.custom-card {
-  background-color: #dddddde5;
-  border-radius: 15px;
-  overflow: hidden;
-  padding: 20px;
-  border-right: 10px solid #ffa807;
-  transition: all 0.4s ease;
-  animation: slideIn 0.5s ease-out;
-}
-
-.customer-name {
-  color: #2c3e50;
-  font-weight: 600;
-}
-
-.booking-id {
-  background: #eee;
-  padding: 5px 15px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.icon-gold {
-  color: #f39c12;
-  font-size: 1.2rem;
-}
-
-.car-details-box {
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-}
-
-.border-left-custom {
-  border-left: 1px solid #dee2e6;
-}
-
-.divider {
-  margin: 15px 0;
-  opacity: 0.1;
-}
-
-
-.btn-new-booking {
-  background-color: transparent;
-  border: 2px solid #f39c12;
-  color: #f39c12;
-  padding: 8px 30px;
-  border-radius: 10px;
-  font-weight: bold;
-  transition: 0.3s;
-}
-
-.btn-new-booking:hover {
-  background-color: #f39c12;
-  color: white;
+  min-height: 100vh;
+  padding-bottom: 50px;
 }
 
 
 .search-section {
-  background-color: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(5px);
-}
-
-.btn-add-client {
-  background-color: #f39c12;
-  color: white;
+  background-color: #ffffff !important;
+  border-radius: 15px;
   border: none;
-  padding: 10px;
-  border-radius: 8px;
-  font-weight: bold;
+}
+
+.search-input {
+  border: 1px solid #eee;
+  background-color: #f0f0f0;
+  padding: 12px;
+  border-radius: 10px;
+  &:focus {
+    border-color: #ffa500;
+    box-shadow: none;
+  }
 }
 
 
+.custom-card {
+  background-color: #ffffff !important;
+  border-radius: 20px;
+  padding: 25px;
+  border: none !important;
+  border-right: 6px solid #ffa500 !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+  transition: transform 0.3s ease;
 
-.small-text-mobile {
-  font-size: 0.9rem;
+  &:hover {
+    transform: translateY(-5px);
+  }
 }
 
-.border-left-custom {
-  border-left: 1px solid #dee2e6;
-}
 
-
-.btn-add-car, .btn-new-booking {
-  padding: 10px 15px;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 0.85rem;
+.icon-container {
+  width: 45px;
+  height: 45px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  background-color: #fff9f0;
+  color: #ffa500;
+  border-radius: 12px;
 }
 
-.btn-add-car {
-  background-color: #2ecc71;
+
+.car-details-box {
+  background-color: #f0f0f0 !important;
+  border: 1px solid #f3f3f3 !important;
+  border-radius: 15px !important;
+  margin-top: 15px;
+  padding: 15px !important;
+}
+
+/* الأزرار */
+.btn-add-client {
+  background-color: #ffa500;
   color: white;
   border: none;
+  font-weight: bold;
+  border-radius: 10px;
+  padding: 12px;
+  &:hover { background-color: #e69500; color: white; }
 }
 
 .btn-new-booking {
   background-color: transparent;
-  border: 2px solid #f39c12;
-  color: #f39c12;
+  border: 2px solid #ffa500;
+  color: #ffa500;
+  font-weight: bold;
+  border-radius: 10px;
+  transition: 0.3s;
+  &:hover { background-color: #ffa500; color: white; }
 }
 
-
-@media (max-width: 767px) {
-  .border-left-custom {
-    border-left: 1px solid #dee2e6;
-  }
-
-  .btn1{
-    margin-top: 10px;
-  }
-
-
-  .car-details-box {
-    padding: 10px !important;
-  }
-
-  .small-text-mobile {
-    font-size: 0.8rem;
-  }
-
-
-  .flex-column.gap-2 button {
-    margin-bottom: 5px;
-  }
-}
-
-
-@media (min-width: 768px) {
-  .w-md-auto {
-    width: auto !important;
-  }
-}
-
-
-
-
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.modal-content {
-  text-align: right;
-}
-
-
-.small-label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.75rem;
-}
-
-@media (max-width: 767px) {
-
-  .flex-column.gap-2 button {
-    width: 100% !important;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .border-left-custom {
-    border-left: none !important;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-  }
-
-}
-
-.car-details-box {
-  background-color: #fafafa;
+.booking-id {
+  background: #f8f9fa;
+  color: #ffa500;
+  font-weight: bold;
+  padding: 4px 12px;
   border-radius: 8px;
+  font-size: 0.85rem;
 }
 
-
-
-
+/* فواصل */
+.divider {
+  opacity: 0.05;
+  border-top: 1px solid #000;
+}
 
 
 

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ServiceCatalogService , ServiceItem} from 'src/app/services/service-catalog.service';
 import { ChangeDetectorRef } from '@angular/core';
 
@@ -12,17 +12,16 @@ export class OrderInformationComponent {
 
   selectedTimeId: string = '';
 
-orderForm: FormGroup = new FormGroup({
-  fullName: new FormControl('', [Validators.required]),
-  phone: new FormControl('', [Validators.required]),
-  carNumber: new FormControl('', [Validators.required]),
-  carType: new FormControl('', [Validators.required]),
-  paymentMethodId: new FormControl('1', [Validators.required]),
+    orderForm: FormGroup = new FormGroup({
+        fullName: new FormControl('', [Validators.required]),
+        phone: new FormControl('', [Validators.required]),
+        carNumber: new FormControl('', [Validators.required]),
+        carType: new FormControl('', [Validators.required]),
 
-  services: new FormControl([], [Validators.required, Validators.minLength(1)]),
-  code: new FormControl('')
-});
-
+        paymentMethod: new FormControl('cash', [Validators.required]),
+        services: new FormControl([], [Validators.required, Validators.minLength(1)]),
+        code: new FormControl('')
+      });
 
 allServices: ServiceItem[] = [];
 selectedServices: ServiceItem[] = [];
@@ -34,6 +33,8 @@ constructor(private serviceCatalog: ServiceCatalogService) {
   this.serviceCatalog.getServices().subscribe(services => {
     this.allServices = services;
   });
+
+
 }
 
 
@@ -75,20 +76,45 @@ onServiceSelected() {
     this.selectedTimeId = id;
   }
 
-  onSubmit() {
-    if (this.orderForm.valid && this.selectedTimeId) {
-      const finalData = {
-        ...this.orderForm.value,
-        selectedTime: this.selectedTimeId
-      };
-      console.log('بيانات الطلب:', finalData);
-    }
-  }
+onSubmit() {
+  if (this.orderForm.valid && this.selectedTimeId) {
+    const finalData = {
+      ...this.orderForm.value,
+      selectedTime: this.selectedTimeId,
+      subTotal: this.totalServicesPrice,
+      tax: this.taxAmount,
+      totalAmount: this.finalTotal,
+      createdAt: new Date().toISOString()
+    };
 
+
+    this.serviceCatalog.addCustomer(finalData);
+    console.log('البيانات النهائية شاملة المبالغ:', finalData);
+  }
+}
 
   isButtonDisabled(): boolean {
     return this.orderForm.invalid || this.selectedTimeId === '';
   }
+
+
+
+
+
+
+get totalServicesPrice(): number {
+  return this.selectedServices.reduce((sum, service) => sum + service.price, 0);
+}
+
+get taxAmount(): number {
+
+  return this.totalServicesPrice * 0.14;
+}
+
+get finalTotal(): number {
+  return this.totalServicesPrice + this.taxAmount;
+}
+
 
 
 

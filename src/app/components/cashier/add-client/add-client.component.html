@@ -1,4 +1,4 @@
-<section class="cont">
+<!-- <section class="cont">
   <div class="container mt-2 p-4">
     <div class="card p-4 rounded-2">
       <h2 class="text-center mb-4">إضافة عميل جديد</h2>
@@ -62,6 +62,77 @@
           </form>
         </div>
       </div>
+    </div>
+  </div>
+</section> -->
+
+
+
+<section class="add-client-section">
+  <div class="container py-5">
+    <div class="main-order-card shadow-sm p-4 p-md-5">
+      <div class="orange-side-border"></div>
+
+      <h2 class="text-center text-black mb-5 fw-bold">إضافة عميل جديد</h2>
+
+      <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+        <div class="row g-4">
+
+          <div class="col-md-6">
+            <label class="custom-label">الاسم <span class="text-danger">*</span></label>
+            <input type="text" formControlName="name" class="form-control custom-input" placeholder="أدخل اسم العميل">
+          </div>
+
+          <div class="col-md-6">
+            <label class="custom-label">التليفون <span class="text-danger">*</span></label>
+            <input type="tel" formControlName="phone" class="form-control custom-input text-end" placeholder="01xxxxxxxxx">
+          </div>
+
+          <div class="col-md-12">
+            <label class="custom-label">البريد الالكتروني</label>
+            <input type="email" formControlName="email" class="form-control custom-input" placeholder="example@mail.com">
+          </div>
+
+          <div class="col-12 my-4">
+            <hr class="form-divider">
+          </div>
+
+          <div class="col-md-4">
+            <label class="custom-label">نوع السيارة <span class="text-danger">*</span></label>
+            <input type="text" formControlName="carType" class="form-control custom-input" placeholder="مثال: تويوتا">
+          </div>
+
+          <div class="col-md-4">
+            <label class="custom-label">رقم اللوحة <span class="text-danger">*</span></label>
+            <input type="text" formControlName="carNumber" class="form-control custom-input text-end" placeholder="ا ب ج 1234">
+          </div>
+
+          <div class="col-md-4">
+            <label class="custom-label">لون السيارة</label>
+            <input type="text" formControlName="carColor" class="form-control custom-input" placeholder="أدخل اللون">
+          </div>
+
+          <div class="col-md-6">
+            <label class="custom-label">فئة السيارة</label>
+            <input type="text" formControlName="carCategory" class="custom-input form-control" placeholder="سيدان / SUV">
+          </div>
+
+          <div class="col-md-6">
+            <label class="custom-label">موديل السيارة</label>
+            <input type="text" formControlName="carModel" class="custom-input form-control" placeholder="مثال: 2024">
+          </div>
+
+          <div class="col-12 text-center mt-5">
+            <button
+              type="submit"
+              [disabled]="customerForm.invalid"
+              class="btn-submit-orange">
+              تأكيد وإضافة العميل
+            </button>
+          </div>
+
+        </div>
+      </form>
     </div>
   </div>
 </section>

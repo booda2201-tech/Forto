@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ServiceCatalogService , Customer, ServiceItem} from 'src/app/services/service-catalog.service';
+import { tap, map } from 'rxjs/operators';
 
 
 
@@ -20,6 +21,12 @@ export class CustomersComponent implements OnInit {
   newCarData = { carModel: '', plateNumber: '' };
   currentCustomer: any = null;
   isMenuOpen: boolean = false;
+  tempTotal: number = 0;
+  tempAppointmentTime: string | null = null;
+
+
+
+
 
   constructor(private serviceCatalog: ServiceCatalogService) {}
 
@@ -71,10 +78,62 @@ onSearchChange(event: any) {
 
 
 
-selectCar(carDetail: any) {
+selectCar(carDetail: any, customer: any) {
+  this.selectedCar = carDetail;
+  this.currentCustomer = customer;
+  this.tempAppointmentTime = null;
+  this.tempTotal = 0;
 
-    this.selectedCar = carDetail;
-  }
+
+  this.allServices.forEach(s => s.selected = false);
+
+
+  this.availableTimes = ['10:00 AM', '11:30 AM', '01:00 PM', '03:00 PM'];
+}
+hasSelectedServices(): boolean {
+  return this.allServices.some(s => s.selected);
+}
+
+
+calculateTempTotal() {
+  this.tempTotal = this.allServices
+    .filter(s => s.selected)
+    .reduce((sum, s) => sum + s.price, 0);
+}
+
+
+confirmBooking() {
+  const selectedServices = this.allServices.filter(s => s.selected);
+
+  const bookingData = {
+    name: this.currentCustomer.customerName,
+    phone: this.currentCustomer.phone,
+    carType: this.selectedCar.carModel,
+    carNumber: this.selectedCar.plateNumber,
+    totalAmount: this.tempTotal,
+    serviceItem: selectedServices,
+    appointmentTime: this.tempAppointmentTime,
+    appointmentDate: new Date().toISOString().split('T')[0]
+  };
+
+
+  this.serviceCatalog.addCustomer(bookingData);
+
+
+  alert('تم إضافة الحجز بنجاح!');
+  location.reload();
+}
+
+
+
+
+
+
+
+
+
+
+
 
 addNewCarToCustomer(car: any) {
   console.log('إضافة سيارة جديدة للعميل:', car.customerName);
