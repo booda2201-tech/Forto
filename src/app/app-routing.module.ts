@@ -14,7 +14,8 @@ import { ReservationsComponent } from './components/cashier/reservations/reserva
 import { CustomersComponent } from './components/cashier/customers/customers.component';
 import { ServicesComponent } from './components/cashier/services/services.component';
 import { InvoicesComponent } from './components/cashier/invoices/invoices.component';
-
+import { NewReservationComponent } from './components/cashier/new-reservation/new-reservation.component';
+import { MessagesComponent } from './components/cashier/messages/messages.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -39,8 +40,9 @@ const routes: Routes = [
     { path: 'add-client', component: AddClientComponent },
     { path: 'reservations', component: ReservationsComponent },
     { path: 'customers', component: CustomersComponent },
-    { path: 'services', component: ServicesComponent },
+    { path: 'new-reservation', component: NewReservationComponent },
     { path: 'invoices', component: InvoicesComponent },
+    { path: 'messages', component: MessagesComponent },
     { path: '', redirectTo: 'customers', pathMatch: 'full' }
   ]
 },

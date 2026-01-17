@@ -7,6 +7,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
+import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
 
 
@@ -26,6 +27,10 @@ import { FilterStatusPipe } from './pipes/filter-status.pipe';
 import { CustomersComponent } from './components/cashier/customers/customers.component';
 import { ServicesComponent } from './components/cashier/services/services.component';
 import { InvoicesComponent } from './components/cashier/invoices/invoices.component';
+import { NewReservationComponent } from './components/cashier/new-reservation/new-reservation.component';
+import { MessagesComponent } from './components/cashier/messages/messages.component';
+import { NotificationService } from './services/notification.service';
+
 
 
 @NgModule({
@@ -41,6 +46,9 @@ import { InvoicesComponent } from './components/cashier/invoices/invoices.compon
     CashierPageComponent,
     CustomersComponent,
     ServicesComponent,
+    NewReservationComponent,
+    MessagesComponent,
+
 
 
 
@@ -53,11 +61,12 @@ import { InvoicesComponent } from './components/cashier/invoices/invoices.compon
     ReactiveFormsModule,
     BrowserAnimationsModule,
     ToastrModule.forRoot(),
+    CommonModule,
     FormsModule,
     NgbModule
   ],
   providers: [
-
+    NotificationService,
     provideAnimations(),
     provideToastr({
       timeOut: 3000,
@@ -65,6 +74,8 @@ import { InvoicesComponent } from './components/cashier/invoices/invoices.compon
       preventDuplicates: true,
     }),
   ],
+
+
   bootstrap: [AppComponent]
 })
 

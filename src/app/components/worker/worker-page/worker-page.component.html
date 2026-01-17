@@ -285,7 +285,7 @@
         <span>جم</span>
         <div class="input-group input-group-sm" style="width: 100px;">
           <input type="number" class="form-control text-center border-2 bg-white"
-                  [(ngModel)]="selectedCar.soapCount" placeholder="0">
+                  [(ngModel)]="selectedCar.soapCount" name="soap" placeholder="0">
         </div>
       </div>
     </div>
@@ -295,8 +295,8 @@
         <span class="fw-bold">معطر:</span>
 
         <div class="input-group input-group-sm" style="width: 100px;">
-          <input type="number" class="form-control text-center border-2 bg-white"
-                  [(ngModel)]="selectedCar.perfumeCount" placeholder="0">
+            <input type="number" class="form-control text-center border-2 bg-white"
+                    [(ngModel)]="selectedCar.perfumeCount" name="perfume" placeholder="0">
         </div>
       </div>
     </div>

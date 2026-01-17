@@ -1,0 +1,45 @@
+.notifications-wrapper {
+  background: #f8f9fa;
+  min-height: 80vh;
+  border-radius: 20px;
+
+  .notif-card {
+    background: #aaa9a9;
+    border: none;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    border-right: 5px solid transparent; // للحواف الملونة
+
+    &:hover {
+      transform: scale(1.01);
+    }
+
+    &.start-border { border-right-color: #0d6efd; }
+    &.edit-border { border-right-color: #ffc107; }
+    &.end-border { border-right-color: #198754; }
+  }
+
+  .icon-box {
+    width: 55px;
+    height: 55px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .time-stamp {
+    font-size: 0.75rem;
+    color: #adb5bd;
+  }
+
+  .worker-name { color: #2c3e50; }
+  .notif-text { font-size: 0.9rem; }
+
+  .btn-sm { font-size: 0.8rem; }
+}
+
+// ألوان الخلفيات الخفيفة للايقونات
+.bg-primary-subtle { background-color: #e7f1ff; }
+.bg-warning-subtle { background-color: #fff3cd; }
+.bg-success-subtle { background-color: #d1e7dd; }

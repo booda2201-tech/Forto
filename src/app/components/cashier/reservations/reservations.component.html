@@ -1,3 +1,4 @@
+<div class="contt">
 <div class="reservations-wrapper" dir="rtl">
   <div
     class="header-section d-flex justify-content-center align-items-center mb-3 mt-3"
@@ -267,13 +268,12 @@
       </div>
 
       <div class="card-actions mt-0 d-flex gap-2">
-          <button
-              class="btn btn-sm btn-outline-danger rounded-3"
-              *ngIf="customer.status !== 'canceled'"
-              (click)="onCancel(customer.id)"
-                >
-                <i class="bi bi-trash"></i>
-          </button>
+        <button
+            class="btn btn-sm btn-outline-danger rounded-3"
+            *ngIf="customer.status !== 'canceled' && customer.status !== 'completed'"
+            (click)="onCancel(customer.id)">
+            <i class="bi bi-trash"></i>
+        </button>
 
         <button
           class="btn btn-update flex-grow-1 text-white fw-bold"
@@ -320,6 +320,52 @@
     </div>
   </div>
 </div>
+</div>
+
+
+<div class="modal fade" id="workerModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-20 border-0 shadow-lg">
+      <div class="modal-header border-0 pb-0 justify-content-center pt-4">
+        <h5 class="fw-bold m-0 text-dark">تعيين عامل التنفيذ</h5>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-center text-muted small mb-4">اختر العامل المتاح لبدء العمل فوراً</p>
+
+        <div class="worker-selection-list">
+          <div *ngFor="let worker of workersWithStatus"
+                (click)="selectWorkerAndActivate(worker)"
+                class="worker-item d-flex align-items-center justify-content-between p-3 mb-3 rounded-15 border transition-all pointer"
+                [ngClass]="{'busy-item': worker.isBusy, 'available-item': !worker.isBusy}">
+
+            <div class="worker-info text-end">
+              <h6 class="fw-bold mb-1" [class.text-muted]="worker.isBusy">{{ worker.name }}</h6>
+              <small class="text-secondary d-block">{{ worker.isBusy ? 'يعمل حالياً' : 'جاهز لاستلام طلب' }}</small>
+            </div>
+
+            <div class="status-section d-flex align-items-center gap-3">
+              <div class="d-flex align-items-center gap-2">
+                <span class="status-text small fw-bold" [ngClass]="worker.isBusy ? 'text-danger' : 'text-success'">
+                  {{ worker.isBusy ? 'مشغول' : 'متاح' }}
+                </span>
+                <div class="status-indicator-dot" [ngClass]="worker.isBusy ? 'bg-danger' : 'bg-success'"></div>
+              </div>
+
+              <div class="icon-wrapper ms-2">
+                <i class="bi fs-5" [ngClass]="worker.isBusy ? 'bi-lock-fill text-muted' : 'bi-chevron-left text-primary'"></i>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-light w-100 rounded-12 fw-bold py-2" data-bs-dismiss="modal">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 
 
@@ -332,7 +378,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <label class="form-label">لماذا تريد إلغاء هذا الطلب؟</label>
+        <label class="form-label"> سبب إلغاءالطلب؟ </label>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>

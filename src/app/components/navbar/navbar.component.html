@@ -56,6 +56,8 @@
       <img src="../../../assets/imeg/logo forto.png" alt="Forto Logo">
     </div>
 
+    <div class="overlay" *ngIf="isMenuOpen" (click)="toggleMenu()"></div>
+
     <ul class="nav-links" [class.active]="isMenuOpen" *ngIf="{ role: userRole$ | async } as data">
 
       <li class="welcome-msg" style="color: #4a4a4a; padding: 0 15px; font-weight: bold;">
@@ -63,19 +65,29 @@
       </li>
 
       <ng-container *ngIf="data.role === 'admin'">
-        <li><a routerLink="/admin/requests" routerLinkActive="active-link">طلباتي ( {{ carRequests.length }} )</a></li>
-        <li><a routerLink="/admin/create-order" routerLinkActive="active-link">اطلب هنا </a></li>
+        <li><a routerLink="/admin/requests" routerLinkActive="active-link" (click)="isMenuOpen = false">طلباتي ( {{ carRequests.length }} )</a></li>
+        <li><a routerLink="/admin/create-order" routerLinkActive="active-link"(click)="isMenuOpen = false">اطلب هنا </a></li>
       </ng-container>
 
 
       <ng-container *ngIf="data.role === 'cashier'">
-        <li><a routerLink="/cashier/" routerLinkActive="active-link"> الرئيسية </a></li>
-        <li><a routerLink="/cashier/requests" routerLinkActive="active-link"> الرسائل </a></li>
+        <li>
+          <a routerLink="/cashier/reservations"
+              routerLinkActive="active-link"
+              [routerLinkActiveOptions]="{exact: true}"
+              (click)="isMenuOpen = false"> الرئيسية </a>
+        </li>
+
+        <li>
+          <a routerLink="/cashier/messages"
+              routerLinkActive="active-link"
+              (click)="isMenuOpen = false"> الرسائل </a>
+        </li>
       </ng-container>
 
 
       <ng-container *ngIf="data.role === 'worker'">
-        <li><a routerLink="/worker-page" routerLinkActive="active-link">مهامي</a></li>
+        <li><a routerLink="/worker-page" routerLinkActive="active-link"(click)="isMenuOpen = false" >مهامي</a></li>
 
       </ng-container>
 
@@ -84,7 +96,7 @@
         </a>
       </li>
       <li *ngIf="!data.role">
-        <a routerLink="/login">تسجيل الدخول</a>
+        <a routerLink="/login"(click)="isMenuOpen = false">تسجيل الدخول</a>
       </li>
     </ul>
   </div>

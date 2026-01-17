@@ -237,10 +237,14 @@
 
 
 
-.contt {
-  background-color: #f8f9fa;
+
+
+.container-fluid{
   min-height: 100vh;
   padding-bottom: 50px;
+  max-width: 1200px;
+  margin: 0 auto;
+  direction: rtl;
 }
 
 

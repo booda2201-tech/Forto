@@ -1,10 +1,11 @@
 
 
-.contt {
-  background-color: #f8f9fa;
-  min-height: 100vh;
-  direction: rtl;
+
+.container-fluid {
+  max-width: 1200px;
+  margin: 0 auto;
 }
+
 
 .custom-card-form {
   background-color: #ffffff;
@@ -103,7 +104,7 @@
   background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
   color: white;
   border: none;
-  padding: 18px 100px;
+  padding: 15px 80px;
   font-size: 1.2rem;
   border-radius: 15px;
   transition: all 0.3s ease;

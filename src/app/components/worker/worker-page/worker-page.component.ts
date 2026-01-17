@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { NotificationService } from 'src/app/services/notification.service';
 
 @Component({
   selector: 'app-worker-page',
@@ -10,6 +11,8 @@ export class WorkerPageComponent {
   isMenuOpen = false;
   userRole: number = 0;
 
+
+  constructor(private notificationService: NotificationService) {}
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
@@ -114,28 +117,48 @@ export class WorkerPageComponent {
   }
 
 startExecution(car: any) {
-  car.status = 'in-progress';
-  car.statusText = 'نشط';
-  console.log(`بدأ العمل على حجز رقم: ${car.id}`);
-}
+    car.status = 'in-progress';
+    car.statusText = 'نشط';
+
+    // إرسال إشعار للكاشير
+    this.notificationService.addMessage({
+      id: Date.now(),
+      workerName: 'أحمد (عامل الغسيل)', // هنا ممكن تحط اسم العامل المسجل دخول
+      type: 'start',
+      content: `بدأ العمل الآن على سيارة ${car.carModel} (لوحة: ${car.plateNumber})`,
+      time: new Date()
+    });
+  }
 
 
 finishCar(car: any) {
-  this.carRequests = this.carRequests.filter(item => item.id !== car.id);
-  console.log(`تم إنهاء وحذف حجز رقم: ${car.id}`);
+    // إرسال إشعار انتهاء
+    this.notificationService.addMessage({
+      id: Date.now(),
+      workerName: 'أحمد (عامل الغسيل)',
+      type: 'end',
+      content: `تم الانتهاء من السيارة ${car.carModel} وهي جاهزة للاستلام`,
+      time: new Date()
+    });
 
-  this.selectedCar = null;
-}
+    this.carRequests = this.carRequests.filter(item => item.id !== car.id);
+    this.selectedCar = null;
+  }
 
 
 saveChanges() {
-  if (this.selectedCar) {
-    console.log('بيانات الإضافات:', {
-        soap: this.selectedCar.soapCount,
-        perfume: this.selectedCar.perfumeCount,});
+    if (this.selectedCar) {
+      // إرسال طلب تعديل للكاشير
+      this.notificationService.addMessage({
+        id: Date.now(),
+        workerName: 'أحمد (عامل الغسيل)',
+        type: 'edit_request',
+        content: `طلب تعديل: استخدم ${this.selectedCar.soapCount || 0} صابون و ${this.selectedCar.perfumeCount || 0} معطر للحجز #${this.selectedCar.id}`,
+        time: new Date()
+      });
+      console.log('تم إرسال طلب التعديل للكاشير');
+    }
   }
-}
-
 }
 
 

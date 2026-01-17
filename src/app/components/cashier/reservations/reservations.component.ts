@@ -1,9 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  ServiceCatalogService,
-  Customer,
-} from 'src/app/services/service-catalog.service';
+import {ServiceCatalogService,Customer,} from 'src/app/services/service-catalog.service';
 import { map, Observable } from 'rxjs';
 import { BehaviorSubject } from 'rxjs';
 import { FilterStatusPipe } from 'src/app/pipes/filter-status.pipe';
@@ -17,55 +14,7 @@ import Swal from 'sweetalert2';
   styleUrls: ['./reservations.component.scss'],
 })
 
-// export class ReservationsComponent implements OnInit {
-//   // تعريف التبويب الافتراضي
-//   currentTab: 'waiting' | 'active' | 'completed' | 'canceled' = 'waiting';
 
-//   constructor(private serviceCatalog: ServiceCatalogService) {}
-
-//   ngOnInit(): void {}
-
-//   // دالة الفلترة: تعتمد على التبويب الحالي
-//   get filteredCustomers$(): Observable<Customer[]> {
-//     return this.serviceCatalog.getCustomers().pipe(
-//       map(customers => customers.filter(c => c.status === this.currentTab))
-//     );
-//   }
-
-//   setTab(tab: 'waiting' | 'active' | 'completed' | 'canceled') {
-//     this.currentTab = tab;
-//   }
-
-//   onActivate(id: number) {
-//     this.serviceCatalog.updateCustomerStatus(id, 'active');
-//   }
-
-//   onComplete(id: number) {
-//     this.serviceCatalog.updateCustomerStatus(id, 'completed');
-//   }
-
-//   onCancel(id: number) {
-//     if(confirm('هل أنت متأكد من إلغاء هذا الحجز؟')) {
-//       this.serviceCatalog.updateCustomerStatus(id, 'canceled');
-//     }
-//   }
-
-//   getRoleDisplayNamee(role: string | null): string {
-//     const roles: any = { 'admin': 'المدير', 'cashier': 'الكاشير', 'worker': 'العامل' };
-//     return role ? (roles[role] || 'العميل') : 'غير محدد';
-//   }
-
-// getCountByStatus(status: string): number {
-//   let count = 0;
-
-//   this.serviceCatalog.getCustomers().subscribe(customers => {
-//     count = customers.filter(c => c.status === status).length;
-//   }).unsubscribe();
-
-//   return count;
-// }
-
-// }
 export class ReservationsComponent implements OnInit {
   customers$: Observable<Customer[]>;
   currentTab: 'waiting' | 'active' | 'completed' | 'canceled' = 'waiting';
@@ -74,7 +23,10 @@ export class ReservationsComponent implements OnInit {
   customer: any;
   selectedCustomerId: any;
   cancelReason: string = '';
+  workersWithStatus: any[] = [];
+  selectedReservationId: any;
 
+  private modalInstance: any | null = null;
   constructor(private serviceCatalog: ServiceCatalogService) {
     this.customers$ = this.serviceCatalog.getCustomers();
   }
@@ -99,56 +51,76 @@ export class ReservationsComponent implements OnInit {
     this.currentTab = tab;
   }
 
-  onActivate(id: number) {
-    // 1. جلب قائمة العمال من الـ Service
-    this.serviceCatalog.getWorkers().subscribe((workers) => {
-      // 2. تحويل قائمة العمال لشكل يفهمه SweetAlert (Map)
-      const workersOptions: any = {};
-      workers.forEach((w) => {
-        workersOptions[w.name] = w.name; // نستخدم الاسم كـ Key و Value
-      });
 
-      // 3. إظهار نافذة الاختيار
-      Swal.fire({
-        title: 'اختيار عامل التنفيذ',
-        input: 'select',
-        inputOptions: workersOptions,
-        inputPlaceholder: 'اختر العامل المسئول...',
-        showCancelButton: true,
-        confirmButtonText: 'تفعيل وتعيين العامل',
-        cancelButtonText: 'إلغاء',
-        confirmButtonColor: '#28a745',
-        inputValidator: (value) => {
-          if (!value) {
-            return 'يجب اختيار عامل لتفعيل الحجز!';
-          }
-          return null;
-        },
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // 4. إرسال اسم العامل المختار مع الـ ID لتحديث البيانات
-          const selectedWorkerName = result.value;
-          this.serviceCatalog.updateCustomerStatus(
-            id,
-            'active',
-            selectedWorkerName
-          );
+onActivate(reservationId: number) {
+  this.selectedReservationId = reservationId;
 
-          Swal.fire({
-            icon: 'success',
-            title: 'تم التفعيل',
-            text: `تم تعيين العامل: ${selectedWorkerName}`,
-            timer: 1500,
-            showConfirmButton: false,
-          });
-        }
+
+  import('rxjs').then(({ forkJoin, take }) => {
+    forkJoin({
+      allCustomers: this.serviceCatalog.getCustomers().pipe(take(1)),
+      workers: this.serviceCatalog.getWorkers().pipe(take(1))
+    }).subscribe(({ allCustomers, workers }) => {
+
+      const busyWorkers = allCustomers
+        .filter(c => c.status === 'active' && c.worker)
+        .map(c => c.worker);
+      this.workersWithStatus = workers.map(w => ({
+        ...w,
+        isBusy: busyWorkers.includes(w.name)
+      }));
+
+      const modalElement = document.getElementById('workerModal');
+      if (this.modalInstance) {
+        this.modalInstance.hide();
+      }
+
+      this.modalInstance = new (window as any).bootstrap.Modal(modalElement, {
+        backdrop: 'static',
+        keyboard: false
       });
+      this.modalInstance.show();
     });
+  });
+}
+
+selectWorkerAndActivate(worker: any) {
+  if (worker.isBusy) return;
+
+  this.serviceCatalog.updateCustomerStatus(this.selectedReservationId, 'active', worker.name);
+
+  if (this.modalInstance) {
+    this.modalInstance.hide();
   }
 
-  onEdit(customer: Customer) {
+
+  setTimeout(() => {
+
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    backdrops.forEach(el => el.remove());
+
+
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true
+    });
+
+    Toast.fire({
+      icon: 'success',
+      title: 'تم تفعيل الحجز بنجاح',
+      text: `العامل المسؤول: ${worker.name}`
+    });
+  }, 100);
+}
+onEdit(customer: Customer) {
     this.serviceCatalog.getServices().subscribe((allServices) => {
-      // تحويل الخدمات لنظام اختيارات (checkboxes) داخل النافذة
       const servicesHtml = allServices
         .map(
           (s) => `
@@ -187,7 +159,6 @@ export class ReservationsComponent implements OnInit {
         cancelButtonText: 'تراجع',
         confirmButtonColor: '#e67e22',
         preConfirm: () => {
-          // جمع الخدمات المختارة الجديدة
           const selectedServiceIds = Array.from(
             document.querySelectorAll('#servicesList input:checked')
           ).map((el: any) => +el.value);
@@ -207,9 +178,7 @@ export class ReservationsComponent implements OnInit {
         },
       }).then((result) => {
         if (result.isConfirmed) {
-          // إرسال البيانات للخدمة للتحديث
           this.serviceCatalog.updateCustomerDetails(customer.id, result.value);
-
           Swal.fire({
             icon: 'success',
             title: 'تم التحديث',
@@ -222,11 +191,12 @@ export class ReservationsComponent implements OnInit {
     });
   }
 
-  onComplete(id: number) {
+
+onComplete(id: number) {
     this.serviceCatalog.updateCustomerStatus(id, 'completed');
   }
 
-  onCancel(customerId: any) {
+onCancel(customerId: any) {
     Swal.fire({
       title: 'سبب إلغاء الطلب',
       input: 'textarea',
@@ -243,18 +213,18 @@ export class ReservationsComponent implements OnInit {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        // هنا يتم إرسال الـ ID والسبب للـ Service
+
         console.log('ID:', customerId, 'Reason:', result.value);
         this.cancelOrder(customerId, result.value);
       }
     });
   }
 
-  cancelOrder(id: string, reason: string) {
+cancelOrder(id: string, reason: string) {
     console.log('جاري إلغاء الطلب رقم:', id, 'بسبب:', reason);
   }
 
-  confirmCancel() {
+confirmCancel() {
     if (this.cancelReason) {
       console.log(
         'Canceling ID:',
