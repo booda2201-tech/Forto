@@ -24,11 +24,13 @@ export class NotificationService {
     return saved ? JSON.parse(saved) : [];
   }
 
-  addMessage(message: AppMessage) {
-    const current = [message, ...this.messagesSource.getValue()];
-    this.messagesSource.next(current);
-    localStorage.setItem(this.storageKey, JSON.stringify(current));
-  }
+addMessage(message: AppMessage) {
+  const currentMessages = this.messagesSource.getValue();
+
+  const updatedMessages = [message, ...currentMessages];
+  this.messagesSource.next(updatedMessages);
+  localStorage.setItem(this.storageKey, JSON.stringify(updatedMessages));
+}
 
   removeMessage(id: number) {
     const filtered = this.messagesSource.getValue().filter(m => m.id !== id);

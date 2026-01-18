@@ -1,4 +1,4 @@
-<div class="cont1">
+<!-- <div class="cont1">
   <section class="hero">
     <div class="hero-overlay">
       <div class="hero-content">
@@ -10,4 +10,18 @@
       </div>
     </div>
   </section>
+</div> -->
+
+
+
+<div class="tabs-wrapper pt-5" dir="rtl" *ngIf="router.url !== '/admin/requests'">
+    <div class="tabs-container">
+        <a routerLink="/admin/services" routerLinkActive="active" class="tab-item"> الخدمات </a>
+        <a routerLink="/admin/products" routerLinkActive="active" class="tab-item"> المنتجات </a>
+        <a routerLink="/admin/workers" routerLinkActive="active" class="tab-item"> العمال </a>
+    </div>
+</div>
+
+<div class="content-container">
+    <router-outlet></router-outlet>
 </div>

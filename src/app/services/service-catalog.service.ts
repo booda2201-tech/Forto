@@ -27,8 +27,8 @@ export interface Customer {
   totalAmount?: number;
   serviceItem?: ServiceItem[];
   createdAt:Date;
-      appointmentDate:string;
-      appointmentTime:string;
+  appointmentDate:string;
+  appointmentTime:string;
   price?: number;
   status?: 'waiting' | 'active' | 'completed' | 'canceled';
   statusText?: string;
@@ -39,7 +39,19 @@ export interface Customer {
 export interface Worker {
   id: number;
   name: string;
+  phone: string;
+  age: number;
+  monthlySalary: number;
 }
+
+export interface ProductsItem {
+  id: number;
+  name: string;
+  price: number;
+  stock: number;
+  selected: boolean;
+}
+
 
 
 
@@ -72,6 +84,16 @@ export class ServiceCatalogService {
     { id: 21, name: 'إزالة الروائح الكريهة', price: 250, category: ServiceCategory.Special, selected: false },
     { id: 22, name: 'تغيير مسحات الزجاج', price: 50, category: ServiceCategory.Special, selected: false },
   ];
+
+
+  private ProductsList: ProductsItem[] = [
+    { id: 1, name: 'قهوه ', price: 50, stock: 20,selected: false },
+    { id: 2, name: 'شاي ', price: 20, stock: 15,selected: false },
+    { id: 3, name: 'برتقال ', price: 50, stock: 18 ,selected: false },
+    { id: 4, name: 'كافي ', price: 50, stock: 5 ,selected: false },
+
+  ];
+
 
   private customers: Customer[] = [
     {
@@ -274,17 +296,18 @@ export class ServiceCatalogService {
     },
   ];
 
+
   private workersList: Worker[] = [
-    { id: 1, name: 'أحمد محمد'},
-    { id: 2, name: 'محمد علي'},
-    { id: 3, name: 'ادهم الشرقاوي'},
-    { id: 4, name: 'محمود كهربا'},
-    { id: 5, name: 'تامر حسني'},
-    { id: 6, name: 'عمرو دياب'},
-    { id: 7, name: 'محمد رمضان'},
+    { id: 1,name: 'أحمد محمد', phone: '+956 54 852 1111', age: 25, monthlySalary: 6000 },
+    { id: 2,name: 'محمد علي', phone: '+856 54 852 0000', age: 28, monthlySalary: 6000 },
+    { id: 3,name: 'ادهم الشرقاوي', phone: '+966 54 852 8888', age: 25, monthlySalary: 7000 },
+    { id: 4,name: 'محمود كهربا', phone: '+926 54 852 3333', age: 30, monthlySalary: 8000 },
+    { id: 5,name: 'تامر حسني', phone: '+996 54 852 4444', age: 25, monthlySalary: 10000 },
+    { id: 6,name: 'عمرو دياب', phone: '+986 54 852 5555', age: 30, monthlySalary: 11000 },
+    { id: 7,name: 'محمد رمضان', phone: '+976 54 852 2222', age: 25, monthlySalary: 8000 },
   ];
 
-private customersSubject = new BehaviorSubject<Customer[]>(this.customers);
+  private customersSubject = new BehaviorSubject<Customer[]>(this.customers);
 
 constructor() {
   this.customers.forEach(customer => {
@@ -322,10 +345,46 @@ constructor() {
     return of(this.workersList);
   }
 
+
+  getProducts(): Observable<ProductsItem[]> {
+    return of(this.ProductsList);
+  }
+
+
+  addProduct(name: string, price: number, stock: number) {
+    const newProduct: ProductsItem = {
+      id: Date.now(),
+      name,
+      price,
+      stock,
+      selected: false
+    };
+    this.ProductsList.push(newProduct);
+  }
+
+
+  deleteProduct(id: number) {
+    this.ProductsList = this.ProductsList.filter(p => p.id !== id);
+  }
+
+
   addWorker(name: string, role: string) {
     const newWorker = { id: Date.now(), name, role };
-    this.workersList.push(newWorker);
   }
+
+  addWorkerDetail(workerData: Worker) {
+  const newWorker = {
+    ...workerData,
+    id: Date.now() 
+  };
+  this.workersList.push(newWorker);
+}
+
+
+  deleteWorker(id: number) {
+    this.workersList = this.workersList.filter(w => w.id !== id);
+  }
+
 
   addCustomer(customerData: any) {
   const newCustomer: Customer = {
@@ -363,10 +422,7 @@ constructor() {
     this.customersSubject.next([...this.customers]);
   }
 
-
-
-
-updateCustomerStatus(id: number, newStatus: 'waiting' | 'active' | 'completed' | 'canceled', workerName?: string) {
+  updateCustomerStatus(id: number, newStatus: 'waiting' | 'active' | 'completed' | 'canceled', workerName?: string) {
   const index = this.customers.findIndex(c => c.id === id);
   if (index !== -1) {
     this.customers[index].status = newStatus;
@@ -378,10 +434,10 @@ updateCustomerStatus(id: number, newStatus: 'waiting' | 'active' | 'completed' |
 
     this.customersSubject.next([...this.customers]);
   }
-}
+  }
 
 
-updateCustomerDetails(id: number, data: { carModel: string, plateNumber: string, services: ServiceItem[] }) {
+  updateCustomerDetails(id: number, data: { carModel: string, plateNumber: string, services: ServiceItem[] }) {
   const index = this.customers.findIndex(c => c.id === id);
   if (index !== -1) {
     this.customers[index].cars[0].carModel = data.carModel;
@@ -390,7 +446,7 @@ updateCustomerDetails(id: number, data: { carModel: string, plateNumber: string,
     this.customers[index].totalAmount = data.services.reduce((sum, s) => sum + s.price, 0);
     this.customersSubject.next([...this.customers]);
   }
-}
+  }
 
 
 }

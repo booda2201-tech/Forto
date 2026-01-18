@@ -65,14 +65,18 @@
       </li>
 
       <ng-container *ngIf="data.role === 'admin'">
-        <li><a routerLink="/admin/requests" routerLinkActive="active-link" (click)="isMenuOpen = false">طلباتي ( {{ carRequests.length }} )</a></li>
-        <li><a routerLink="/admin/create-order" routerLinkActive="active-link"(click)="isMenuOpen = false">اطلب هنا </a></li>
+        <li>
+          <a routerLink="/admin/services"
+              routerLinkActive="active-link"
+              [routerLinkActiveOptions]="{exact: true}"
+              (click)="isMenuOpen = false"> الرئيسية </a>
+        </li>
       </ng-container>
 
 
       <ng-container *ngIf="data.role === 'cashier'">
         <li>
-          <a routerLink="/cashier/reservations"
+          <a routerLink="/cashier/new-reservation"
               routerLinkActive="active-link"
               [routerLinkActiveOptions]="{exact: true}"
               (click)="isMenuOpen = false"> الرئيسية </a>

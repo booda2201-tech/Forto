@@ -15,7 +15,7 @@ import { AppComponent } from './app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { HomeComponent } from './components/admin/home/home.component';
-import { CreateOrderComponent } from './components/admin/create-order/create-order.component';
+
 import { LoginComponent } from './components/login/login.component';
 import { RequestsComponent } from './components/admin/requests/requests.component';
 import { OrderInformationComponent } from './components/cashier/order-information/order-information.component';
@@ -25,11 +25,13 @@ import { AddClientComponent } from './components/cashier/add-client/add-client.c
 import { ReservationsComponent } from './components/cashier/reservations/reservations.component';
 import { FilterStatusPipe } from './pipes/filter-status.pipe';
 import { CustomersComponent } from './components/cashier/customers/customers.component';
-import { ServicesComponent } from './components/cashier/services/services.component';
+import { ServicesComponent } from './components/admin/services/services.component';
 import { InvoicesComponent } from './components/cashier/invoices/invoices.component';
 import { NewReservationComponent } from './components/cashier/new-reservation/new-reservation.component';
 import { MessagesComponent } from './components/cashier/messages/messages.component';
 import { NotificationService } from './services/notification.service';
+import { ProductsComponent } from './components/admin/products/products.component';
+import { WorkersComponent } from './components/admin/workers/workers.component';
 
 
 
@@ -38,7 +40,6 @@ import { NotificationService } from './services/notification.service';
     AppComponent,
     NavbarComponent,
     HomeComponent,
-    CreateOrderComponent,
     LoginComponent,
     RequestsComponent,
     OrderInformationComponent,
@@ -48,6 +49,8 @@ import { NotificationService } from './services/notification.service';
     ServicesComponent,
     NewReservationComponent,
     MessagesComponent,
+    ProductsComponent,
+    WorkersComponent,
 
 
 

@@ -1,45 +1,166 @@
-.notifications-wrapper {
-  background: #f8f9fa;
-  min-height: 80vh;
-  border-radius: 20px;
 
-  .notif-card {
-    background: #aaa9a9;
-    border: none;
-    border-radius: 15px;
-    transition: all 0.3s ease;
-    border-right: 5px solid transparent; // للحواف الملونة
+// .messages-container{
+//   background: #f8f9fa;
+//   max-width: 1200px;
+//   margin: 0 auto;
+//   padding: 20px;
+//   min-height: 80vh;
+//   border-radius: 20px;
+// }
 
-    &:hover {
-      transform: scale(1.01);
-    }
 
-    &.start-border { border-right-color: #0d6efd; }
-    &.edit-border { border-right-color: #ffc107; }
-    &.end-border { border-right-color: #198754; }
-  }
+// .message-card{
+//   background: #d8d8d8;
+//   height: 100px;
+//   border: none;
+//   border-radius: 10px;
+//   transition: all 0.3s ease;
+//   border-right: 5px solid transparent;
+// }
 
-  .icon-box {
-    width: 55px;
-    height: 55px;
-    border-radius: 12px;
+// .notifications-wrapper {
+//   background: #f8f9fa;
+//   min-height: 80vh;
+//   border-radius: 20px;
+
+//   .notif-card {
+//     background: #aaa9a9;
+//     border: none;
+//     border-radius: 15px;
+//     transition: all 0.3s ease;
+//     border-right: 5px solid transparent;
+
+//     &:hover {
+//       transform: scale(1.01);
+//     }
+
+//     &.start-border { border-right-color: #0d6efd; }
+//     &.edit-border { border-right-color: #ffc107; }
+//     &.end-border { border-right-color: #198754; }
+//   }
+
+//   .icon-box {
+//     width: 55px;
+//     height: 55px;
+//     border-radius: 12px;
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//   }
+
+//   .time-stamp {
+//     font-size: 0.75rem;
+//     color: #adb5bd;
+//   }
+
+//   .worker-name { color: #2c3e50; }
+//   .notif-text { font-size: 0.9rem; }
+
+//   .btn-sm { font-size: 0.8rem; }
+// }
+
+
+// .bg-primary-subtle { background-color: #e7f1ff; }
+// .bg-warning-subtle { background-color: #fff3cd; }
+// .bg-success-subtle { background-color: #d1e7dd; }
+
+
+
+
+
+
+
+
+.messages-container {
+    background: #ffffff;
+    max-width: 1200px;
+    margin: auto;
+    padding: 30px;
+    min-height: 100vh;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+
+.message-card {
+    background: #eeeeee;
+    border: 1px solid #f0f0f0;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    padding: 10px;
+}
+
+.message-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.08);
+    border-color: #e0e0e0;
+}
+
+
+.icon-wrapper {
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-
-  .time-stamp {
-    font-size: 0.75rem;
-    color: #adb5bd;
-  }
-
-  .worker-name { color: #2c3e50; }
-  .notif-text { font-size: 0.9rem; }
-
-  .btn-sm { font-size: 0.8rem; }
+    font-size: 1.2rem;
+    border-radius: 12px !important;
 }
 
-// ألوان الخلفيات الخفيفة للايقونات
-.bg-primary-subtle { background-color: #e7f1ff; }
-.bg-warning-subtle { background-color: #fff3cd; }
-.bg-success-subtle { background-color: #d1e7dd; }
+
+.bg-edit { background-color: #fff8e1; color: #ffa000; }
+.bg-start { background-color: #e3f2fd; color: #1976d2; }
+
+
+.worker-name {
+    color: #2d3436;
+    font-size: 1rem;
+    margin-bottom: 2px;
+}
+
+.message-content {
+    color: #636e72;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.small-time {
+    color: #b2bec3;
+    font-weight: 500;
+}
+
+
+.btn-approve {
+    background: #00b894;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 20px;
+    font-weight: 500;
+
+    &:hover {
+        background: #00a53f;
+        color: white;
+    }
+}
+
+.btn-reject {
+    background: #fff5f5;
+    color: #f07373;
+    border: 1px solid #f8f8f8;
+    border-radius: 8px;
+    padding: 6px 20px;
+
+    &:hover {
+        background: #f83030;
+        color: white;
+    }
+}
+
+.btn-close {
+    font-size: 0.8rem;
+    opacity: 0.3;
+}

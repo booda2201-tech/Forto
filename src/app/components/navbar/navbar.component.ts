@@ -14,8 +14,9 @@ export class NavbarComponent implements OnInit {
   userRole$: Observable<string | null>;
   data: any;
 
-  constructor(private authService: AuthService, private router: Router) {
 
+
+  constructor(private authService: AuthService, private router: Router) {
     this.userRole$ = this.authService.userRole$;
   }
 
@@ -36,7 +37,7 @@ export class NavbarComponent implements OnInit {
   getLogoRoute(): string {
 
     const role = localStorage.getItem('userRole');
-    if (role === 'admin') return '/admin/dashboard';
+    if (role === 'admin') return '/admin/services';
     if (role === 'cashier') return '/cashier/reservations';
     if (role === 'worker') return '/worker-page';
     return '/login';
@@ -45,7 +46,6 @@ export class NavbarComponent implements OnInit {
 
 
   logout() {
-
     this.authService.logout();
   }
 
