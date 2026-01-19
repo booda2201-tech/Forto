@@ -380,6 +380,14 @@
   border: 1px solid #dee2e6;
   border-radius: 50px;
   font-size: 0.9rem;
+
+
+  &:hover {
+    background: #fffaf0;
+    border-color: #ffa807;
+    transform: translateY(-3px);
+  }
+
   &.active-service {
     background:  #ffa807;
     color: white;
@@ -390,7 +398,7 @@
 .worker-card {
   &:hover:not(.disabled-worker) {
     background-color: #f0f7ff;
-    border-color: #0d6efd;
+    border-color: #fd9d0d;
     transform: translateX(-5px);
   }
   &.disabled-worker {
@@ -426,7 +434,7 @@
   box-sizing: border-box;
 
   &:hover:not(.disabled-worker) {
-    background-color: #f0f7ff;
+    background-color: #fff9f0;
     border-color: #0d6efd;
 
     transform: scale(0.99);

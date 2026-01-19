@@ -264,12 +264,12 @@
         </div>
 
         <div class="alert alert-success py-2 small" *ngIf="selectedCar">
-          سيارة: <strong>{{ selectedCar.carModel }}</strong> | لوحة: <strong>{{ selectedCar.plateNumber }}</strong>
+          سيارة:  <strong>{{ selectedCar.carModel }}</strong> | لوحة: <strong>{{ selectedCar.plateNumber }}</strong>
         </div>
 
         <div class="mb-4">
             <label class="form-label fw-bold text-dark mb-2">
-                <i class="bi bi-list-check ms-2 text-success"></i> اختر الخدمات المطلوبة:
+                <i class="bi bi-wrench text-success ms-1"></i> اختر الخدمات المطلوبة:
             </label>
             <div class="services-list-container border rounded p-3" style="max-height: 250px; overflow-y: auto; background: #fafafa;">
                 <div *ngFor="let service of allServices" class="form-check mb-2 d-flex align-items-center justify-content-between p-2 rounded hover-bg">
