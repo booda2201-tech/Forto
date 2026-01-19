@@ -2,7 +2,7 @@
 
 
 .invoices-page{
-  background-color: #f7f7f7;
+  background-color: #f8f9fa;
   min-height: 100vh;
   max-width: 1200px;
   margin: 0 auto
@@ -27,7 +27,9 @@
   &:hover { background-color: #e68a00 !important; }
 }
 
-
+.card{
+  border-radius:20px;
+}
 
 
 

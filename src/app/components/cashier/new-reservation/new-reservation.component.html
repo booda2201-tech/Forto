@@ -89,31 +89,31 @@
 <section class="contt">
   <div class="new-reservation-container">
     <div class="header">
-      <h2 class="text-center mb-4 fw-bold text-dark"><i class="bi bi-calendar-plus"></i>  حجز جديد  </h2>
+      <h2 class="text-center mb-4 fw-bold text-dark"><i class="bi bi-calendar-plus text-orange"></i>  حجز جديد  </h2>
       <p>أدخل بيانات العميل وتفاصيل الخدمة المطلوبة</p>
     </div>
 
     <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="reservation-form">
       <div class="form-section">
-        <h3><i class="bi bi-people-fill mx-1"></i> بيانات العميل والسيارة</h3>
+        <h3><i class="bi bi-people-fill mx-1"></i> بيانات العميل والسيارة </h3>
         <div class="row">
           <div class="form-group">
-            <label>اسم العميل</label>
+            <label><i class="bi bi-person mx-1"></i>  اسم العميل </label>
             <input type="text" formControlName="name" placeholder="مثال: عصام الشوالي">
           </div>
           <div class="form-group">
-            <label>رقم الهاتف</label>
+            <label><i class="bi bi-telephone mx-1"></i>  رقم الهاتف  </label>
             <input type="tel" formControlName="phone" placeholder="+966 5x xxx xxxx" class="text-end">
           </div>
         </div>
 
         <div class="row">
           <div class="form-group">
-            <label>نوع السيارة</label>
+            <label><i class="bi bi-car-front mx-1"></i> نوع السيارة   </label>
             <input type="text" formControlName="carType" placeholder="مثال: تويوتا كامري 2023">
           </div>
           <div class="form-group">
-            <label>رقم اللوحة</label>
+            <label><i class="bi bi-map mx-1"></i> رقم اللوحة </label>
             <input type="text" formControlName="carNumber" placeholder="ب ص ج 1234">
           </div>
         </div>
@@ -123,11 +123,11 @@
         <h3><i class="bi bi-info-circle-fill mx-1"></i> تفاصيل الخدمة</h3>
         <div class="row">
           <div class="form-group col-md-8">
-            <label>تاريخ الحجز</label>
+            <label><i class="bi bi-calendar-date mx-1"></i>  تاريخ الحجز </label>
             <input type="date" formControlName="appointmentDate">
           </div>
           <div class="form-group col-md-4">
-            <label>الوقت</label>
+            <label><i class="bi bi-clock mx-1"></i>  الوقت </label>
             <input type="time" formControlName="appointmentTime">
           </div>
         </div>

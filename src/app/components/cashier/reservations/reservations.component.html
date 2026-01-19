@@ -241,7 +241,7 @@
           </div>
         </div>
           <div class="detail-item" *ngIf="customer.worker && customer.status !== 'waiting'">
-            <span><i class="bi bi-person-badge ms-1"></i> العامل المسؤول:</span>
+            <span><i class="bi bi-person-badge ms-2"></i> العامل المسؤول:</span>
             <strong class="text-primary">{{ customer.worker }}</strong>
           </div>
       </div>
@@ -323,53 +323,57 @@
 </div>
 
 
-<div class="modal fade" id="workerModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+
+<div class="modal fade" id="workerModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content rounded-20 border-0 shadow-lg">
-      <div class="modal-header border-0 pb-0 justify-content-center pt-4">
-        <h5 class="fw-bold m-0 text-dark">تعيين عامل لتنفيذ
-          <i class="bi bi-person-check-fill mx-1"></i>
-        </h5>
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+      <div class="modal-header border-0 pb-0 d-flex justify-content-center pt-4">
+        <h5 class="modal-title fw-bold">تفعيل الحجز وتعيين عامل</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+
       <div class="modal-body p-4">
-        <p class="text-center text-muted small mb-4">اختر العامل المتاح لبدء العمل فوراً</p>
-
-        <div class="worker-selection-list">
-          <div *ngFor="let worker of workersWithStatus"
-                (click)="selectWorkerAndActivate(worker)"
-                class="worker-item d-flex align-items-center justify-content-between p-3 mb-3 rounded-15 border transition-all pointer"
-                [ngClass]="{'busy-item': worker.isBusy, 'available-item': !worker.isBusy}">
-
-            <div class="worker-info text-end">
-              <h6 class="fw-bold mb-1" [class.text-muted]="worker.isBusy">{{ worker.name }}</h6>
-              <small class="text-secondary d-block">{{ worker.isBusy ? 'يعمل حالياً' : 'جاهز لاستلام طلب' }}</small>
+        <div class="mb-4">
+          <label class="d-block text-secondary mb-2 text-end small">الخدمات المطلوبة (اختر خدمة لتعيين عامل):</label>
+          <div class="d-flex flex-wrap gap-2 justify-content-end">
+            <div *ngFor="let svc of selectedReservationServices"
+                  (click)="selectService(svc.id)"
+                  [class.active-service]="selectedServiceId === svc.id"
+                  class="service-badge pointer transition-all">
+              {{ svc.name }}
             </div>
-
-            <div class="status-section d-flex align-items-center gap-3">
-              <div class="d-flex align-items-center gap-2">
-                <span class="status-text small fw-bold" [ngClass]="worker.isBusy ? 'text-danger' : 'text-success'">
-                  {{ worker.isBusy ? 'مشغول' : 'متاح' }}
-                </span>
-                <div class="status-indicator-dot" [ngClass]="worker.isBusy ? 'bg-danger' : 'bg-success'"></div>
-              </div>
-
-              <div class="icon-wrapper ms-2">
-                <i class="bi fs-5" [ngClass]="worker.isBusy ? 'bi-lock-fill text-muted' : 'bi-chevron-left text-primary'"></i>
-              </div>
-            </div>
-
           </div>
         </div>
-      </div>
-      <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-light w-100 rounded-12 fw-bold py-2" data-bs-dismiss="modal">إلغاء</button>
+
+        <hr class="opacity-25">
+
+        <div *ngIf="selectedServiceId">
+          <h6 class="fw-bold mb-3 text-end">العمال المختصين المتاحين:</h6>
+            <div class="worker-selection-container">
+              <div *ngFor="let worker of getFilteredWorkers()"
+                    (click)="selectWorkerAndActivate(worker)"
+                    class="worker-card p-3 mb-2 rounded-15 border transition-all pointer"
+                    [class.disabled-worker]="worker.isBusy">
+                <div class="worker-info text-end">
+                  <div class="fw-bold">{{ worker.name }}</div>
+                  <div class="small text-secondary">{{ worker.phone }}</div>
+                </div>
+                <div class="status-indicator d-flex align-items-center">
+                  <small class="text-muted mx-2">{{ worker.isBusy ? 'مشغول' : 'متاح' }}</small>
+                  <span [class]="worker.isBusy ? 'bg-danger' : 'bg-success'" class="dot"></span>
+                </div>
+              </div>
+            </div>
+        </div>
+
+        <div *ngIf="!selectedServiceId" class="text-center py-4">
+            <i class="bi bi-hand-index fs-1 text-primary opacity-25"></i>
+            <p class="text-muted mt-2">يرجى الضغط على خدمة أولاً لعرض العمال المختصين بها</p>
+        </div>
       </div>
     </div>
   </div>
 </div>
-
-
-
 
 
 <div class="modal fade" id="cancelModal" tabindex="-1">
@@ -505,7 +509,8 @@
 
 
 
-<div
+
+<!-- <div
   class="modal fade forto-modal"
   id="invoiceModal"
   tabindex="-1"
@@ -527,17 +532,17 @@
             src="../../../../assets/imeg/logo forto.png"
             class="brand-logo mb-2"
             onerror="this.src='https:'//via.placeholder.com/80?text=FORTO'"
-          />
+          /> -->
           <!-- <h1 class="text-black fw-bold m-0">FORTO</h1> -->
-          <div class="text-black mt-2 fs-5">
+          <!-- <div class="text-black mt-2 fs-5">
             رقم الفاتورة:
             <span class="fw-bold fs-6">#{{ selectedInvoice?.id }}</span>
           </div>
-        </div>
+        </div> -->
 
         <!-- <div class="row g-4 mb-4 text-end"> -->
         <!-- <div class="border-start"> -->
-        <h6 class="fw-bold text-black mb-3 pb-2">بيانات العميل</h6>
+        <!-- <h6 class="fw-bold text-black mb-3 pb-2">بيانات العميل</h6>
 
         <hr />
 
@@ -556,9 +561,9 @@
           <div class="fw-bold fs-6 d-inline-block">
             {{ selectedInvoice?.phone }}
           </div>
-        </div>
+        </div> -->
 
-        <div class="mb-2">
+        <!-- <div class="mb-2">
           <span class="text-black small fw-bold d-inline-block mx-1"
             >السيارة:</span
           >
@@ -576,7 +581,7 @@
           <div class="fw-bold fs-6 d-inline-block">
             {{ selectedInvoice?.appointmentDate }}
           </div>
-        </div>
+        </div> -->
 
         <!-- <hr> -->
         <!-- <div class="border-start"> -->
@@ -622,7 +627,7 @@
           الخدمات المنفذة
         </div> -->
 
-        <div class="table-responsive mt-5">
+        <!-- <div class="table-responsive mt-5">
           <table
             class="table table-hover text-center align-middle invoice-table"
           >
@@ -644,9 +649,9 @@
                 </td>
               </tr>
             </tbody>
-          </table>
+          </table> -->
 
-          <div class="totals-area ms-auto">
+          <!-- <div class="totals-area ms-auto">
             <div class="d-flex justify-content-between py-2 ">
               <span class="text-black fs-5">المجموع :</span>
               <span class="fw-bold">{{ subTotal | number : "1.2-2" }} ج.م</span>
@@ -666,7 +671,7 @@
               >
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- <div class="mt-4 align-items-center"> -->
           <!-- <div class="col-md-6"> -->
@@ -714,7 +719,7 @@
           <!-- </div> -->
         <!-- </div> -->
 
-        <div class="text-center pt-3">
+        <!-- <div class="text-center pt-3">
           <h6 class="text-black fw-bold">شكراً لزيارتكم فورتو!</h6>
           <p class="text-black">نتمنى أن نكون دائماً عند حسن ظنكم</p>
         </div>
@@ -735,6 +740,82 @@
           class="btn btn-warning text-white px-5 rounded-pill shadow-sm fw-bold print-btn"
           (click)="downloadInvoice()"
         >
+          <i class="bi bi-printer me-2"></i> طباعة الفاتورة
+        </button>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+
+
+
+
+<div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;"> <div class="modal-content border-0 shadow-lg">
+
+      <div class="text-end p-2 no-print">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4 forto-invoice-container" id="printableInvoice">
+        <div class="text-center mb-3">
+          <img src="../../../../assets/imeg/logo forto.png" class="brand-logo mb-1" style="max-width: 70px;">
+
+          <div class="small">#{{ selectedInvoice?.id }}</div>
+        </div>
+
+        <hr class="my-2" style="border-top: 1px dashed #000;">
+
+        <div class="client-data mb-3 fw-bold" style="font-size: 12px;">
+          <div><strong>العميل:</strong> {{ selectedInvoice?.customerName }}</div>
+          <div><strong>الهاتف:</strong> {{ selectedInvoice?.phone }}</div>
+          <div><strong>السيارة:</strong> {{ selectedInvoice?.cars?.[0]?.carModel }}</div>
+          <div><strong>التاريخ:</strong> {{ selectedInvoice?.appointmentDate }}</div>
+        </div>
+
+        <table class="table table-sm invoice-table mb-2" style="font-size: 12px;">
+          <thead class="border-bottom">
+            <tr>
+              <th class="text-end">الخدمة</th>
+              <th class="text-center">الكمية</th>
+              <th class="text-center">السعر</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let service of selectedInvoice?.serviceItem">
+              <td class="text-end">{{ service.name }}</td>
+              <td class="text-center">1</td>
+              <td class="text-center fw-bold">{{ service.price }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <hr class="my-2" style="border-top: 1px dashed #000;">
+
+        <div style="font-size: 13px; font-weight: bold;">
+          <div class="d-flex justify-content-between">
+            <span>المجموع:</span>
+            <span>{{ subTotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="d-flex justify-content-between fw-bold">
+            <span>الضريبة (14%):</span>
+            <span>{{ taxAmount | number:'1.2-2' }}</span>
+          </div>
+          <div class="d-flex justify-content-between fw-bold mt-1" style="font-size: 15px;">
+            <span>الإجمالي:</span>
+            <span>{{ finalTotal | number:'1.2-2' }} ج.م</span>
+          </div>
+        </div>
+
+        <div class="text-center mt-4" style="font-size: 11px;">
+          <div>شكراً لزيارتكم فورتو</div>
+          <div class="mt-1">نظام فورتو لإدارة المغاسل</div>
+        </div>
+      </div>
+
+      <div class="modal-footer no-print justify-content-center bg-light">
+        <button type="button" class="btn btn-warning text-white px-5 rounded-pill shadow-sm fw-bold print-btn" (click)="downloadInvoice()">
           <i class="bi bi-printer me-2"></i> طباعة الفاتورة
         </button>
       </div>

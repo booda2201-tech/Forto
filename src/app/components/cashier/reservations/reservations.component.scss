@@ -131,7 +131,6 @@
 }
 
 
-
 .services-container {
     border-right: 2px solid #ffc107;
     padding-right: 10px;
@@ -145,7 +144,6 @@
 .border-bottom.border-light {
     border-color: rgba(0,0,0,0.05) !important;
 }
-
 
 
 
@@ -196,8 +194,6 @@
 }
 
 
-
-
 .booking-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -218,8 +214,6 @@
     margin-top: auto;
   }
 }
-
-
 
 
 
@@ -254,116 +248,6 @@
   }
 
 }
-
-
-
-
-// .forto-invoice-container {
-//   direction: rtl;
-//   font-family: 'Segoe UI', Arial, sans-serif;
-//   $forto-orange: #f99f1b;
-
-//   .brand-orange {
-//     color: $forto-orange !important;
-//   }
-
-//   .brand-orange-bg {
-//     background-color: $forto-orange !important;
-//   }
-
-//   .final-total-box {
-//     background: linear-gradient(135deg, #f99f1b 0%, #e68a00 100%) !important;
-//   }
-
-//   .brand-logo { width: 85px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
-
-//   .invoice-table {
-//     border-collapse: separate;
-//     border-spacing: 0 8px;
-
-//     thead th { border: none; font-size: 0.8rem; letter-spacing: 0.5px; }
-//     tbody tr { background-color: #fcfcfc; transition: 0.3s; }
-//   }
-
-//   .cashier-box {
-//     background-color: #fafafa;
-//     border: 1px dashed #ddd !important;
-//     .extra-small { font-size: 0.7rem; }
-//   }
-
-//   .totals-area {
-//     max-width: 280px;
-//     .final-total-box {
-//       background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
-//     }
-//   }
-// }
-
-// .print-btn {
-//   background-color: #f99f1b !important;
-//   &:hover {
-//     background-color: #e68a00 !important;
-//   }
-// }
-
-// /* تنسيقات الشاشة العادية */
-// .forto-invoice-container {
-//   direction: rtl;
-//   background: white;
-//   max-height: 80vh; /* تحديد ارتفاع للمودال في الشاشة */
-//   overflow-y: auto; /* سكروول للشاشة فقط */
-// }
-
-// /* التنسيق الخاص بالطباعة (الحل النهائي) */
-// @media print {
-//   /* 1. إخفاء كل شيء وإلغاء السكروول */
-//   body, html {
-//     overflow: hidden !important;
-//     height: 100% !important;
-//     margin: 0 !important;
-//     padding: 0 !important;
-//   }
-
-//   body * {
-//     visibility: hidden !important;
-//   }
-
-//   /* 2. إظهار الفاتورة وحدها وعزلها تماماً */
-//   #printableInvoice, #printableInvoice * {
-//     visibility: visible !important;
-//   }
-
-//   #printableInvoice {
-//     position: fixed !important;
-//     top: 0 !important;
-//     left: 0 !important;
-//     width: 100% !important;
-//     height: 100vh !important;
-//     background-color: white !important;
-//     margin: 0 !important;
-//     padding: 2cm !important; /* هوامش طباعة احترافية */
-//     z-index: 999999 !important;
-//     overflow: hidden !important; /* إلغاء السكروول نهائياً في الطباعة */
-//     display: block !important;
-//   }
-
-//   /* 3. ضبط الألوان (البرتقالي الهادئ #f99f1b) */
-//   .brand-orange { color: #f99f1b !important; }
-//   .total-box {
-//     background-color: #f99f1b !important;
-//     -webkit-print-color-adjust: exact; /* إجبار المتصفح على طباعة اللون */
-//   }
-
-//   /* 4. تصغير حجم المحتوى لضمان صفحة واحدة */
-//   .invoice-table { font-size: 14px !important; }
-//   .no-print, .modal-backdrop, .btn-close { display: none !important; }
-
-//   @page {
-//     size: auto;
-//     margin: 0mm;
-//   }
-// }
-
 
 
 .forto-invoice-container {
@@ -486,30 +370,76 @@
 }
 
 
+.modal-header{
+  flex-direction: column;
+}
 
-
-
-
-.worker-item {
-  border: 1px solid #f0f0f0;
-  transition: all 0.3s ease;
-  flex-direction: row; /* يضمن الترتيب الأفقي */
-
-  &:hover:not(.busy-item) {
+.service-badge {
+  padding: 8px 16px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  &.active-service {
+    background:  #ffa807;
+    color: white;
     border-color: #ffa807;
-    background-color: #fffcf5;
-    transform: translateX(5px); /* حركة خفيفة لليمين */
   }
+}
 
-  &.busy-item {
-    background-color: #fcfcfc;
+.worker-card {
+  &:hover:not(.disabled-worker) {
+    background-color: #f0f7ff;
+    border-color: #0d6efd;
+    transform: translateX(-5px);
+  }
+  &.disabled-worker {
+    opacity: 0.6;
     cursor: not-allowed;
-    opacity: 0.7;
+  }
+  .dot {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    // display: inline-block;
+  }
+}
+
+.rounded-15 { border-radius: 15px; }
+.transition-all { transition: all 0.3s ease; }
+
+
+.worker-selection-container {
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 5px;
+}
+
+.worker-card {
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+
+  &:hover:not(.disabled-worker) {
+    background-color: #f0f7ff;
+    border-color: #0d6efd;
+
+    transform: scale(0.99);
   }
 
-  .status-indicator-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
+  &.disabled-worker {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #f9f9f9;
   }
+}
+
+
+.modal-body {
+  overflow-x: hidden;
 }

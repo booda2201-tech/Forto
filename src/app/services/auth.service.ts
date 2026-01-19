@@ -8,9 +8,7 @@ import { BehaviorSubject } from 'rxjs';
 export class AuthService {
 
   private userRoleSubject = new BehaviorSubject<string | null>(localStorage.getItem('userRole'));
-
   userRole$ = this.userRoleSubject.asObservable();
-
   constructor(private router: Router) { }
 
 login(role: string) {
@@ -19,7 +17,7 @@ login(role: string) {
 
 
   if (role === 'admin') {
-    this.router.navigate(['/admin/home']);
+    this.router.navigate(['/admin/services']);
   } else if (role === 'cashier') {
     this.router.navigate(['/cashier/reservations']);
   } else if (role === 'worker') {

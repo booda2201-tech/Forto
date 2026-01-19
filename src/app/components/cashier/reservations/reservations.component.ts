@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {ServiceCatalogService,Customer,} from 'src/app/services/service-catalog.service';
-import { map, Observable } from 'rxjs';
+import {ServiceCatalogService,Customer, Worker, ServiceItem} from 'src/app/services/service-catalog.service';
+import { map, Observable, take } from 'rxjs';
 import { BehaviorSubject } from 'rxjs';
 import { FilterStatusPipe } from 'src/app/pipes/filter-status.pipe';
 import Swal from 'sweetalert2';
@@ -25,6 +25,9 @@ export class ReservationsComponent implements OnInit {
   cancelReason: string = '';
   workersWithStatus: any[] = [];
   selectedReservationId: any;
+  selectedServiceId: number | null = null;
+  selectedReservationServices: ServiceItem[] = [];
+  allServices: ServiceItem[] = [];
 
   private modalInstance: any | null = null;
   constructor(private serviceCatalog: ServiceCatalogService) {
@@ -52,9 +55,12 @@ export class ReservationsComponent implements OnInit {
   }
 
 
+
+
+
 onActivate(reservationId: number) {
   this.selectedReservationId = reservationId;
-
+  this.selectedServiceId = null;
 
   import('rxjs').then(({ forkJoin, take }) => {
     forkJoin({
@@ -62,29 +68,51 @@ onActivate(reservationId: number) {
       workers: this.serviceCatalog.getWorkers().pipe(take(1))
     }).subscribe(({ allCustomers, workers }) => {
 
+      const currentCustomer = allCustomers.find(c => c.id === reservationId);
+      this.selectedReservationServices = currentCustomer?.serviceItem || [];
+
+
       const busyWorkers = allCustomers
         .filter(c => c.status === 'active' && c.worker)
         .map(c => c.worker);
+
       this.workersWithStatus = workers.map(w => ({
         ...w,
         isBusy: busyWorkers.includes(w.name)
       }));
 
-      const modalElement = document.getElementById('workerModal');
-      if (this.modalInstance) {
-        this.modalInstance.hide();
-      }
 
-      this.modalInstance = new (window as any).bootstrap.Modal(modalElement, {
-        backdrop: 'static',
-        keyboard: false
-      });
+      const modalElement = document.getElementById('workerModal');
+      this.modalInstance = new (window as any).bootstrap.Modal(modalElement);
       this.modalInstance.show();
     });
   });
 }
 
-selectWorkerAndActivate(worker: any) {
+getFilteredWorkers() {
+  if (!this.selectedServiceId) return [];
+
+
+  let qualifiedIds: number[] = [];
+  this.serviceCatalog.getServices().pipe(take(1)).subscribe(services => {
+    const service = services.find(s => s.id === this.selectedServiceId);
+    qualifiedIds = service?.qualifiedWorkers || [];
+  });
+
+
+  return this.workersWithStatus.filter(worker => qualifiedIds.includes(worker.id));
+}
+
+selectService(serviceId: number) {
+  this.selectedServiceId = serviceId;
+}
+
+
+
+
+
+
+  selectWorkerAndActivate(worker: any) {
   if (worker.isBusy) return;
 
   this.serviceCatalog.updateCustomerStatus(this.selectedReservationId, 'active', worker.name);
@@ -118,8 +146,8 @@ selectWorkerAndActivate(worker: any) {
       text: `العامل المسؤول: ${worker.name}`
     });
   }, 100);
-}
-onEdit(customer: Customer) {
+    }
+  onEdit(customer: Customer) {
     this.serviceCatalog.getServices().subscribe((allServices) => {
       const servicesHtml = allServices
         .map(
@@ -189,14 +217,13 @@ onEdit(customer: Customer) {
         }
       });
     });
-  }
+    }
 
+  onComplete(id: number) {
+      this.serviceCatalog.updateCustomerStatus(id, 'completed');
+    }
 
-onComplete(id: number) {
-    this.serviceCatalog.updateCustomerStatus(id, 'completed');
-  }
-
-onCancel(customerId: any) {
+  onCancel(customerId: any) {
     Swal.fire({
       title: 'سبب إلغاء الطلب',
       input: 'textarea',
@@ -218,13 +245,13 @@ onCancel(customerId: any) {
         this.cancelOrder(customerId, result.value);
       }
     });
-  }
+    }
 
-cancelOrder(id: string, reason: string) {
-    console.log('جاري إلغاء الطلب رقم:', id, 'بسبب:', reason);
-  }
+  cancelOrder(id: string, reason: string) {
+      console.log('جاري إلغاء الطلب رقم:', id, 'بسبب:', reason);
+    }
 
-confirmCancel() {
+  confirmCancel() {
     if (this.cancelReason) {
       console.log(
         'Canceling ID:',

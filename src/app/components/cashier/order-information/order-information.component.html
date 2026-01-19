@@ -141,58 +141,31 @@
       <span class="badge bg-warning text-dark rounded-pill px-3 py-2">خطوة الحجز</span>
     </div>
 
-      <!-- <div class="col-lg-3">
-        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
-          <div class="d-flex align-items-center mb-3">
-            <i class="bi bi-clock-history fs-4 me-2 text-dark"></i>
-            <h6 class="fw-bold mb-0">إدارة الورديات</h6>
-          </div>
-          <p class="text-muted small">إدارة ورديات نقطة البيع</p>
-
-          <div class="alert alert-light border text-center py-2 mb-3">
-              <small class="text-muted">يوجد وردية نشطة قيد التشغيل حالياً</small>
-          </div>
-
-          <div class="shift-details p-3 bg-white border rounded-3 mb-3">
-            <div class="d-flex justify-content-between mb-2">
-              <span class="text-muted small">رقم الوردية:</span>
-              <span class="badge bg-dark">#1</span>
-            </div>
-            <div class="mb-1"><small class="text-muted">بدأت في:</small> <small class="fw-bold">1/13/2026</small></div>
-            <div class="mb-1"><small class="text-muted">بواسطة:</small> <small class="fw-bold">ibrahim</small></div>
-          </div>
-
-          <button class="btn btn-danger w-100 rounded-3 py-2 fw-bold">
-            <i class="bi bi-power me-1"></i> إنهاء الوردية
-          </button>
-        </div>
-      </div> -->
-
       <div class="col-lg-8 m-auto">
       <form [formGroup]="orderForm" class="custom-card-form p-4 mb-5 w-100 shadow-sm">
         <div class="row mb-4">
           <div class="col-md-6 mb-3">
-            <label class="form-label-custom"><i class="bi bi-person mx-1"></i> اسم العميل <span class="text-danger">*</span></label>
+            <label class="form-label-custom"><i class="bi bi-person text-orange mx-1"></i> اسم العميل <span class="text-danger">*</span></label>
             <input type="text" formControlName="fullName" class="form-control custom-input" placeholder="أدخل الاسم بالكامل" />
           </div>
 
           <div class="col-md-6 mb-3">
-            <label class="form-label-custom"><i class="bi bi-telephone mx-1"></i> رقم الهاتف <span class="text-danger">*</span></label>
+            <label class="form-label-custom"><i class="bi bi-telephone text-orange mx-1"></i> رقم الهاتف <span class="text-danger">*</span></label>
             <input type="text" formControlName="phone" class="form-control custom-input" placeholder="01xxxxxxxxx" />
           </div>
 
           <div class="col-md-6 mb-3">
-            <label class="form-label-custom"><i class="bi bi-card-text mx-1"></i> رقم لوحة السيارة <span class="text-danger">*</span></label>
+            <label class="form-label-custom"><i class="bi bi-card-checklist text-orange mx-1"></i> رقم لوحة السيارة <span class="text-danger">*</span></label>
             <input type="text" formControlName="carNumber" class="form-control custom-input" placeholder="أ ب ج 123" />
           </div>
 
           <div class="col-md-6 mb-3">
-            <label class="form-label-custom"><i class="bi bi-car-front mx-1"></i> نوع السيارة <span class="text-danger">*</span></label>
+            <label class="form-label-custom"><i class="bi bi-car-front text-orange mx-1"></i> نوع السيارة <span class="text-danger">*</span></label>
             <input type="text" formControlName="carType" class="form-control custom-input" placeholder="مثال: مرسيدس C200" />
           </div>
           <div class="col-md-6 mb-3">
               <label class="form-label-custom mb-4 d-block">
-                <i class="bi bi-cash mx-1"></i> طريقة الدفع <span class="text-danger">*</span>
+                <i class="bi bi-cash-stack text-orange mx-1"></i> طريقة الدفع <span class="text-danger">*</span>
               </label>
 
               <div class="d-flex gap-3 payment-toggle">
@@ -224,7 +197,7 @@
         <hr class="divider mb-4">
 
         <div class="mb-4">
-          <label class="form-label-custom mb-3 fw-bold"><i class="bi bi-grid-fill me-2 text-warning"></i> اختر الخدمات المطلوبة</label>
+          <label class="form-label-custom mb-3 fw-bold"><i class="bi bi-grid me-2 text-orange"></i> اختر الخدمات المطلوبة</label>
           <div class="services-grid">
             <div *ngFor="let service of allServices"
                   (click)="toggleService(service)"
@@ -269,6 +242,33 @@
 
         </div>
 
+      <!-- <div class="col-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-clock-history fs-4 me-2 text-dark"></i>
+            <h6 class="fw-bold mb-0">إدارة الورديات</h6>
+          </div>
+          <p class="text-muted small">إدارة ورديات نقطة البيع</p>
+
+          <div class="alert alert-light border text-center py-2 mb-3">
+              <small class="text-muted">يوجد وردية نشطة قيد التشغيل حالياً</small>
+          </div>
+
+          <div class="shift-details p-3 bg-white border rounded-3 mb-3">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted small">رقم الوردية:</span>
+              <span class="badge bg-dark">#1</span>
+            </div>
+            <div class="mb-1"><small class="text-muted">بدأت في:</small> <small class="fw-bold"> 1/13/2026 </small></div>
+            <div class="mb-1"><small class="text-muted">بواسطة:</small> <small class="fw-bold"> اسم المستخدم </small></div>
+          </div>
+
+          <button class="btn btn-danger w-100 rounded-3 py-2 fw-bold">
+            <i class="bi bi-power me-1"></i> إنهاء الوردية
+          </button>
+        </div>
+      </div> -->
+
       <div class="col-lg-4">
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden sticky-top" style="top: 20px;">
           <div class="p-4">
@@ -299,6 +299,7 @@
               </div>
           </div>
         </div>
+
       </div>
       </div>
     </div>

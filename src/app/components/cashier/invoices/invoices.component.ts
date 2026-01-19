@@ -14,7 +14,6 @@ import * as XLSX from 'xlsx';
 export class InvoicesComponent {
   selectedInvoice: any;
   invoices$: Observable<Customer[]>;
-
   totalInvoicesCount: number = 0;
   totalDailyAmount: number = 0;
 
