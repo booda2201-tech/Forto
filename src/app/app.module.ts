@@ -32,6 +32,7 @@ import { MessagesComponent } from './components/cashier/messages/messages.compon
 import { NotificationService } from './services/notification.service';
 import { ProductsComponent } from './components/admin/products/products.component';
 import { WorkersComponent } from './components/admin/workers/workers.component';
+import { HttpClientModule } from '@angular/common/http';
 
 
 
@@ -66,7 +67,8 @@ import { WorkersComponent } from './components/admin/workers/workers.component';
     ToastrModule.forRoot(),
     CommonModule,
     FormsModule,
-    NgbModule
+    NgbModule,
+    HttpClientModule
   ],
   providers: [
     NotificationService,

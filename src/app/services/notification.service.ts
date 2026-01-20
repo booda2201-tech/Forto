@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-// تأكد من تصدير هذه الواجهة ليراها المكون
+
 export interface AppMessage {
   id: number;
   workerName: string;

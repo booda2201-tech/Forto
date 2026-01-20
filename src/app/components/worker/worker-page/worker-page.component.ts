@@ -10,6 +10,8 @@ export class WorkerPageComponent {
   selectedCar: any = null;
   isMenuOpen = false;
   userRole: number = 0;
+  currentWorkerName: string = ' محمد رمضان ';
+
 
 
   constructor(private notificationService: NotificationService) {}
@@ -120,22 +122,20 @@ startExecution(car: any) {
     car.status = 'in-progress';
     car.statusText = 'نشط';
 
-    // إرسال إشعار للكاشير
     this.notificationService.addMessage({
       id: Date.now(),
-      workerName: 'أحمد (عامل الغسيل)', // هنا ممكن تحط اسم العامل المسجل دخول
+      workerName: this.currentWorkerName,
       type: 'start',
       content: `بدأ العمل الآن على سيارة ${car.carModel} (لوحة: ${car.plateNumber})`,
       time: new Date()
     });
-  }
+}
 
 
 finishCar(car: any) {
-    // إرسال إشعار انتهاء
     this.notificationService.addMessage({
       id: Date.now(),
-      workerName: 'أحمد (عامل الغسيل)',
+      workerName: this.currentWorkerName,
       type: 'end',
       content: `تم الانتهاء من السيارة ${car.carModel} وهي جاهزة للاستلام`,
       time: new Date()
@@ -143,17 +143,17 @@ finishCar(car: any) {
 
     this.carRequests = this.carRequests.filter(item => item.id !== car.id);
     this.selectedCar = null;
-  }
+}
 
 
 saveChanges() {
     if (this.selectedCar) {
-      // إرسال طلب تعديل للكاشير
+
       this.notificationService.addMessage({
         id: Date.now(),
-        workerName: 'أحمد (عامل الغسيل)',
+        workerName: this.currentWorkerName,
         type: 'edit_request',
-        content: `طلب تعديل: استخدم ${this.selectedCar.soapCount || 0} صابون و ${this.selectedCar.perfumeCount || 0} معطر للحجز #${this.selectedCar.id}`,
+        content: `طلب تعديل: استخدم ${this.selectedCar.soapCount || 0}جم صابون و ${this.selectedCar.perfumeCount || 0} لتر معطر للحجز #${this.selectedCar.id}`,
         time: new Date()
       });
       console.log('تم إرسال طلب التعديل للكاشير');

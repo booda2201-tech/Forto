@@ -60,8 +60,12 @@
       <div *ngFor="let msg of messages" class="message-card animate__animated animate__fadeInUp">
         <div class="card-body d-flex align-items-start gap-3">
 
-          <div class="icon-wrapper" [ngClass]="msg.type === 'edit_request' ? 'bg-edit' : 'bg-start'">
-            <i class="bi" [ngClass]="getIconClass(msg.type)"></i>
+          <div class="icon-wrapper"
+                  [ngClass]="{
+                  'bg-edit': msg.type === 'edit_request',
+                  'bg-start': msg.type === 'start',
+                  'bg-end': msg.type === 'end'}">
+                <i class="bi" [ngClass]="getIconClass(msg.type)"></i>
           </div>
 
           <div class="flex-grow-1">

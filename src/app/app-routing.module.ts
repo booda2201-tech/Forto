@@ -20,43 +20,38 @@ import { WorkersComponent } from './components/admin/workers/workers.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
-{
-  path: 'admin',
-  component: HomeComponent,
-  children: [
-    { path: 'products', component: ProductsComponent },
-    { path: 'workers', component: WorkersComponent },
-    { path: 'requests', component: RequestsComponent },
-    { path: 'services', component: ServicesComponent },
-    { path: '', redirectTo: 'home', pathMatch: 'full' }
-  ]
+  {
+    path: 'admin',
+    component: HomeComponent,
+    children: [
+      { path: 'products', component: ProductsComponent },
+      { path: 'workers', component: WorkersComponent },
+      { path: 'requests', component: RequestsComponent },
+      { path: 'services', component: ServicesComponent },
+      { path: '', redirectTo: 'home', pathMatch: 'full' },
+    ],
   },
 
-
-{
-  path: 'cashier',
-  component: CashierPageComponent,
-  children: [
-    { path: 'order-info', component: OrderInformationComponent },
-    { path: 'add-client', component: AddClientComponent },
-    { path: 'reservations', component: ReservationsComponent },
-    { path: 'customers', component: CustomersComponent },
-    { path: 'new-reservation', component: NewReservationComponent },
-    { path: 'invoices', component: InvoicesComponent },
-    { path: 'messages', component: MessagesComponent },
-    { path: '', redirectTo: 'cashier', pathMatch: 'full' }
-  ]
-},
-
+  {
+    path: 'cashier',
+    component: CashierPageComponent,
+    children: [
+      { path: 'order-info', component: OrderInformationComponent },
+      { path: 'add-client', component: AddClientComponent },
+      { path: 'reservations', component: ReservationsComponent },
+      { path: 'customers', component: CustomersComponent },
+      { path: 'new-reservation', component: NewReservationComponent },
+      { path: 'invoices', component: InvoicesComponent },
+      { path: 'messages', component: MessagesComponent },
+      { path: '', redirectTo: 'cashier', pathMatch: 'full' },
+    ],
+  },
 
   { path: 'worker-page', component: WorkerPageComponent },
-
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-
-
-export class AppRoutingModule { }
+export class AppRoutingModule {}

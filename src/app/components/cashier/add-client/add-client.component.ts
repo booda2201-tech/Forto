@@ -3,6 +3,8 @@ import { FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router } from '@angular/router';
 import { ServiceCatalogService } from 'src/app/services/service-catalog.service';
 import { ToastrService } from 'ngx-toastr';
+import { ApiService } from 'src/app/services/api.service';
+
 
 @Component({
   selector: 'app-add-client',
@@ -24,31 +26,64 @@ export class AddClientComponent {
     carModel: new FormControl('')
   });
 
-  constructor(private serviceCatalog: ServiceCatalogService,private router: Router,private toastr: ToastrService) {}
+//   constructor(private serviceCatalog: ServiceCatalogService,private router: Router,private toastr: ToastrService) {}
 
-onSubmit() {
+// onSubmit() {
+//     if (this.customerForm.valid) {
+//       const formValue = this.customerForm.value;
+//       const customerData = {
+//         name: formValue.name,
+//         phone: formValue.phone,
+//         carNumber: formValue.carNumber,
+//         carType: formValue.carType,
+//         carCategory: formValue.carCategory,
+//         services: []
+//       };
+
+//       this.serviceCatalog.addCustomer(customerData);
+
+
+//       this.toastr.success('تم إضافة العميل بنجاح!', 'عملية ناجحة');
+
+//       this.router.navigate(['/cashier/cashier-page']);
+//     } else {
+
+//       this.toastr.error('يرجى التأكد من البيانات المدخلة', 'خطأ');
+//     }
+//   }
+
+constructor(
+    private apiService: ApiService,
+    private router: Router,
+    private toastr: ToastrService
+  ) {}
+
+  onSubmit() {
     if (this.customerForm.valid) {
-      const formValue = this.customerForm.value;
-      const customerData = {
-        name: formValue.name,
-        phone: formValue.phone,
-        carNumber: formValue.carNumber,
-        carType: formValue.carType,
-        carCategory: formValue.carCategory,
-        services: []
-      };
-
-      this.serviceCatalog.addCustomer(customerData);
+      const customerData = this.customerForm.value;
 
 
-      this.toastr.success('تم إضافة العميل بنجاح!', 'عملية ناجحة');
 
-      this.router.navigate(['/cashier/cashier-page']);
+      this.apiService.createClient(customerData).subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.toastr.success('تم إضافة العميل بنجاح!', 'عملية ناجحة');
+            this.router.navigate(['/cashier/cashier-page']);
+          } else {
+            this.toastr.error(response.message || 'فشل إضافة العميل', 'خطأ');
+          }
+        },
+        error: (err) => {
+          this.toastr.error('حدث خطأ في الاتصال بالسيرفر', 'خطأ');
+          console.error(err);
+        }
+      });
     } else {
-
       this.toastr.error('يرجى التأكد من البيانات المدخلة', 'خطأ');
     }
   }
+
+
 
 }
 

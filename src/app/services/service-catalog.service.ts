@@ -20,6 +20,7 @@ export interface ServiceItem {
 }
 
 export interface Customer {
+  paymentMode?: string;
   id: number;
   customerName: string;
   phone: string;
@@ -35,6 +36,7 @@ export interface Customer {
   statusText?: string;
   worker?: string;
   role?: string | null;
+
 }
 
 export interface Worker {
@@ -62,28 +64,28 @@ export interface ProductsItem {
 export class ServiceCatalogService {
 
   private allServices: ServiceItem[] = [
-    { id: 1, name: 'غسيل سيارة خارجي', price: 200, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [1,2,3] },
-    { id: 2, name: 'غسيل داخلي وبخار', price: 250, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [1,2,] },
-    { id: 3, name: 'تلميع إطارات', price: 150, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [2,3] },
-    { id: 4, name: 'تلميع الفرش', price: 300, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [1,3] },
-    { id: 5, name: 'غسبل المتور', price: 50, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [5,4,3] },
-    { id: 6, name: 'غسيل مساحات', price: 50, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [2] },
-    { id: 7, name: 'تعطير وتطهير', price: 120, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [1] },
-    { id: 8, name: 'غسيل كامل ', price: 650, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [3] },
-    { id: 9, name: 'غسيل المقاعد', price: 130, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [2,3] },
-    { id: 10, name: 'تطهير المكيف', price: 130, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [1,2] },
-    { id: 20, name: 'غسيل أسفل السيارة', price: 150, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [2,3] },
-    { id: 11, name: 'غسيل الموتور بالبخار', price: 150, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [4,5] },
-    { id: 12, name: 'تلميع بودي (واكس نانو)', price: 400, category: ServiceCategory. Polishing , selected: false, qualifiedWorkers: [5] },
-    { id: 13, name: 'تلميع الفوانيس الأمامية', price: 120, category: ServiceCategory. Polishing , selected: false, qualifiedWorkers: [1,3] },
-    { id: 14, name: 'تلميع الجنوط وإزالة الرايش', price: 150, category: ServiceCategory. Polishing , selected: false, qualifiedWorkers: [1,5] },
-    { id: 15, name: 'تلميع التابلوه والأبواب', price: 80, category: ServiceCategory. Polishing , selected: false, qualifiedWorkers: [2,4] },
-    { id: 16, name: 'تنظيف مراتب السيارة', price: 300, category: ServiceCategory.Interior, selected: false, qualifiedWorkers: [3,5] },
-    { id: 17, name: 'إزالة بقع السقف والشامواه', price: 200, category: ServiceCategory.Interior, selected: false, qualifiedWorkers: [1,2,3] },
+    { id: 1, name: 'غسيل سيارة خارجي', price: 200, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [1,2,3,4,5] },
+    { id: 2, name: 'غسيل داخلي وبخار', price: 250, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [1,2,5,4] },
+    { id: 3, name: 'تلميع إطارات', price: 150, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [2,3,5] },
+    { id: 4, name: 'تلميع الفرش', price: 300, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [1,3,4,5] },
+    { id: 5, name: 'غسبل المتور', price: 50, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [5,4,3,5] },
+    { id: 6, name: 'غسيل مساحات', price: 50, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [2,5] },
+    { id: 7, name: 'تعطير وتطهير', price: 120, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [1,3,4] },
+    { id: 8, name: 'غسيل كامل ', price: 650, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [3,4,6] },
+    { id: 9, name: 'غسيل المقاعد', price: 130, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [2,3,5] },
+    { id: 10, name: 'تطهير المكيف', price: 130, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [1,2,3] },
+    { id: 20, name: 'غسيل أسفل السيارة', price: 150, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [2,3,4] },
+    { id: 11, name: 'غسيل الموتور بالبخار', price: 150, category: ServiceCategory.CarWash , selected: false, qualifiedWorkers: [4,5,3] },
+    { id: 12, name: 'تلميع بودي (واكس نانو)', price: 400, category: ServiceCategory. Polishing , selected: false, qualifiedWorkers: [5,3,4] },
+    { id: 13, name: 'تلميع الفوانيس الأمامية', price: 120, category: ServiceCategory. Polishing , selected: false, qualifiedWorkers: [1,3,2] },
+    { id: 14, name: 'تلميع الجنوط وإزالة الرايش', price: 150, category: ServiceCategory. Polishing , selected: false, qualifiedWorkers: [1,5,3] },
+    { id: 15, name: 'تلميع التابلوه والأبواب', price: 80, category: ServiceCategory. Polishing , selected: false, qualifiedWorkers: [2,4,3] },
+    { id: 16, name: 'تنظيف مراتب السيارة', price: 300, category: ServiceCategory.Interior, selected: false, qualifiedWorkers: [3,5,4] },
+    { id: 17, name: 'إزالة بقع السقف والشامواه', price: 200, category: ServiceCategory.Interior, selected: false, qualifiedWorkers: [1,2,3,5] },
     { id: 18, name: 'تعقيم المكيف بالبخار', price: 100, category: ServiceCategory.Interior, selected: false, qualifiedWorkers: [1,2,3,4,5] },
-    { id: 19, name: 'طبقة حماية نانو سريعة', price: 600, category: ServiceCategory.Special, selected: false, qualifiedWorkers: [4,5] },
-    { id: 21, name: 'إزالة الروائح الكريهة', price: 250, category: ServiceCategory.Special, selected: false, qualifiedWorkers: [5,2] },
-    { id: 22, name: 'تغيير مسحات الزجاج', price: 50, category: ServiceCategory.Special, selected: false, qualifiedWorkers: [1,2,3] },
+    { id: 19, name: 'طبقة حماية نانو سريعة', price: 600, category: ServiceCategory.Special, selected: false, qualifiedWorkers: [4,5,3] },
+    { id: 21, name: 'إزالة الروائح الكريهة', price: 250, category: ServiceCategory.Special, selected: false, qualifiedWorkers: [5,2,4] },
+    { id: 22, name: 'تغيير مسحات الزجاج', price: 50, category: ServiceCategory.Special, selected: false, qualifiedWorkers: [1,2,3,5] },
   ];
 
 
@@ -318,6 +320,7 @@ constructor() {
     } else {
       customer.totalAmount = customer.price || 0;
     }
+
 
 
     customer.status = customer.status || 'waiting';
