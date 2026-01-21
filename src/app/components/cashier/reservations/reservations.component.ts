@@ -50,7 +50,8 @@ export class ReservationsComponent implements OnInit {
       );
   }
 
-  setTab(tab: 'waiting' | 'active' | 'completed' | 'canceled') {
+  setTab(
+    tab: 'waiting' | 'active' | 'completed' | 'canceled') {
     this.currentTab = tab;
   }
 
@@ -89,27 +90,23 @@ onActivate(reservationId: number) {
   });
 }
 
-getFilteredWorkers() {
-  if (!this.selectedServiceId) return [];
+  getFilteredWorkers() {
+    if (!this.selectedServiceId) return [];
 
 
-  let qualifiedIds: number[] = [];
-  this.serviceCatalog.getServices().pipe(take(1)).subscribe(services => {
-    const service = services.find(s => s.id === this.selectedServiceId);
-    qualifiedIds = service?.qualifiedWorkers || [];
-  });
+    let qualifiedIds: number[] = [];
+    this.serviceCatalog.getServices().pipe(take(1)).subscribe(services => {
+      const service = services.find(s => s.id === this.selectedServiceId);
+      qualifiedIds = service?.qualifiedWorkers || [];
+    });
 
 
-  return this.workersWithStatus.filter(worker => qualifiedIds.includes(worker.id));
-}
+    return this.workersWithStatus.filter(worker => qualifiedIds.includes(worker.id));
+  }
 
-selectService(serviceId: number) {
+  selectService(serviceId: number) {
   this.selectedServiceId = serviceId;
-}
-
-
-
-
+  }
 
 
   selectWorkerAndActivate(worker: any) {
@@ -146,7 +143,7 @@ selectService(serviceId: number) {
       text: `العامل المسؤول: ${worker.name}`
     });
   }, 100);
-    }
+  }
   onEdit(customer: Customer) {
     this.serviceCatalog.getServices().subscribe((allServices) => {
       const servicesHtml = allServices
@@ -217,39 +214,86 @@ selectService(serviceId: number) {
         }
       });
     });
-    }
+  }
 
   onComplete(id: number) {
       this.serviceCatalog.updateCustomerStatus(id, 'completed');
-    }
+  }
 
-  onCancel(customerId: any) {
-    Swal.fire({
-      title: 'سبب إلغاء الطلب',
-      input: 'textarea',
-      inputPlaceholder: 'اكتب هنا سبب الإلغاء...',
-      showCancelButton: true,
-      confirmButtonText: 'تأكيد الإلغاء',
-      cancelButtonText: 'تراجع',
-      confirmButtonColor: '#dc3545',
-      preConfirm: (reason) => {
-        if (!reason) {
-          Swal.showValidationMessage('من فضلك ادخل سبب الإلغاء');
-        }
-        return reason;
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
+  onCancel(customer: any) {
+  const isCurrentlyActive = customer.status === 'active';
 
-        console.log('ID:', customerId, 'Reason:', result.value);
-        this.cancelOrder(customerId, result.value);
+  Swal.fire({
+    title: 'إلغاء الطلب',
+    html: `
+      <div dir="rtl" class="text-end">
+        ${isCurrentlyActive ? `
+          <div class="alert alert-warning small py-2 mb-3">الطلب نشط: يرجى تسجيل استهلاك المواد</div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-8">
+            <label class="form-label small fw-bold">المادة المستخدمة</label>
+            <input type="text" id="materialName" class="form-control" placeholder="مثلا: (صابون)">
+            </div>
+            <div class="col-4">
+              <label class="form-label small fw-bold">الكمية (جرام)</label>
+              <input type="number" id="materialWeight" class="form-control" placeholder="0">
+            </div>
+          </div>
+          <hr>` : ''}
+
+        <div class="mb-2">
+          <label class="form-label fw-bold">سبب إلغاء الطلب:</label>
+          <textarea id="cancelReason" class="form-control" placeholder="يمكنك كتابة السبب هنا..."></textarea>
+        </div>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'تأكيد الإلغاء',
+    cancelButtonText: 'تراجع',
+    confirmButtonColor: '#dc3545',
+    preConfirm: () => {
+
+      const reason = (document.getElementById('cancelReason') as HTMLTextAreaElement).value;
+      let materialData = null;
+
+      if (isCurrentlyActive) {
+        materialData = {
+          name: (document.getElementById('materialName') as HTMLInputElement).value,
+          weight: (document.getElementById('materialWeight') as HTMLInputElement).value
+        };
       }
-    });
+
+
+      return { reason, materialData };
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+
+      this.serviceCatalog.updateCustomerStatus(customer.id, 'canceled');
+
+
+      this.cancelOrder(customer.id, result.value.reason, result.value.materialData);
+
+      Swal.fire({
+        title: 'تم الإلغاء',
+        text: 'تم إلغاء الطلب بنجاح',
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    }
+  });
+  }
+
+  cancelOrder(id: string, reason: string, materials: string | null) {
+    console.log('جاري إلغاء الطلب رقم:', id);
+    console.log('السبب:', reason);
+    if (materials) {
+        console.log('المواد المستهلكة:', materials);
     }
 
-  cancelOrder(id: string, reason: string) {
-      console.log('جاري إلغاء الطلب رقم:', id, 'بسبب:', reason);
-    }
+  }
 
   confirmCancel() {
     if (this.cancelReason) {
@@ -316,4 +360,5 @@ selectService(serviceId: number) {
       document.body.classList.remove('printing-mode');
     };
   }
+  
 }

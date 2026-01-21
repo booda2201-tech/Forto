@@ -33,6 +33,7 @@ import { ProductsComponent } from './components/admin/products/products.componen
 import { WorkersComponent } from './components/admin/workers/workers.component';
 import { HttpClientModule } from '@angular/common/http';
 import { PaymentPointComponent } from './components/cashier/payment-point/payment-point.component';
+import { DashboardComponent } from './components/admin/dashboard/dashboard.component';
 
 @NgModule({
   declarations: [
@@ -51,6 +52,7 @@ import { PaymentPointComponent } from './components/cashier/payment-point/paymen
     ProductsComponent,
     WorkersComponent,
     PaymentPointComponent,
+    DashboardComponent,
   ],
   imports: [
     BrowserModule,

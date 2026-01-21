@@ -18,6 +18,7 @@ import { MessagesComponent } from './components/cashier/messages/messages.compon
 import { ProductsComponent } from './components/admin/products/products.component';
 import { WorkersComponent } from './components/admin/workers/workers.component';
 import { PaymentPointComponent } from './components/cashier/payment-point/payment-point.component';
+import { DashboardComponent } from './components/admin/dashboard/dashboard.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -29,6 +30,7 @@ const routes: Routes = [
       { path: 'workers', component: WorkersComponent },
       { path: 'requests', component: RequestsComponent },
       { path: 'services', component: ServicesComponent },
+      { path: 'dashboard', component: DashboardComponent },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
     ],
   },

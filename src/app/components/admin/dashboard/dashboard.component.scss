@@ -1,0 +1,132 @@
+.dashboard-container {
+  max-width: 1200px; /* المقاس المطلوب لشاشات الكاشير */
+  margin: 0 auto;
+  padding: 15px;
+  direction: rtl;
+  // background: #fdfdfd;
+}
+
+/* Stats Row */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.mini-card {
+  background: #fff;
+  padding: 15px;
+  border-radius: 15px; /* نفس حواف كروت الحجز */
+  border: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.mini-card .label { font-size: 13px; color: #777; }
+.mini-card .value { font-size: 18px; font-weight: bold; margin-top: 5px; }
+
+/* Colors from your system */
+.income .value { color: #ff9800; } /* برتقالي */
+.active .value { color: #2196f3; } /* أزرق نشط */
+.pending .value { color: #ffc107; } /* أصفر انتظار */
+.done .value { color: #4caf50; }   /* أخضر مكتمل */
+
+/* Main Cards */
+.main-content-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 20px;
+}
+
+.forto-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  border: 1px solid #f0f0f0;
+}
+
+.section-title {
+  font-size: 16px;
+  border-right: 4px solid #ff9800; /* لمسة برتقالية مثل نظامك */
+  padding-right: 10px;
+  margin-bottom: 15px;
+}
+
+/* Table Style matching image_121725 */
+.pos-table { width: 100%; border-collapse: collapse; }
+.pos-table th { color: #aaa; font-size: 13px; padding: 10px; border-bottom: 1px solid #eee; }
+.pos-table td { padding: 12px 10px; border-bottom: 1px solid #fafafa; font-size: 14px; }
+
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-left: 5px;
+}
+.busy { background: #f44336; }
+.available { background: #4caf50; }
+
+
+
+.btn-submit-order {
+  background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+  color: white;
+  border: none;
+  padding: 15px 50px;
+  font-size: 1.2rem;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #d89a28 0%, #aa7106 100%);
+    transform: translateY(-3px) translateY(-1px);
+
+    filter: brightness(1.1);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+
+  }
+
+  &:disabled {
+    background: #e0e0e0;
+    color: #9e9e9e;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+
+.progress {
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.custom-input {
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  padding: 8px 15px;
+  &:focus {
+    border-color: #ffa500;
+    box-shadow: 0 0 0 0.2rem rgba(255, 165, 0, 0.25);
+  }
+}
+
+.table-wrapper {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.section-title{
+  background-color: #cacaca35;
+  padding: 10px;
+  border-radius: 5px;
+}

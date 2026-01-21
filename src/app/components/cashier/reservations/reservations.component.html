@@ -271,7 +271,7 @@
         <button
             class="btn btn-sm btn-outline-danger rounded-3"
             *ngIf="customer.status !== 'canceled' && customer.status !== 'completed'"
-            (click)="onCancel(customer.id)">
+            (click)="onCancel(customer)">
             <i class="bi bi-trash"></i>
         </button>
 

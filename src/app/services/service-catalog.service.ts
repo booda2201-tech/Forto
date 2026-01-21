@@ -123,7 +123,7 @@ export class ServiceCatalogService {
     },
     {
       id: 2,
-      customerName: 'سارة أحمد',
+      customerName: ' رؤف خليف ',
       phone: '+966 55 987 6543',
       cars: [
         { carid: 1,

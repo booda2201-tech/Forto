@@ -1,0 +1,191 @@
+
+
+
+
+
+<!-- <div class="contt">
+  <div class="dashboard-container">
+  <div class="stats-grid">
+    <div class="mini-card income">
+      <span class="label">إجمالي الدخل</span>
+      <span class="value">1,539 ج.م</span>
+    </div>
+    <div class="mini-card active">
+      <span class="label">نشط</span>
+      <span class="value">3</span>
+    </div>
+    <div class="mini-card pending">
+      <span class="label">انتظار</span>
+      <span class="value">10</span>
+    </div>
+    <div class="mini-card done">
+      <span class="label">مكتمل</span>
+      <span class="value">25</span>
+    </div>
+  </div>
+
+  <div class="main-content-grid">
+    <div class="forto-card">
+      <h3 class="section-title">أداء العمال (اليوم)</h3>
+      <div class="table-wrapper">
+        <table class="pos-table">
+          <thead>
+            <tr>
+              <th>العامل</th>
+              <th class="text-center">السيارات</th>
+              <th class="text-left">الحالة</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let staff of staffPerformance">
+              <td><strong>{{staff.name}}</strong></td>
+              <td class="text-center">{{staff.completedCount}}</td>
+              <td class="text-left">
+                <span class="status-dot" [ngClass]="staff.isBusy ? 'busy' : 'available'"></span>
+                {{staff.isBusy ? 'مشغول' : 'متاح'}}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="forto-card">
+      <h3 class="section-title">الخدمات الأكثر طلباً</h3>
+      <div class="chart-area">
+        <div class="placeholder-text">الرسم البياني مخصص للعرض السريع</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reports-container" style="max-width: 1200px; margin: auto;">
+  <div class="filter-card forto-card mt-4 mb-4 p-3 d-flex align-items-center gap-3">
+    <input type="date" class="form-control custom-input" placeholder="من تاريخ">
+    <input type="date" class="form-control custom-input" placeholder="إلى تاريخ">
+    <button class="btn-submit-order w-50 py-2 fw-bold rounded-3">تحديث التقارير</button>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="forto-card p-4 h-100">
+        <h5 class="section-title mb-4">توزيع الإيرادات حسب الخدمة</h5>
+        <div class="chart-wrapper">
+          <canvas id="servicesChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="forto-card p-4 h-100">
+        <h5 class="section-title mb-4">معدل الإنجاز اليومي</h5>
+        <canvas id="performanceChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+</div>
+</div> -->
+
+
+
+
+
+<div class="contt">
+  <div class="dashboard-container">
+    <div class="filter-card forto-card mb-4 p-3 d-flex align-items-center gap-3">
+        <input type="date" class="form-control custom-input" placeholder="من تاريخ">
+        <input type="date" class="form-control custom-input" placeholder="إلى تاريخ">
+        <button class="btn-submit-order w-50 py-2 fw-bold rounded-3">تحديث التقارير</button>
+    </div>
+    <div class="stats-grid">
+      <div class="mini-card income">
+        <span class="label">إجمالي الدخل</span>
+        <span class="value">{{ stats.totalRevenue | number }} ج.م</span>
+      </div>
+      <div class="mini-card active">
+        <span class="label">نشط</span>
+        <span class="value">{{ stats.activeCount }}</span>
+      </div>
+      <div class="mini-card pending">
+        <span class="label">انتظار</span>
+        <span class="value">{{ stats.waitingCount }}</span>
+      </div>
+      <div class="mini-card done">
+        <span class="label">مكتمل</span>
+        <span class="value">{{ stats.completedCount }}</span>
+      </div>
+    </div>
+    <div class="main-content-grid">
+      <div class="forto-card">
+        <h3 class="section-title">أداء العمال (اليوم)</h3>
+        <div class="table-wrapper">
+          <table class="pos-table">
+            <thead>
+              <tr>
+                <th>العامل</th>
+                <th class="text-center">السيارات</th>
+                <th class="text-left">الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let staff of staffPerformance">
+                <td><strong>{{ staff.name }}</strong></td>
+                <td class="text-center">{{ staff.completedCount }}</td>
+                <td class="text-left">
+                  <span class="status-dot" [ngClass]="staff.isBusy ? 'busy' : 'available'"></span>
+                  {{ staff.isBusy ? 'مشغول' : 'متاح' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="forto-card">
+        <h3 class="section-title">الخدمات الأكثر طلباً</h3>
+        <div class="chart-area py-3">
+          <div *ngFor="let service of topServices" class="mb-3">
+              <div class="d-flex justify-content-between mb-1">
+                <small>{{service.name}}</small>
+                <small class="fw-bold">{{service.count}}</small>
+              </div>
+              <div class="progress" style="height: 8px;">
+               <div class="progress-bar" [style.width.%]="service.count * 2" [style.background-color]="service.color"></div>
+              </div>
+          </div>
+          <div class="placeholder-text text-center mt-3" style="font-size: 11px; color: #ccc;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reports-container mt-4">
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <div class="forto-card p-4 h-100 text-center">
+            <h5 class="section-title mb-4">توزيع الإيراد</h5>
+            <div style="height: 200px; display: flex; align-items: center; justify-content: center; background: #f9f9f9; border-radius: 50%; width: 200px; margin: auto; border: 10px solid #ffa500;">
+              <span class="fw-bold text-muted">Chart View</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div class="forto-card p-4 h-100 text-center">
+            <h5 class="section-title mb-4">معدل الإنجاز</h5>
+            <div style="height: 200px; display: flex; align-items: flex-end; justify-content: space-around; background: #f9f9f9; padding: 10px; border-radius: 15px;">
+              <div style="height: 40%; width: 20px; background: #ffa500; border-radius: 5px;"></div>
+              <div style="height: 70%; width: 20px; background: #ffa500; border-radius: 5px;"></div>
+              <div style="height: 55%; width: 20px; background: #ffa500; border-radius: 5px;"></div>
+              <div style="height: 90%; width: 20px; background: #ffa500; border-radius: 5px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
