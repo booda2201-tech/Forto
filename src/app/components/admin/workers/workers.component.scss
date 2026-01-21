@@ -92,7 +92,12 @@
   transition: all 0.2s ease;
   border: 1px solid rgba(0,0,0,0.02) !important;
 
-  &:active { transform: scale(0.98); }
+    &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
+  }
+
+  &:active { transform: scale(0.95); }
 }
 
 .icon-avatar {

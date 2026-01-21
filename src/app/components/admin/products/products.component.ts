@@ -27,20 +27,18 @@ export class ProductsComponent implements OnInit {
     item.selected = !item.selected;
   }
 
-  addNewProduct(nameInp: HTMLInputElement, priceInp: HTMLInputElement) {
+  addNewProduct(nameInp: HTMLInputElement, priceInp: HTMLInputElement, stockInp: HTMLInputElement) {
     const name = nameInp.value;
     const price = Number(priceInp.value);
-    const stock = Number(priceInp.value);
+    const stock = Number(stockInp.value);
 
-
-    if (name && price) {
-
-      this.serviceCatalog.addProduct(name, price,stock);
+    if (name && price >= 0) {
+      this.serviceCatalog.addProduct(name, price, stock);
       this.loadProducts();
 
       nameInp.value = '';
       priceInp.value = '';
-      
+      stockInp.value = '';
 
       alert('تم إضافة المنتج بنجاح');
     }
@@ -77,7 +75,12 @@ export class ProductsComponent implements OnInit {
 }
 
 
-
+  updateQuickStock(prod: ProductsItem, amount: number) {
+  const newStock = prod.stock + amount;
+  if (newStock >= 0) {
+    this.serviceCatalog.updateProductStock(prod.id, newStock);
+  }
+}
 
 
 

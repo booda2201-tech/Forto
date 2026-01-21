@@ -9,34 +9,37 @@
       </div>
 
       <div class="row g-3">
-        <div class="col-md-4" *ngFor="let prod of products">
-          <div class="card product-card border-0 shadow-sm" >
-            <div class="card-body text-center p-4">
-              <div class="icon-circle mb-3">
-                <i class="bi bi-cup-straw fs-2"></i>
+          <div class="col-md-4" *ngFor="let prod of products">
+            <div class="card product-card border-0 shadow-sm"
+                  [class.border-danger]="prod.stock === 0"
+                  [class.bg-light-danger]="prod.stock === 0">
+
+              <div class="card-body text-center p-4">
+                <div class="icon-circle mb-3" [class.bg-danger]="prod.stock === 0">
+                  <i class="bi" [ngClass]="prod.stock === 0 ? 'bi-exclamation-triangle-fill fs-3 text-center' : 'bi-cup-hot fs-2 text-center'"></i>
+                </div>
+
+                <h6 class="fw-bold mb-1">{{ prod.name }}</h6>
+
+                <div class="mb-2">
+                  <span class="badge"
+                        [ngClass]="{'bg-danger': prod.stock === 0, 'bg-warning text-dark': prod.stock <= 5 && prod.stock > 0, 'bg-success': prod.stock > 5}">
+                    {{ prod.stock === 0 ? 'غير متوفر' : 'المخزون: ' + prod.stock }}
+                  </span>
+                </div>
+
+                <p class="text-orange fw-bold mb-1">{{ prod.price }} ج.م</p>
+
+                <div class="d-flex justify-content-center gap-2 mt-2">
+                  <button class="btn btn-sm btn-outline-secondary" (click)="updateQuickStock(prod, -1)">-</button>
+                  <button class="btn btn-sm btn-light-warning" (click)="openEditModal(prod)" data-bs-toggle="modal" data-bs-target="#editProductModal">
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary" (click)="updateQuickStock(prod, 1)">+</button>
+                </div>
               </div>
-              <h6 class="fw-bold mb-1">{{ prod.name }}</h6>
-              <p class="text-orange fw-bold mb-1">{{ prod.price }} ج.م</p>
-
-              <div class="mb-3">
-                <span class="badge bg-light text-dark border">
-                    الكمية: {{ prod.stock }}
-                </span>
-              </div>
-
-
-              <div class="d-flex justify-content-center gap-2 mt-2">
-                <button class="btn btn-sm btn-light-warning" (click)="openEditModal(prod); $event.stopPropagation()" data-bs-toggle="modal" data-bs-target="#editProductModal">
-                      <i class="bi bi-pencil-square"></i>
-                </button>
-                <button class="btn btn-sm btn-light-danger" (click)="deleteProduct(prod.id); $event.stopPropagation()">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-
             </div>
           </div>
-        </div>
       </div>
     </div>
 
@@ -56,19 +59,19 @@
                   <label class="form-label small fw-bold">السعر ($) *</label>
                   <input #priceInp type="number" class="form-control custom-input" [(ngModel)]="selectedProduct.price">
                 </div>
-                <div class="col-6">
-                  <label class="form-label small fw-bold">الكمية في المخزون *</label>
-                  <input type="number" class="form-control custom-input" placeholder="2">
-                </div>
+                  <div class="col-6">
+                    <label class="form-label small fw-bold">الكمية في المخزون *</label>
+                    <input #stockInp type="number" class="form-control custom-input" placeholder="2">
+                  </div>
               </div>
               <div class="mt-3">
                 <label class="form-label small fw-bold">الوصف</label>
                 <textarea class="form-control custom-input" rows="2" placeholder="الوصف"></textarea>
               </div>
             </div>
-          <button (click)="addNewProduct(nameInp, priceInp)" class="btn btn-orange w-100 py-2 mt-3 fw-bold">
-            إضافة للقائمة <i class="bi bi-plus-lg ms-1"></i>
-          </button>
+                <button (click)="addNewProduct(nameInp, priceInp, stockInp)" class="btn btn-orange w-100 py-2 mt-3 fw-bold">
+                  إضافة للقائمة <i class="bi bi-plus-lg ms-1"></i>
+                </button>
         </div>
       </div>
     </div>

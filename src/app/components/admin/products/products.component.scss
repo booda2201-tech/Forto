@@ -27,8 +27,7 @@ $orange-color: #ff9a27;
   &.active {
     border-color: $orange-color !important;
     background-color: #fff9f2;
-
-
+    transform: scale(0.95);
   }
     .icon-circle {
       background-color: $orange-color;

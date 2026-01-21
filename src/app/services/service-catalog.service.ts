@@ -91,8 +91,8 @@ export class ServiceCatalogService {
 
   private ProductsList: ProductsItem[] = [
     { id: 1, name: 'قهوه ', price: 50, stock: 20,selected: false },
-    { id: 2, name: 'شاي ', price: 20, stock: 15,selected: false },
-    { id: 3, name: 'برتقال ', price: 50, stock: 18 ,selected: false },
+    { id: 2, name: 'شاي ', price: 20, stock: 10,selected: false },
+    { id: 3, name: 'برتقال ', price: 50, stock: 0 ,selected: false },
     { id: 4, name: 'كافي ', price: 50, stock: 5 ,selected: false },
 
   ];
@@ -451,6 +451,17 @@ constructor() {
     this.customersSubject.next([...this.customers]);
   }
   }
+
+
+updateProductStock(id: number, newStock: number) {
+  const product = this.ProductsList.find(p => p.id === id);
+  if (product) {
+    product.stock = newStock;
+
+  }
+}
+
+
 
 
 }
