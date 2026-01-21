@@ -238,3 +238,17 @@
 }
 
 
+.custom-select {
+    height: 45px;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    color: #000000;
+    font-size: 0.9rem;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+    &:focus { border-color: #f39c12; box-shadow: 0 0 5px rgba(243, 156, 18, 0.2); }
+}
+
+

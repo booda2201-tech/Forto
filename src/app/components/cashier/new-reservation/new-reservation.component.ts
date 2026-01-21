@@ -18,6 +18,29 @@ export class NewReservationComponent implements OnInit{
   totalPrice: number = 0;
 
 
+
+  carCategories = [
+    { id: 1, nameAr: 'سيدان (Sedan)' },
+    { id: 2, nameAr: 'دفع رباعي (SUV)' },
+    { id: 3, nameAr: 'هاتشباك (Hatchback)' },
+    { id: 4, nameAr: 'كوبيه (Coupe)' },
+    { id: 5, nameAr: 'بيك أب (Pickup)' },
+    { id: 6, nameAr: 'فان (Van)' },
+    { id: 7, nameAr: 'شاحنة (Truck)' },
+    { id: 99, nameAr: 'أخرى (Other)' }
+  ];
+
+
+
+
+
+
+
+
+
+
+
+
   customerForm = new FormGroup({
     name: new FormControl('', [Validators.required]),
     phone: new FormControl('', [Validators.required]),

@@ -17,6 +17,7 @@ import { NewReservationComponent } from './components/cashier/new-reservation/ne
 import { MessagesComponent } from './components/cashier/messages/messages.component';
 import { ProductsComponent } from './components/admin/products/products.component';
 import { WorkersComponent } from './components/admin/workers/workers.component';
+import { PaymentPointComponent } from './components/cashier/payment-point/payment-point.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -37,6 +38,7 @@ const routes: Routes = [
     component: CashierPageComponent,
     children: [
       { path: 'order-info', component: OrderInformationComponent },
+      { path: 'pay-point', component: PaymentPointComponent },
       { path: 'add-client', component: AddClientComponent },
       { path: 'reservations', component: ReservationsComponent },
       { path: 'customers', component: CustomersComponent },

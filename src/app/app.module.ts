@@ -10,7 +10,6 @@ import { ToastrModule } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
 
-
 import { AppComponent } from './app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NavbarComponent } from './components/navbar/navbar.component';
@@ -33,8 +32,7 @@ import { NotificationService } from './services/notification.service';
 import { ProductsComponent } from './components/admin/products/products.component';
 import { WorkersComponent } from './components/admin/workers/workers.component';
 import { HttpClientModule } from '@angular/common/http';
-
-
+import { PaymentPointComponent } from './components/cashier/payment-point/payment-point.component';
 
 @NgModule({
   declarations: [
@@ -52,12 +50,7 @@ import { HttpClientModule } from '@angular/common/http';
     MessagesComponent,
     ProductsComponent,
     WorkersComponent,
-
-
-
-
-
-
+    PaymentPointComponent,
   ],
   imports: [
     BrowserModule,
@@ -68,7 +61,7 @@ import { HttpClientModule } from '@angular/common/http';
     CommonModule,
     FormsModule,
     NgbModule,
-    HttpClientModule
+    HttpClientModule,
   ],
   providers: [
     NotificationService,
@@ -80,8 +73,6 @@ import { HttpClientModule } from '@angular/common/http';
     }),
   ],
 
-
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-
-export class AppModule { }
+export class AppModule {}

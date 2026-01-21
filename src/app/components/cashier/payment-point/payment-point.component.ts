@@ -4,11 +4,11 @@ import { ServiceCatalogService , ServiceItem} from 'src/app/services/service-cat
 import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
-  selector: 'app-order-information',
-  templateUrl: './order-information.component.html',
-  styleUrls: ['./order-information.component.scss']
+  selector: 'app-payment-point',
+  templateUrl: './payment-point.component.html',
+  styleUrls: ['./payment-point.component.scss']
 })
-export class OrderInformationComponent {
+export class PaymentPointComponent {
 
   selectedTimeId: string = '';
 
@@ -43,21 +43,11 @@ availableTimes: string[] = ['10:00 AM', '11:30 AM', '01:00 PM', '03:00 PM'];
 
 
 
-
-
-
-
-
-
-
-
-
 constructor(private serviceCatalog: ServiceCatalogService) {
 
   this.serviceCatalog.getServices().subscribe(services => {
     this.allServices = services;
   });
-
 
 }
 
@@ -138,7 +128,6 @@ get taxAmount(): number {
 get finalTotal(): number {
   return this.totalServicesPrice + this.taxAmount;
 }
-
 
 
 

@@ -163,11 +163,18 @@
             <label class="form-label-custom"><i class="bi bi-car-front text-orange mx-1"></i> نوع السيارة <span class="text-danger">*</span></label>
             <input type="text" formControlName="carType" class="form-control custom-input" placeholder="مثال: مرسيدس C200" />
           </div>
+            <div class="form-group mb-3">
+              <label><i class="bi bi-car-front mx-1"></i> فئة السيارة </label>
+                <select class="form-select custom-select" formControlName="carCategory">
+                <option value="" disabled selected>اختر فئة السيارة</option>
+                <option *ngFor="let cat of carCategories" [value]="cat.id" class="text-dark">
+                        {{ cat.nameAr }} </option>
+              </select>
+            </div>
           <div class="col-md-6 mb-3">
               <label class="form-label-custom mb-4 d-block">
                 <i class="bi bi-cash-stack text-orange mx-1"></i> طريقة الدفع <span class="text-danger">*</span>
               </label>
-
               <div class="d-flex gap-3 payment-toggle">
                 <input type="radio"
                         class="btn-check"

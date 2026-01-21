@@ -116,6 +116,14 @@
             <label><i class="bi bi-map mx-1"></i> رقم اللوحة </label>
             <input type="text" formControlName="carNumber" placeholder="ب ص ج 1234">
           </div>
+            <div class="form-group mt-1">
+              <label><i class="bi bi-car-front mx-1"></i> فئة السيارة </label>
+              <select class="form-select custom-select" formControlName="carCategory">
+                <option value="" disabled selected>اختر فئة السيارة</option>
+                <option *ngFor="let cat of carCategories" [value]="cat.id" class="text-dark">
+                  {{ cat.nameAr }} </option>
+              </select>
+            </div>
         </div>
       </div>
 
