@@ -26,24 +26,33 @@ type ServiceCardVm = {
   durationMinutes: number;
 };
 
+type SlotDto = {
+  hour: string;     // "08:00"
+  booked: number;
+  available: number;
+};
+
 @Component({
   selector: 'app-new-reservation',
   templateUrl: './new-reservation.component.html',
   styleUrls: ['./new-reservation.component.scss'],
 })
 export class NewReservationComponent implements OnInit {
-  // ===== Config (set correct values) =====
-  branchId = 6713; // ✅ quick-create branchId (from your latest API)
-  categoryId = 2396; // services GetAll?categoryId=2396 (adjust if needed)
-  createdByType = 0; // ✅ from quick-create example
-  createdByEmployeeId = 314; // ✅ from quick-create example
-  createdByClientId = 3237; // ✅ from quick-create example (change if needed)
+  // ===== Config =====
+  branchId = 1;            // ✅ set correct branchId
+  createdByType = 1;
+  createdByEmployeeId = 5;
 
   // ===== Services =====
   servicesRaw: ServiceApiDto[] = [];
-  services: ServiceCardVm[] = []; // cards rendered in UI
+  services: ServiceCardVm[] = []; // rendered cards
   selectedServices: ServiceCardVm[] = [];
   totalPrice = 0;
+
+  // ===== Slots =====
+  availableSlots: SlotDto[] = [];
+  selectedSlotHour: string | null = null;
+  isSlotsLoading = false;
 
   carCategories = [
     { id: 1, nameAr: 'سيدان (Sedan)' },
@@ -66,7 +75,9 @@ export class NewReservationComponent implements OnInit {
     carCategory: new FormControl<number | null>(null, [Validators.required]),
 
     appointmentDate: new FormControl('', [Validators.required]),
-    appointmentTime: new FormControl('', [Validators.required]),
+    // ⛔ appointmentTime removed from logic (time comes from available slots dropdown)
+    // keep it in form only if you want, but we won't use it
+    appointmentTime: new FormControl(''),
   });
 
   constructor(
@@ -76,7 +87,7 @@ export class NewReservationComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // 1) load services once (raw)
+    // 1) Load services (IMPORTANT: pass categoryId if your ApiService supports it)
     this.api.getServices().subscribe({
       next: (res: any) => {
         this.servicesRaw = res?.data ?? [];
@@ -88,18 +99,29 @@ export class NewReservationComponent implements OnInit {
       },
     });
 
-    // 2) whenever carCategory changes -> rebuild service cards & clear selections
+    // 2) When car category changes -> rebuild services, clear selections & slots
     this.customerForm.get('carCategory')!.valueChanges.subscribe(() => {
       this.selectedServices = [];
       this.totalPrice = 0;
+
+      this.availableSlots = [];
+      this.selectedSlotHour = null;
+
       this.rebuildServicesForBodyType();
+      this.loadAvailableSlots(); // will clear if no services/date
+    });
+
+    // 3) When date changes -> reload slots (if services selected)
+    this.customerForm.get('appointmentDate')!.valueChanges.subscribe(() => {
+      this.selectedSlotHour = null;
+      this.loadAvailableSlots();
     });
   }
 
   private rebuildServicesForBodyType(): void {
-    const bodyType = this.customerForm.value.carCategory;
+    const bodyType = Number(this.customerForm.value.carCategory);
 
-    if (!bodyType || !this.servicesRaw.length) {
+    if (!this.servicesRaw.length || Number.isNaN(bodyType) || bodyType <= 0) {
       this.services = [];
       return;
     }
@@ -140,6 +162,10 @@ export class NewReservationComponent implements OnInit {
     }
 
     this.calculateTotal();
+
+    // refresh slots when services change
+    this.selectedSlotHour = null;
+    this.loadAvailableSlots();
   }
 
   calculateTotal() {
@@ -150,6 +176,47 @@ export class NewReservationComponent implements OnInit {
     return this.selectedServices.some((s) => s.id === service.id);
   }
 
+  // ======================
+  // Available Slots
+  // ======================
+loadAvailableSlots(): void {
+  const date = this.customerForm.value.appointmentDate;
+  const serviceIds = this.selectedServices.map((s) => s.id);
+
+  console.log('[Slots] date =', date, 'serviceIds =', serviceIds);
+
+  if (!date) {
+    console.log('[Slots] return: no date');
+    this.availableSlots = [];
+    return;
+  }
+
+  if (serviceIds.length === 0) {
+    console.log('[Slots] return: no selected services');
+    this.availableSlots = [];
+    return;
+  }
+
+  this.isSlotsLoading = true;
+
+  this.api.getAvailableSlots(this.branchId, String(date), serviceIds).subscribe({
+    next: (res: any) => {
+      console.log('[Slots] API response:', res);
+      this.availableSlots = res?.data?.slots ?? [];
+      this.isSlotsLoading = false;
+    },
+    error: (err) => {
+      console.log('[Slots] API error:', err);
+      this.isSlotsLoading = false;
+      this.availableSlots = [];
+      this.toastr.error(err?.error?.message || 'فشل تحميل المواعيد', 'خطأ');
+    },
+  });
+}
+
+  // ======================
+  // Submit quick-create
+  // ======================
   onSubmit() {
     if (this.customerForm.invalid) {
       this.toastr.error('يرجى التأكد من البيانات المدخلة', 'خطأ');
@@ -159,24 +226,25 @@ export class NewReservationComponent implements OnInit {
       this.toastr.warning('يرجى اختيار خدمة واحدة على الأقل', 'تنبيه');
       return;
     }
+    if (!this.selectedSlotHour) {
+      this.toastr.warning('يرجى اختيار وقت من المواعيد المتاحة', 'تنبيه');
+      return;
+    }
 
     const v = this.customerForm.value;
 
-    const scheduledStart = this.toIsoFromDateAndTime(
+    const scheduledStart = this.toIsoFromDateAndHour(
       String(v.appointmentDate),
-      String(v.appointmentTime)
+      this.selectedSlotHour
     );
 
     const bodyType = Number(v.carCategory);
-
-    const { brand, model, year } = this.parseBrandModelYear(
-      String(v.carType ?? '')
-    );
+    const { brand, model, year } = this.parseBrandModelYear(String(v.carType ?? ''));
 
     const payload = {
       branchId: this.branchId,
       car: {
-        bodyType: bodyType,
+        bodyType,
         plateNumber: String(v.carNumber ?? '').trim(),
         brand: brand || 'Unknown',
         model: model || '',
@@ -189,17 +257,18 @@ export class NewReservationComponent implements OnInit {
         fullName: String(v.name ?? '').trim(),
         email: String(v.email ?? '').trim() || null,
       },
-      scheduledStart: scheduledStart,
+      scheduledStart,
       serviceIds: this.selectedServices.map((s) => s.id),
-      serviceAssignments: [], // optional now
+      serviceAssignments: [],
       createdByType: this.createdByType,
       createdByEmployeeId: this.createdByEmployeeId,
-      createdByClientId: this.createdByClientId,
       notes: '',
     };
 
     this.api.quickCreateBooking(payload).subscribe({
       next: (res: any) => {
+        console.log(res);
+        
         if (res?.success === false) {
           this.toastr.error(res?.message || 'فشل إنشاء الحجز', 'خطأ');
           return;
@@ -209,11 +278,15 @@ export class NewReservationComponent implements OnInit {
         this.router.navigate(['/cashier/cashier-page']);
       },
       error: (err) => {
+        console.log(err);
+        
         if (err?.status === 409) {
           this.toastr.error(
             err?.error?.message || 'الموعد غير متاح، اختر موعدًا آخر',
             'تعارض'
           );
+          // refresh slots after conflict
+          this.loadAvailableSlots();
           return;
         }
 
@@ -223,19 +296,15 @@ export class NewReservationComponent implements OnInit {
     });
   }
 
-  private toIsoFromDateAndTime(dateStr: string, timeStr: string): string {
-    // date: "2026-01-20", time: "11:30"
+  private toIsoFromDateAndHour(dateStr: string, hourStr: string): string {
+    // date: "2026-01-20", hour: "08:00"
     const [y, m, d] = dateStr.split('-').map(Number);
-    const [hh, mm] = timeStr.split(':').map(Number);
+    const [hh, mm] = hourStr.split(':').map(Number);
     const local = new Date(y, m - 1, d, hh, mm, 0, 0);
     return local.toISOString();
   }
 
-  private parseBrandModelYear(carTypeText: string): {
-    brand: string;
-    model: string;
-    year?: number;
-  } {
+  private parseBrandModelYear(carTypeText: string): { brand: string; model: string; year?: number } {
     const text = carTypeText.trim();
     const parts = text.split(/\s+/).filter(Boolean);
 
