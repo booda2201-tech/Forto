@@ -66,10 +66,8 @@
   </div>
 </section> -->
 
-
 <div class="contt">
-<section class="add-client-section">
-
+  <section class="add-client-section">
     <div class="main-order-card shadow-sm p-4 p-md-5">
       <div class="orange-side-border"></div>
 
@@ -77,63 +75,129 @@
 
       <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
         <div class="row g-4">
-
           <div class="col-md-6">
-            <label class="custom-label"><i class="bi bi-person text-orange fs-5 mx-1"></i>  الاسم    <span class="text-danger">*</span></label>
-            <input type="text" formControlName="name" class="form-control custom-input" placeholder="أدخل اسم العميل">
+            <label class="custom-label"
+              ><i class="bi bi-person text-orange fs-5 mx-1"></i> الاسم
+              <span class="text-danger">*</span></label
+            >
+            <input
+              type="text"
+              formControlName="name"
+              class="form-control custom-input"
+              placeholder="أدخل اسم العميل"
+            />
           </div>
 
           <div class="col-md-6">
-            <label class="custom-label"><i class="bi bi-telephone text-orange fs-5 mx-1"></i> التليفون <span class="text-danger">*</span></label>
-            <input type="tel" formControlName="phone" class="form-control custom-input text-end" placeholder="01xxxxxxxxx">
+            <label class="custom-label"
+              ><i class="bi bi-telephone text-orange fs-5 mx-1"></i> التليفون
+              <span class="text-danger">*</span></label
+            >
+            <input
+              type="tel"
+              formControlName="phone"
+              class="form-control custom-input text-end"
+              placeholder="01xxxxxxxxx"
+            />
           </div>
 
           <div class="col-md-12">
-            <label class="custom-label"><i class="bi bi-envelope text-orange fs-5 mx-1"></i> البريد الالكتروني</label>
-            <input type="email" formControlName="email" class="form-control custom-input" placeholder="example@mail.com">
+            <label class="custom-label"
+              ><i class="bi bi-envelope text-orange fs-5 mx-1"></i> البريد
+              الالكتروني</label
+            >
+            <input
+              type="email"
+              formControlName="email"
+              class="form-control custom-input"
+              placeholder="example@mail.com"
+            />
           </div>
 
           <div class="col-12 my-4">
-            <hr class="form-divider">
+            <hr class="form-divider" />
           </div>
 
           <div class="col-md-4">
-            <label class="custom-label"><i class="bi bi-car-front text-orange fs-5 mx-1"></i>   نوع السيارة <span class="text-danger">*</span></label>
-            <input type="text" formControlName="carType" class="form-control custom-input" placeholder="مثال: تويوتا">
+            <label class="custom-label"
+              ><i class="bi bi-car-front text-orange fs-5 mx-1"></i> نوع السيارة
+              <span class="text-danger">*</span></label
+            >
+            <input
+              type="text"
+              formControlName="brand"
+              class="form-control custom-input"
+              placeholder="مثال: تويوتا"
+            />
           </div>
 
           <div class="col-md-4">
-            <label class="custom-label"><i class="bi bi-map text-orange fs-5 mx-1"></i>  رقم اللوحة <span class="text-danger">*</span></label>
-            <input type="text" formControlName="carNumber" class="form-control custom-input text-end" placeholder="ا ب ج 1234">
+            <label class="custom-label"
+              ><i class="bi bi-map text-orange fs-5 mx-1"></i> رقم اللوحة
+              <span class="text-danger">*</span></label
+            >
+            <input
+              type="text"
+              formControlName="plateNumber"
+              class="form-control custom-input text-end"
+              placeholder="ا ب ج 1234"
+            />
           </div>
 
           <div class="col-md-4">
-            <label class="custom-label"><i class="bi bi-palette text-orange fs-5 mx-1"></i>  لون السيارة</label>
-            <input type="text" formControlName="carColor" class="form-control custom-input" placeholder="أدخل اللون">
+            <label class="custom-label"
+              ><i class="bi bi-palette text-orange fs-5 mx-1"></i> لون
+              السيارة</label
+            >
+            <input
+              type="text"
+              formControlName="color"
+              class="form-control custom-input"
+              placeholder="أدخل اللون"
+            />
           </div>
 
           <div class="col-md-6">
-            <label class="custom-label"><i class="bi bi-grid text-orange fs-5 mx-1"></i>  فئة السيارة</label>
-            <input type="text" formControlName="carCategory" class="custom-input form-control" placeholder="سيدان / SUV">
+            <label class="custom-label">
+              <i class="bi bi-grid text-orange fs-5 mx-1"></i>
+              نوع هيكل السيارة <span class="text-danger">*</span>
+            </label>
+
+            <select
+              formControlName="bodyType"
+              class="form-control custom-input"
+            >
+              <option value="" disabled selected>اختر النوع</option>
+              <option *ngFor="let t of bodyTypes" [value]="t.value">
+                {{ t.label }}
+              </option>
+            </select>
           </div>
 
           <div class="col-md-6">
-            <label class="custom-label"><i class="bi bi-gear text-orange fs-5 mx-1"></i>  موديل السيارة</label>
-            <input type="text" formControlName="carModel" class="custom-input form-control" placeholder="مثال: 2024">
+            <label class="custom-label"
+              ><i class="bi bi-gear text-orange fs-5 mx-1"></i> موديل
+              السيارة</label
+            >
+            <input
+              type="text"
+              formControlName="model"
+              class="custom-input form-control"
+              placeholder="مثال: 2024"
+            />
           </div>
 
           <div class="col-12 text-center mt-5">
             <button
               type="submit"
               [disabled]="customerForm.invalid"
-              class="btn-submit-orange">
+              class="btn-submit-orange"
+            >
               تأكيد وإضافة العميل
             </button>
           </div>
-
         </div>
       </form>
     </div>
-
-</section>
+  </section>
 </div>
