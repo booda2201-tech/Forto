@@ -1,334 +1,147 @@
-<!-- <nav class="navbar">
-  <div class="container">
-<div class="checkbtn" (click)="toggleMenu()">
-      <span>☰</span>
-    </div>
-    <div class="logo" routerLink="/">
-      <img src="../../../assets/imeg/logo forto.png" alt="#"> </div>
-
-<ul class="nav-links" [class.active]="isMenuOpen">
-          <li><a href="#" routerLinkActive="active-link" routerLink="/create-order">تسجيل الخروج</a></li>
-    </ul>
-  </div>
-</nav> -->
-
-
-<!-- <div class="cont">
-<div class="container bg-danger">
-<div class="row bg-info">
-    <h3 class="mb-5 text-center text-white">
-    <i class="fas fa-concierge-bell"></i>
-      الطلبات الحالية ({{ carRequests.length }})
-    </h3>
-  <div *ngFor="let car of carRequests" class="col-md-10 mx-auto mb-3">
-    <div class="card shadow-sm">
-      <div class="card-body d-flex align-items-center justify-content-between text-end">
-        <div>
-
-          <h6 class="card-subtitle mb-2 text-muted"> <strong class="text-black">نوع السيارة:</strong>
-                {{ car.carType }}</h6>
-          <p class="mb-1"><strong>فئة السيارة:</strong> {{ car.carCategory }}</p>
-          <p class="mb-0"><strong> نوع الخدمة: </strong>  {{ car.service }}</p>
-        </div>
-
-<div class="d-flex gap-2 mt-2" *ngIf="userRole === 1">
-    <button class="btn btn-success">
-        بدء الخدمة
-    </button>
-
-    <button class="btn btn-danger"
-            data-bs-toggle="modal"
-            data-bs-target="#detailsModal"
-            data-bs-backdrop="static"
-            data-bs-keyboard="false"
-            (click)="selectCar(car)">
-        انهاء الخدمه
-    </button>
-</div>
-
-
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content rounded-0" *ngIf="selectedCar">
-<div class="min mt-4 pt-3 text-end p-3 rounded-4" dir="rtl">
-
-    <label class="form-label fw-bold mb-3 text-black fs-5 d-flex align-items-center justify-content-between">
-        <span>مدى اتساخ السيارة <span class="text-danger">*</span></span>
-        <small class="text-muted fw-normal" *ngIf="!selectedCar.dirtLevel"> (يجب اختيار مستوى) </small>
-    </label>
-
-    <div class="dirt-list" dir="ltr">
-        <div class="dirt-item"
-            [class.active-normal]="selectedCar.dirtLevel === 'normal'"
-            (click)="selectedCar.dirtLevel = 'normal'"
-            data-bs-dismiss="modal">
-            <div class="d-flex align-items-center w-100">
-                <div class="status-indicator bg-success"></div>
-                <div class="flex-grow-1 ms-3 text-end px-3">
-                    <h6 class="mb-0 fw-bold">عادي</h6>
-
-                </div>
-                <i class="bi bi-check-circle-fill fs-4 check-icon" *ngIf="selectedCar.dirtLevel === 'normal'"></i>
-            </div>
-        </div>
-
-        <div class="dirt-item"
-            [class.active-medium]="selectedCar.dirtLevel === 'medium'"
-            (click)="selectedCar.dirtLevel = 'medium'"
-            data-bs-dismiss="modal">
-            <div class="d-flex align-items-center w-100">
-                <div class="status-indicator bg-warning"></div>
-                <div class="flex-grow-1 ms-3 text-end px-3">
-                    <h6 class="mb-0 fw-bold">متوسط</h6>
-                </div>
-                <i class="bi bi-check-circle-fill fs-4 check-icon" *ngIf="selectedCar.dirtLevel === 'medium'"></i>
-            </div>
-        </div>
-
-        <div class="dirt-item"
-            [class.active-hard]="selectedCar.dirtLevel === 'hard'"
-            (click)="selectedCar.dirtLevel = 'hard'"
-            data-bs-dismiss="modal">
-            <div class="d-flex align-items-center w-100">
-                <div class="status-indicator bg-danger"></div>
-                <div class="flex-grow-1 ms-3 text-end px-3">
-                    <h6 class="mb-0 fw-bold">صعب (متسخة جداً)</h6>
-                </div>
-                <i class="bi bi-check-circle-fill fs-4 check-icon" *ngIf="selectedCar.dirtLevel === 'hard'"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
-</div>
-</div>
-
-
-
-
-</div>
-</div>
-</div> -->
-
-
 <div class="container mt-4" dir="rtl">
-  <h3 class="text-end mb-4 fw-bold">الحجوزات ({{ carRequests.length }})</h3>
 
-  <div *ngFor="let car of carRequests" class="card mb-4 shadow-sm border-0 position-relative">
-    <div class="position-absolute top-0 start-0 m-3 d-flex align-items-center">
-        <span [ngClass]="{'text-warning': car.status === 'waiting', 'text-primary': car.status === 'in-progress'
-          , 'text-success': car.status === 'completed', 'text-danger': car.status === 'canceled'
-        }" class="fw-bold small">
-            <i class="bi bi-circle-fill me-1" style="font-size: 8px;"></i> {{ car.statusText }}
-        </span>
-    </div>
+  <div class="d-flex justify-content-end mb-3 gap-2">
+    <input
+      type="date"
+      class="form-control"
+      style="max-width: 220px"
+      [value]="selectedDate"
+      (change)="onDateChange($event)"
+    />
+    <button class="btn btn-outline-secondary" (click)="loadTasks()">تحديث</button>
+  </div>
 
-    <div class="card-body pt-5">
-      <div class="d-flex align-items-center mb-3">
-        <div class="bg-light p-3 rounded-3 me-3">
-          <i class="bi bi-person text-warning fs-4"></i>
-        </div>
+  <!-- ✅ Active -->
+  <h3 class="text-end mb-3 fw-bold">
+    المهام النشطة ({{ myActiveTasks.length }})
+  </h3>
+
+  <div *ngIf="myActiveTasks.length === 0" class="alert alert-light text-end">
+    لا توجد مهام نشطة حالياً.
+  </div>
+
+  <div *ngFor="let task of myActiveTasks" class="card mb-3 shadow-sm border-0">
+    <div class="card-body text-end">
+      <div class="d-flex justify-content-between align-items-center">
         <div>
-          <h5 class="mb-0 fw-bold">{{ car.customerName }}</h5>
-          <small class="text-muted">رقم الحجز: #{{ car.id }}</small>
+          <div class="fw-bold">{{ task.serviceName }}</div>
+          <div class="text-muted small">
+            لوحة: <strong>{{ task.plateNumber }}</strong> |
+            موعد: <strong>{{ task.scheduledStart }}</strong>
+          </div>
         </div>
+
+        <span class="badge bg-primary">نشط</span>
       </div>
 
-      <div class="row g-3 text-end">
-        <div class="col-md-4">
-          <div class="border rounded-3 p-2 bg-white d-flex align-items-center">
-              <div class="icon-box border rounded-3 d-flex align-items-center justify-content-center me-3 bg-white" style="width: 45px; height: 45px;">
-                <i class="bi bi-telephone text-front text-secondary fs-5"></i>
-              </div>
-            <div>
-              <small class="text-muted d-block">رقم الهاتف</small>
-              <span class="fw-bold small">{{ car.phone }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="border rounded-3 p-2 d-flex align-items-center bg-light-subtle">
-              <div class="icon-box border rounded-3 d-flex align-items-center justify-content-center me-3 bg-white" style="width: 45px; height: 45px;">
-                <i class="bi bi-car-front text-secondary fs-5"></i>
-              </div>
-            <div class="text-end flex-grow-1 px-2">
-              <small class="text-muted d-block mb-1" style="font-size: 0.8rem;">نوع السيارة</small>
-              <span class="fw-bold text-dark d-block">{{ car.carModel }}</span>
-          </div>
-            </div>
-          </div>
-        <div class="col-md-4">
-          <div class="border rounded-3 p-2 bg-white d-flex align-items-center">
-            <div class="icon-box border rounded-3 d-flex align-items-center justify-content-center me-3 bg-white" style="width: 45px; height: 45px;">
-                <i class="bi bi-map text-secondary fs-5"></i>
-              </div>
-            <div>
-              <small class="text-muted d-block">رقم اللوحة</small>
-              <span class="fw-bold small">{{ car.plateNumber }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="border rounded-3 p-2 bg-white d-flex align-items-center">
-              <div class="icon-box border rounded-3 d-flex align-items-center justify-content-center me-3 bg-white" style="width: 45px; height: 45px;">
-                  <i class="bi bi-tag text-secondary fs-5"></i>
-              </div>
-            <div>
-              <small class="text-muted d-block">الخدمة</small>
-              <span class="fw-bold small">{{ car.service }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="border rounded-3 p-2 bg-white d-flex align-items-center">
-              <div class="icon-box border rounded-3 d-flex align-items-center justify-content-center me-3 bg-white" style="width: 45px; height: 45px;">
-                <i class="bi bi-calendar text-secondary fs-5"></i>
-              </div>
-            <div>
-              <small class="text-muted d-block">التاريخ</small>
-              <span class="fw-bold small">{{ car.date }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="border rounded-3 p-2 bg-white d-flex align-items-center">
-            <div class="icon-box border rounded-3 d-flex align-items-center justify-content-center me-3 bg-white" style="width: 45px; height: 45px;">
-                <i class="bi bi-clock text-secondary fs-5"></i>
-              </div>
-            <div>
-              <small class="text-muted d-block">الوقت</small>
-              <span class="fw-bold small">{{ car.time }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div class="d-flex gap-2 mt-3 justify-content-end">
+        <button class="btn btn-success btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#detailsModal"
+                (click)="selectTask(task)">
+          تسجيل مواد
+        </button>
 
-      <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3">
-
-
-  <div class="d-flex gap-2" *ngIf="userRole === 0">
-    <button *ngIf="car.status === 'waiting'"
-            class="btn btn-primary rounded-pill px-4 btn-sm fw-bold"
-            (click)="startExecution(car)">
-        بدء التنفيذ
-    </button>
-
-    <button class="btn btn-success rounded-pill px-4 btn-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#detailsModal"
-            (click)="selectCar(car)">
-        تعديل
-    </button>
-
-    <button class="btn btn-danger rounded-pill px-4 btn-sm"
-            (click)="finishCar(car)">
-        انهاء
-    </button>
-  </div>
+        <button class="btn btn-danger btn-sm" (click)="finishExecution(task)">
+          إنهاء
+        </button>
       </div>
     </div>
   </div>
 
-<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow rounded-4" *ngIf="selectedCar">
-      <div class="modal-body p-4 text-end" dir="rtl">
+  <hr class="my-4">
 
-        <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
-          <h5 class="fw-bold mb-0">تحديث تفاصيل الخدمة</h5>
-          <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"></button>
+  <!-- ✅ Available -->
+  <h3 class="text-end mb-3 fw-bold">
+    المهام المتاحة ({{ availableTasks.length }})
+  </h3>
+
+  <div *ngIf="availableTasks.length === 0" class="alert alert-light text-end">
+    لا توجد مهام متاحة.
+  </div>
+
+  <div *ngFor="let task of availableTasks" class="card mb-3 shadow-sm border-0">
+    <div class="card-body text-end">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="fw-bold">{{ task.serviceName }}</div>
+          <div class="text-muted small">
+            لوحة: <strong>{{ task.plateNumber }}</strong> |
+            موعد: <strong>{{ task.scheduledStart }}</strong>
+          </div>
         </div>
 
-        <!-- <div class="mb-4">
-          <label class="form-label fw-bold text-dark mb-2">
-            <i class="bi bi-box-seam ms-2 text-primary"></i> أدوات/منظفات إضافية استخدمت:
-          </label>
-          <textarea class="form-control bg-light border-0 rounded-3"
-                    rows="2"
-                    [(ngModel)]="selectedCar.additionalTools"
-                    placeholder=""></textarea>
-        </div>
+        <span class="badge bg-warning text-dark">متاح</span>
+      </div>
 
-        <div class="mb-4">
-          <label class="form-label fw-bold text-dark mb-2">
-            <i class="bi bi-chat-dots ms-2 text-warning"></i> طلبات إضافية من العميل:
-          </label>
-          <input type="text" class="form-control bg-light border-0 rounded-3"
-                  [(ngModel)]="selectedCar.customerRequests"
-                  placeholder="">
-        </div>
-
-        <div class="mb-4">
-          <label class="form-label fw-bold text-dark mb-2">
-            <i class="bi bi-cash-stack ms-2 text-success"></i> رسوم إضافية:
-          </label>
-          <input type="number" class="form-control bg-light border-0 rounded-3"
-                  [(ngModel)]="selectedCar.extraCharge"
-                  placeholder="0.00">
-        </div> -->
-
-        <div class="mb-4">
-  <label class="form-label fw-bold text-dark mb-3">
-    <i class="bi bi-box-seam ms-2 text-primary"></i> أدوات/منظفات إضافية استخدمت:
-  </label>
-
-  <div class="row g-3">
-    <div class="col-6">
-      <div class="p-3 border rounded-3 bg-light d-flex align-items-center justify-content-between">
-        <span class="fw-bold">  صابون: </span>
-        <span>جم</span>
-        <div class="input-group input-group-sm" style="width: 100px;">
-          <input type="number" class="form-control text-center border-2 bg-white"
-                  [(ngModel)]="selectedCar.soapCount" name="soap" placeholder="0">
-        </div>
+      <div class="d-flex gap-2 mt-3 justify-content-end">
+        <button class="btn btn-primary btn-sm" (click)="startExecution(task)">
+          ابدأ
+        </button>
       </div>
     </div>
+  </div>
 
-    <div class="col-6">
-      <div class="p-3 border rounded-3 bg-light d-flex align-items-center justify-content-between">
-        <span class="fw-bold">معطر:</span>
+  <!-- ✅ Materials Modal -->
+  <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow rounded-4" *ngIf="selectedTask">
+        <div class="modal-body p-4 text-end" dir="rtl">
+          <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+            <h5 class="fw-bold mb-0">تحديث المواد المستخدمة</h5>
+            <button type="button" class="btn-close m-0" data-bs-dismiss="modal"></button>
+          </div>
 
-        <div class="input-group input-group-sm" style="width: 100px;">
-            <input type="number" class="form-control text-center border-2 bg-white"
-                    [(ngModel)]="selectedCar.perfumeCount" name="perfume" placeholder="0">
+          <div class="alert alert-light small">
+            خدمة: <strong>{{ selectedTask.serviceName }}</strong> |
+            لوحة: <strong>{{ selectedTask.plateNumber }}</strong>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold mb-2">اختر المواد + الكمية الفعلية:</label>
+
+            <div class="row g-2" *ngFor="let row of selectedMaterialRows; let i = index">
+              <div class="col-md-7">
+                <select class="form-select" [(ngModel)]="row.materialId">
+                  <option [ngValue]="0" disabled>اختر مادة...</option>
+                  <option *ngFor="let m of materials" [ngValue]="m.id">
+                    {{ m.name }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="col-md-3">
+                <input type="number" class="form-control" step="0.01"
+                       [(ngModel)]="row.actualQty" placeholder="الكمية" />
+              </div>
+
+              <div class="col-md-2 d-flex gap-2">
+                <button class="btn btn-outline-danger w-100" type="button" (click)="removeMaterialRow(i)">
+                  حذف
+                </button>
+              </div>
+            </div>
+
+            <button class="btn btn-outline-primary mt-3" type="button" (click)="addMaterialRow()">
+              + إضافة مادة
+            </button>
+          </div>
+
+          <div class="d-grid gap-2 mt-4">
+            <button class="btn btn-success py-2 rounded-3 fw-bold"
+                    (click)="saveMaterials()"
+                    data-bs-dismiss="modal">
+              حفظ
+            </button>
+
+            <button class="btn btn-light py-2 rounded-3 text-muted" data-bs-dismiss="modal">
+              إلغاء
+            </button>
+          </div>
+
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="mb-4">
-  <label class="form-label fw-bold text-dark mb-2">
-    <i class="bi bi-chat-dots ms-2 text-warning"></i> طلبات إضافية من العميل:
-  </label>
-  <textarea class="form-control bg-light border-0 rounded-3"
-            rows="2"
-            [(ngModel)]="selectedCar.customerRequests"
-            placeholder=""></textarea>
-</div>
-
-
-        <div class="d-grid gap-2 mt-4">
-          <button class="btn btn-success py-2 rounded-3 fw-bold"
-                  (click)="saveChanges()"
-                  data-bs-toggle="modal"
-                  data-bs-dismiss="modal">
-              تأكيد
-          </button>
-
-          <button class="btn btn-light py-2 rounded-3 text-muted" data-bs-dismiss="modal">
-            إلغاء
-          </button>
-        </div>
-
-      </div>
-    </div>
-  </div>
 </div>

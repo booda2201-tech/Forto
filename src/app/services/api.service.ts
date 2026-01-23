@@ -332,4 +332,47 @@ export class ApiService {
   // getCatalogCategories() {
   //   return this.http.get(`${this.baseUrl}/api/catalog/categories/GetAll`);
   // }
+
+  getEmployeeTasks(employeeId: number, date: string) {
+    return this.http.get(
+      `${this.baseUrl}/api/employees/${employeeId}/tasks/GetEmployeeTasks`,
+      {
+        params: { date },
+      },
+    );
+  }
+
+startBookingItem(itemId: number, payload: { employeeId: number }) {
+  return this.http.put(
+    `${this.baseUrl}/api/booking-items/${itemId}/start`,
+    payload
+  );
+}
+
+completeBookingItem(itemId: number, payload: { employeeId: number }) {
+  return this.http.put(
+    `${this.baseUrl}/api/booking-items/${itemId}/complete`,
+    payload
+  );
+}
+
+updateBookingItemMaterials(
+  bookingItemId: number,
+  payload: {
+    employeeId: number;
+    materials: { materialId: number; actualQty: number }[];
+  }
+) {
+  return this.http.put(
+    `${this.baseUrl}/api/booking-items/${bookingItemId}/materials/UpdateBookingItemMaterials`,
+    payload
+  );
+}
+
+
+
+  // // (Optional but very useful for materials dropdown)
+  // getMaterials() {
+  //   return this.http.get(`${this.baseUrl}/api/materials/GetAll`);
+  // }
 }
