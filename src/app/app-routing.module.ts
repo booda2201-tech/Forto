@@ -19,6 +19,7 @@ import { ProductsComponent } from './components/admin/products/products.componen
 import { WorkersComponent } from './components/admin/workers/workers.component';
 import { PaymentPointComponent } from './components/cashier/payment-point/payment-point.component';
 import { DashboardComponent } from './components/admin/dashboard/dashboard.component';
+import { MaterialsComponent } from './components/admin/materials/materials.component';
 
 
 
@@ -33,6 +34,7 @@ const routes: Routes = [
       { path: 'workers', component: WorkersComponent },
       { path: 'requests', component: RequestsComponent },
       { path: 'services', component: ServicesComponent },
+      { path: 'materials', component: MaterialsComponent },
       { path: 'dashboard', component: DashboardComponent },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
     ],

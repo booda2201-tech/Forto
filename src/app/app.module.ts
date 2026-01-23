@@ -34,6 +34,7 @@ import { WorkersComponent } from './components/admin/workers/workers.component';
 import { HttpClientModule } from '@angular/common/http';
 import { PaymentPointComponent } from './components/cashier/payment-point/payment-point.component';
 import { DashboardComponent } from './components/admin/dashboard/dashboard.component';
+import { MaterialsComponent } from './components/admin/materials/materials.component';
 
 @NgModule({
   declarations: [
@@ -53,6 +54,7 @@ import { DashboardComponent } from './components/admin/dashboard/dashboard.compo
     WorkersComponent,
     PaymentPointComponent,
     DashboardComponent,
+    MaterialsComponent,
   ],
   imports: [
     BrowserModule,

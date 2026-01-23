@@ -1,7 +1,15 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BehaviorSubject, combineLatest, map, Observable, switchMap, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Observable,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import { ApiService } from 'src/app/services/api.service';
 import * as XLSX from 'xlsx';
 
@@ -18,8 +26,8 @@ type InvoiceUi = {
   customerName: string;
   phone: string;
   paymentMethod: number; // 1 = cash
-  date: string;          // YYYY-MM-DD
-  createdAt: string;     // full date string
+  date: string; // YYYY-MM-DD
+  createdAt: string; // full date string
 
   subTotal: number;
   discount: number;
@@ -34,7 +42,7 @@ type InvoiceUi = {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './invoices.component.html',
-  styleUrls: ['./invoices.component.scss']
+  styleUrls: ['./invoices.component.scss'],
 })
 export class InvoicesComponent {
   selectedInvoice: InvoiceUi | null = null;
@@ -47,14 +55,15 @@ export class InvoicesComponent {
   // filters
   private searchTerm$ = new BehaviorSubject<string>('');
   private from$ = new BehaviorSubject<string>(''); // YYYY-MM-DD
-  private to$ = new BehaviorSubject<string>('');   // YYYY-MM-DD
+  private to$ = new BehaviorSubject<string>(''); // YYYY-MM-DD
   private paymentMethod$ = new BehaviorSubject<string>(''); // "1" cash / "2" visa ... (string from select)
 
   private page$ = new BehaviorSubject<number>(1);
   private pageSize$ = new BehaviorSubject<number>(20);
 
   // keep last summary
-  private lastSummary: { totalCount: number; totalRevenue: number } | null = null;
+  private lastSummary: { totalCount: number; totalRevenue: number } | null =
+    null;
 
   invoices$: Observable<InvoiceUi[]> = combineLatest([
     this.searchTerm$,
@@ -62,7 +71,7 @@ export class InvoicesComponent {
     this.to$,
     this.paymentMethod$,
     this.page$,
-    this.pageSize$
+    this.pageSize$,
   ]).pipe(
     switchMap(([term, from, to, method, page, pageSize]) => {
       return this.api.getInvoicesList({
@@ -72,7 +81,7 @@ export class InvoicesComponent {
         paymentMethod: method || undefined,
         q: term || undefined,
         page,
-        pageSize
+        pageSize,
       });
     }),
     tap((res: any) => {
@@ -81,8 +90,10 @@ export class InvoicesComponent {
     map((res: any) => this.mapApiToUi(res)),
     tap((list) => {
       this.totalInvoicesCount = this.lastSummary?.totalCount ?? list.length;
-      this.totalDailyAmount = this.lastSummary?.totalRevenue ?? list.reduce((acc, inv) => acc + (inv.total || 0), 0);
-    })
+      this.totalDailyAmount =
+        this.lastSummary?.totalRevenue ??
+        list.reduce((acc, inv) => acc + (inv.total || 0), 0);
+    }),
   );
 
   constructor(private api: ApiService) {}
@@ -153,7 +164,7 @@ export class InvoicesComponent {
         customerName: String(x.customerName ?? ''),
         phone: String(x.customerPhone ?? ''),
         itemsText: String(x.itemsText ?? ''),
-        lines
+        lines,
       } as InvoiceUi;
     });
   }
@@ -170,15 +181,19 @@ export class InvoicesComponent {
 
   // ---------- Excel ----------
   exportToExcel(invoice: InvoiceUi): void {
-    const dataToExport = [{
-      'رقم الفاتورة': invoice.id,
-      'اسم العميل': invoice.customerName || 'Walk-in',
-      'رقم الهاتف': invoice.phone || '-',
-      'البنود': invoice.lines.map(l => `${l.description} x${l.qty}`).join(' | '),
-      'طريقة الدفع': this.paymentLabel(invoice.paymentMethod),
-      'الإجمالي': invoice.total.toFixed(2),
-      'التاريخ': invoice.date
-    }];
+    const dataToExport = [
+      {
+        'رقم الفاتورة': invoice.id,
+        'اسم العميل': invoice.customerName || 'Walk-in',
+        'رقم الهاتف': invoice.phone || '-',
+        البنود: invoice.lines
+          .map((l) => `${l.description} x${l.qty}`)
+          .join(' | '),
+        'طريقة الدفع': this.paymentLabel(invoice.paymentMethod),
+        الإجمالي: invoice.total.toFixed(2),
+        التاريخ: invoice.date,
+      },
+    ];
 
     const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(dataToExport);
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
@@ -206,5 +221,35 @@ export class InvoicesComponent {
 
   downloadInvoice(): void {
     setTimeout(() => window.print(), 300);
+  }
+
+  exportFilteredToExcel(): void {
+    this.invoices$.pipe(take(1)).subscribe((list) => {
+      if (!list || list.length === 0) return;
+
+      const rows = list.map((inv) => ({
+        'رقم الفاتورة': inv.id,
+        التاريخ: inv.date,
+        'اسم العميل': inv.customerName || 'Walk-in',
+        الهاتف: inv.phone || '-',
+        'طريقة الدفع': inv.paymentMethod === 1 ? 'كاش' : 'فيزا',
+        البنود:
+          inv.itemsText ||
+          inv.lines?.map((l) => l.description).join(' | ') ||
+          '',
+        الإجمالي: inv.total,
+      }));
+
+      const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(rows);
+      const wb: XLSX.WorkBook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Invoices');
+
+      // filename includes filters (optional)
+      const from = (this.from$ as any).value || '';
+      const to = (this.to$ as any).value || '';
+      const fileName = `Invoices_${from || 'all'}_to_${to || 'all'}.xlsx`;
+
+      XLSX.writeFile(wb, fileName);
+    });
   }
 }

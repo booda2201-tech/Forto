@@ -1,123 +1,237 @@
-
-
 <div class="contt">
-<div class="container-fluid mt-4" dir="rtl">
-  <div class="row g-4">
-    <div class="col-md-8">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold m-0"><i class="bi bi-cup-hot-fill me-2 text-orange"></i> قائمة المنتجات</h3>
-      </div>
+  <div class="container-fluid mt-4" dir="rtl">
+    <div class="row g-4">
+      <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="fw-bold m-0">
+            <i class="bi bi-cup-hot-fill me-2 text-orange"></i> قائمة المنتجات
+          </h3>
+        </div>
 
-      <div class="row g-3">
+        <div class="row g-3">
           <div class="col-md-4" *ngFor="let prod of products">
-            <div class="card product-card border-0 shadow-sm"
-                  [class.border-danger]="prod.stock === 0"
-                  [class.bg-light-danger]="prod.stock === 0">
-
+            <div
+              class="card product-card border-0 shadow-sm"
+              [class.border-danger]="prod.stock === 0"
+              [class.bg-light-danger]="prod.stock === 0"
+            >
               <div class="card-body text-center p-4">
-                <div class="icon-circle mb-3" [class.bg-danger]="prod.stock === 0">
-                  <i class="bi" [ngClass]="prod.stock === 0 ? 'bi-exclamation-triangle-fill fs-3 text-center' : 'bi-cup-hot fs-2 text-center'"></i>
+                <div
+                  class="icon-circle mb-3"
+                  [class.bg-danger]="prod.stock === 0"
+                >
+                  <i
+                    class="bi"
+                    [ngClass]="
+                      prod.stock === 0
+                        ? 'bi-exclamation-triangle-fill fs-3 text-center'
+                        : 'bi-cup-hot fs-2 text-center'
+                    "
+                  ></i>
                 </div>
 
                 <h6 class="fw-bold mb-1">{{ prod.name }}</h6>
 
                 <div class="mb-2">
-                  <span class="badge"
-                        [ngClass]="{'bg-danger': prod.stock === 0, 'bg-warning text-dark': prod.stock <= 5 && prod.stock > 0, 'bg-success': prod.stock > 5}">
-                    {{ prod.stock === 0 ? 'غير متوفر' : 'المخزون: ' + prod.stock }}
+                  <span
+                    class="badge"
+                    [ngClass]="{
+                      'bg-danger': prod.stock === 0,
+                      'bg-warning text-dark': prod.stock <= 5 && prod.stock > 0,
+                      'bg-success': prod.stock > 5,
+                    }"
+                  >
+                    {{
+                      prod.stock === 0 ? "غير متوفر" : "المخزون: " + prod.stock
+                    }}
                   </span>
                 </div>
 
                 <p class="text-orange fw-bold mb-1">{{ prod.price }} ج.م</p>
 
                 <div class="d-flex justify-content-center gap-2 mt-2">
-                  <button class="btn btn-sm btn-outline-secondary" (click)="updateQuickStock(prod, -1)">-</button>
-                  <button class="btn btn-sm btn-light-warning" (click)="openEditModal(prod)" data-bs-toggle="modal" data-bs-target="#editProductModal">
-                    <i class="bi bi-pencil-square"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-secondary" (click)="updateQuickStock(prod, 1)">+</button>
+                  <div class="d-flex justify-content-center gap-2 mt-2">
+                    <button
+                      class="btn btn-sm btn-light-warning"
+                      (click)="openEditModal(prod)"
+                      data-bs-toggle="modal"
+                      data-bs-target="#editProductModal"
+                    >
+                      <!-- <i class="bi bi-pencil-square"></i> -->
+                      تعديل
+                    </button>
+
+                    <button
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="deleteProduct(prod.id)"
+                    >
+                      <!-- <i class="bi bi-trash"></i> -->
+                      حذف
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-      </div>
-    </div>
-
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 20px;">
-        <div class="card-header bg-orange text-white py-3 border-0 rounded-top-4">
-          <h5 class="mb-0 text-center fw-bold">إضافة منتج جديد</h5>
         </div>
-        <div class="card-body p-4 text-end">
+      </div>
+
+      <div class="col-md-4">
+        <div
+          class="card border-0 shadow-sm rounded-4 sticky-top"
+          style="top: 20px"
+        >
+          <div
+            class="card-header bg-orange text-white py-3 border-0 rounded-top-4"
+          >
+            <h5 class="mb-0 text-center fw-bold">إضافة منتج جديد</h5>
+          </div>
+          <div class="card-body p-4 text-end">
             <div class="modal-body p-0 text-end">
               <div class="mb-3">
                 <label class="form-label small fw-bold">اسم المنتج *</label>
-                <input #nameInp type="text" class="form-control custom-input" [(ngModel)]="selectedProduct.name">
+                <input
+                  #nameInp
+                  type="text"
+                  class="form-control custom-input"
+                  [(ngModel)]="selectedProduct.name"
+                />
               </div>
+
+              <div class="mb-3">
+                <label class="form-label small fw-bold">SKU *</label>
+                <input
+                  #skuInp
+                  type="text"
+                  class="form-control custom-input"
+                  [(ngModel)]="selectedProduct.sku"
+                />
+              </div>
+
               <div class="row">
                 <div class="col-6">
-                  <label class="form-label small fw-bold">السعر ($) *</label>
-                  <input #priceInp type="number" class="form-control custom-input" [(ngModel)]="selectedProduct.price">
+                  <label class="form-label small fw-bold">سعر البيع *</label>
+                  <input
+                    #priceInp
+                    type="number"
+                    class="form-control custom-input"
+                    [(ngModel)]="selectedProduct.price"
+                  />
                 </div>
-                  <div class="col-6">
-                    <label class="form-label small fw-bold">الكمية في المخزون *</label>
-                    <input #stockInp type="number" class="form-control custom-input" placeholder="2">
-                  </div>
-              </div>
-              <div class="mt-3">
-                <label class="form-label small fw-bold">الوصف</label>
-                <textarea class="form-control custom-input" rows="2" placeholder="الوصف"></textarea>
+                <div class="col-6">
+                  <label class="form-label small fw-bold">التكلفة *</label>
+                  <input
+                    #costInp
+                    type="number"
+                    class="form-control custom-input"
+                    [(ngModel)]="selectedProduct.costPerUnit"
+                  />
+                </div>
               </div>
             </div>
-                <button (click)="addNewProduct(nameInp, priceInp, stockInp)" class="btn btn-orange w-100 py-2 mt-3 fw-bold">
-                  إضافة للقائمة <i class="bi bi-plus-lg ms-1"></i>
-                </button>
+            <button
+              (click)="addNewProduct()"
+              class="btn btn-orange w-100 py-2 mt-3 fw-bold"
+            >
+              إضافة للقائمة <i class="bi bi-plus-lg ms-1"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
-</div>
 
-
-
-
-<div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true" dir="rtl">
+<div
+  class="modal fade"
+  id="editProductModal"
+  tabindex="-1"
+  aria-hidden="true"
+  dir="rtl"
+>
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow rounded-4">
       <div class="modal-header border-0 pb-0">
         <h5 class="modal-title fw-bold">تعديل المنتج</h5>
-        <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button
+          type="button"
+          class="btn-close ms-0 me-auto"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
       </div>
       <div class="modal-body p-4 text-end">
         <div class="mb-3">
           <label class="form-label small fw-bold">اسم المنتج *</label>
-          <input type="text" class="form-control custom-input" [(ngModel)]="selectedProduct.name">
+          <input
+            #nameInp
+            type="text"
+            class="form-control custom-input"
+            [(ngModel)]="selectedProduct.name"
+          />
         </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">SKU *</label>
+          <input
+            #skuInp
+            type="text"
+            class="form-control custom-input"
+            [(ngModel)]="selectedProduct.sku"
+          />
+        </div>
+
         <div class="row">
           <div class="col-6">
-            <label class="form-label small fw-bold">السعر ($) *</label>
-            <input type="number" class="form-control custom-input" [(ngModel)]="selectedProduct.price">
+            <label class="form-label small fw-bold">سعر البيع *</label>
+            <input
+              #priceInp
+              type="number"
+              class="form-control custom-input"
+              [(ngModel)]="selectedProduct.price"
+            />
           </div>
           <div class="col-6">
-            <label class="form-label small fw-bold">الكمية في المخزون *</label>
-            <input type="number" class="form-control custom-input" placeholder="2">
+            <label class="form-label small fw-bold">التكلفة *</label>
+            <input
+              #costInp
+              type="number"
+              class="form-control custom-input"
+              [(ngModel)]="selectedProduct.costPerUnit"
+            />
           </div>
         </div>
-        <div class="mt-3">
-          <label class="form-label small fw-bold">الوصف</label>
-          <textarea class="form-control custom-input" rows="2" placeholder="الوصف"></textarea>
+        <div class="form-check mt-2">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="isActiveChk"
+            [(ngModel)]="selectedProduct.isActive"
+          />
+          <label class="form-check-label fw-bold" for="isActiveChk"
+            >Active</label
+          >
         </div>
       </div>
       <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-orange px-4 py-2 fw-bold rounded-3" (click)="saveProductChanges()" data-bs-dismiss="modal">حفظ</button>
-        <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-bold rounded-3" data-bs-dismiss="modal">إلغاء</button>
+        <button
+          type="button"
+          class="btn btn-orange px-4 py-2 fw-bold rounded-3"
+          (click)="saveProductChanges()"
+          data-bs-dismiss="modal"
+        >
+          حفظ
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary px-4 py-2 fw-bold rounded-3"
+          data-bs-dismiss="modal"
+        >
+          إلغاء
+        </button>
       </div>
     </div>
   </div>
 </div>
-
-
-
 
 <!-- [class.active]="prod.selected" (click)="toggleProduct(prod)" -->

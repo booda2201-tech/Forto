@@ -96,29 +96,61 @@
 
 <div class="contt">
   <div class="dashboard-container">
+
+    <!-- Filters -->
     <div class="filter-card forto-card mb-4 p-3 d-flex align-items-center gap-3">
-        <input type="date" class="form-control custom-input" placeholder="من تاريخ">
-        <input type="date" class="form-control custom-input" placeholder="إلى تاريخ">
-        <button class="btn-submit-order w-50 py-2 fw-bold rounded-3">تحديث التقارير</button>
+      <input
+        type="date"
+        class="form-control custom-input"
+        [(ngModel)]="fromDate"
+        placeholder="من تاريخ"
+      />
+
+      <input
+        type="date"
+        class="form-control custom-input"
+        [(ngModel)]="toDate"
+        placeholder="إلى تاريخ"
+      />
+
+      <button
+        class="btn-submit-order w-50 py-2 fw-bold rounded-3"
+        (click)="loadSummary()"
+        [disabled]="isLoading || !fromDate || !toDate"
+      >
+        {{ isLoading ? 'جاري التحديث...' : 'تحديث التقارير' }}
+      </button>
     </div>
+
+    <!-- Error -->
+    <div *ngIf="errorMsg" class="alert alert-danger">
+      {{ errorMsg }}
+    </div>
+
+    <!-- Stats -->
     <div class="stats-grid">
       <div class="mini-card income">
         <span class="label">إجمالي الدخل</span>
-        <span class="value">{{ stats.totalRevenue | number }} ج.م</span>
+        <span class="value">{{ totalRevenue | number:'1.0-2' }} ج.م</span>
       </div>
-      <div class="mini-card active">
-        <span class="label">نشط</span>
-        <span class="value">{{ stats.activeCount }}</span>
-      </div>
-      <div class="mini-card pending">
-        <span class="label">انتظار</span>
-        <span class="value">{{ stats.waitingCount }}</span>
-      </div>
+
       <div class="mini-card done">
-        <span class="label">مكتمل</span>
-        <span class="value">{{ stats.completedCount }}</span>
+        <span class="label">صافي الربح</span>
+        <span class="value">{{ netProfit | number:'1.0-2' }} ج.م</span>
+      </div>
+
+      <div class="mini-card pending">
+        <span class="label">إجمالي التكاليف</span>
+        <span class="value">{{ totalCosts | number:'1.0-2' }} ج.م</span>
+      </div>
+
+      <div class="mini-card active">
+        <span class="label">تكلفة المنتجات</span>
+        <span class="value">{{ productsCost | number:'1.0-2' }} ج.م</span>
       </div>
     </div>
+
+    <!-- The rest stays as placeholders -->
     <div class="main-content-grid">
       <div class="forto-card">
         <h3 class="section-title">أداء العمال (اليوم)</h3>
@@ -149,43 +181,45 @@
         <h3 class="section-title">الخدمات الأكثر طلباً</h3>
         <div class="chart-area py-3">
           <div *ngFor="let service of topServices" class="mb-3">
-              <div class="d-flex justify-content-between mb-1">
-                <small>{{service.name}}</small>
-                <small class="fw-bold">{{service.count}}</small>
-              </div>
-              <div class="progress" style="height: 8px;">
-               <div class="progress-bar" [style.width.%]="service.count * 2" [style.background-color]="service.color"></div>
-              </div>
-          </div>
-          <div class="placeholder-text text-center mt-3" style="font-size: 11px; color: #ccc;">
+            <div class="d-flex justify-content-between mb-1">
+              <small>{{ service.name }}</small>
+              <small class="fw-bold">{{ service.count }}</small>
+            </div>
+            <div class="progress" style="height: 8px;">
+              <div class="progress-bar" [style.width.%]="service.count * 2" [style.background-color]="service.color"></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="reports-container mt-4">
-
+    <!-- Optional: show summary breakdown if you want -->
+    <div class="reports-container mt-4" *ngIf="summary">
       <div class="row">
         <div class="col-md-6 mb-3">
           <div class="forto-card p-4 h-100 text-center">
-            <h5 class="section-title mb-4">توزيع الإيراد</h5>
-            <div style="height: 200px; display: flex; align-items: center; justify-content: center; background: #f9f9f9; border-radius: 50%; width: 200px; margin: auto; border: 10px solid #ffa500;">
-              <span class="fw-bold text-muted">Chart View</span>
+            <h5 class="section-title mb-3">تفاصيل التكاليف</h5>
+            <div class="text-muted small">
+              <div>مواد مستهلكة: {{ summary.materialsConsumeCost | number:'1.0-2' }} ج.م</div>
+              <div>مواد تالفة: {{ summary.materialsWasteCost | number:'1.0-2' }} ج.م</div>
+              <div>هدايا: {{ summary.giftsCost | number:'1.0-2' }} ج.م</div>
             </div>
           </div>
         </div>
+
         <div class="col-md-6 mb-3">
           <div class="forto-card p-4 h-100 text-center">
-            <h5 class="section-title mb-4">معدل الإنجاز</h5>
-            <div style="height: 200px; display: flex; align-items: flex-end; justify-content: space-around; background: #f9f9f9; padding: 10px; border-radius: 15px;">
-              <div style="height: 40%; width: 20px; background: #ffa500; border-radius: 5px;"></div>
-              <div style="height: 70%; width: 20px; background: #ffa500; border-radius: 5px;"></div>
-              <div style="height: 55%; width: 20px; background: #ffa500; border-radius: 5px;"></div>
-              <div style="height: 90%; width: 20px; background: #ffa500; border-radius: 5px;"></div>
+            <h5 class="section-title mb-3">صافي الربح</h5>
+            <div style="height: 200px; display:flex; align-items:center; justify-content:center; background:#f9f9f9; border-radius:15px;">
+              <span class="fw-bold text-orange" style="font-size: 28px;">
+                {{ netProfit | number:'1.0-2' }} ج.م
+              </span>
             </div>
           </div>
         </div>
       </div>
     </div>
+
   </div>
 </div>
+

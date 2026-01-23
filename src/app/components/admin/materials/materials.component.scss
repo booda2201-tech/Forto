@@ -1,0 +1,125 @@
+
+.container-fluid{
+  background-color: #f8f9fa;
+  max-width: 1200px;
+  height: 100vh;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+
+$orange-color: #ff9a27;
+
+.text-orange { color: $orange-color !important; }
+.bg-orange { background-color: $orange-color !important; }
+
+.product-card {
+  cursor: pointer;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent !important;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
+  }
+
+  &.active {
+    border-color: $orange-color !important;
+    background-color: #fff9f2;
+    transform: scale(0.95);
+  }
+    .icon-circle {
+      background-color: $orange-color;
+      color: white;
+    }
+
+}
+
+.icon-circle {
+  width: 60px;
+  height: 60px;
+  background-color: #f8f9fa;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  color: $orange-color;
+  transition: 0.3s;
+}
+
+.bg-soft-orange {
+  background-color: #fff4e6;
+}
+
+.custom-input {
+  border: 1px solid #eee;
+  padding: 12px;
+  border-radius: 10px;
+  &:focus {
+    border-color: $orange-color;
+    box-shadow: none;
+  }
+}
+
+.btn-orange {
+  background-color: $orange-color;
+  color: white;
+  border-radius: 10px;
+  &:hover {
+    background-color: darken($orange-color, 10%);
+    color: white;
+  }
+}
+
+.btn-light-danger {
+  background-color: #fff5f5;
+  color: #ff4d4d;
+  border-radius: 8px;
+  &:hover { background-color: #ff4d4d; color: white; }
+}
+
+
+
+
+
+
+
+
+
+
+.btn-light-warning {
+  background-color: #fff9e6;
+  color: #ffc107;
+  border-radius: 8px;
+  border: none;
+  &:hover {
+    background-color: #ffc107;
+    color: white;
+  }
+}
+
+.modal-content {
+  .modal-header {
+    .btn-close { font-size: 0.8rem; }
+  }
+
+  .custom-input {
+    background-color: #f8f9fa;
+    border: 1px solid #eee;
+    padding: 10px;
+    font-size: 0.9rem;
+    &:focus {
+      background-color: white;
+      border-color: #ff9a27;
+      box-shadow: none;
+    }
+  }
+
+  .btn-dark {
+    background-color: #0d1117;
+    border: none;
+    &:hover { background-color: #000; }
+  }
+}

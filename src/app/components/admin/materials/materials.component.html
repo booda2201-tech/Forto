@@ -1,0 +1,154 @@
+<div class="contt">
+  <div class="container-fluid mt-4" dir="rtl">
+    <div class="row g-4">
+
+      <!-- LIST -->
+      <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="fw-bold m-0">
+            <i class="bi bi-droplet-fill me-2 text-orange"></i> قائمة المواد
+          </h3>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-4" *ngFor="let mat of materials">
+            <div class="card product-card border-0 shadow-sm">
+
+              <div class="card-body text-center p-4">
+                <!-- <div class="icon-circle mb-3 bg-light-orange">
+                  <i class="bi bi-droplet-fill fs-2 text-orange"></i>
+                </div> -->
+
+                <h6 class="fw-bold mb-1">{{ mat.name }}</h6>
+
+                <div class="mb-2">
+                  <span class="badge bg-light text-dark">
+                    {{ unitLabel(mat.unit) }}
+                  </span>
+                </div>
+
+                <p class="text-orange fw-bold mb-1">
+                  التكلفة: {{ mat.costPerUnit }} ج.م
+                </p>
+
+                <p class="text-muted fw-bold mb-1">
+                  التحميل: {{ mat.chargePerUnit }} ج.م
+                </p>
+
+                <div class="d-flex justify-content-center gap-2 mt-2">
+                  <button
+                    class="btn btn-sm btn-light-warning"
+                    (click)="openEditModal(mat)"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editMaterialModal"
+                  >
+                    تعديل
+                  </button>
+
+                  <button
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="deleteMaterial(mat.id)"
+                  >
+                    حذف
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADD FORM -->
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 20px;">
+          <div class="card-header bg-orange text-white py-3 border-0 rounded-top-4">
+            <h5 class="mb-0 text-center fw-bold">إضافة مادة جديدة</h5>
+          </div>
+
+          <div class="card-body p-4 text-end">
+            <div class="mb-3">
+              <label class="form-label small fw-bold">اسم المادة *</label>
+              <input type="text" class="form-control custom-input" [(ngModel)]="selectedMaterial.name" />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold">الوحدة *</label>
+              <select class="form-select custom-input" [(ngModel)]="selectedMaterial.unit">
+                <option *ngFor="let u of units" [ngValue]="u.id">{{ u.label }}</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="col-6">
+                <label class="form-label small fw-bold">التكلفة *</label>
+                <input type="number" step="0.1" class="form-control custom-input" [(ngModel)]="selectedMaterial.costPerUnit" />
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-bold">التحميل *</label>
+                <input type="number" step="0.1" class="form-control custom-input" [(ngModel)]="selectedMaterial.chargePerUnit" />
+              </div>
+            </div>
+
+            <button (click)="addNewMaterial()" class="btn btn-orange w-100 py-2 mt-3 fw-bold">
+              إضافة للقائمة <i class="bi bi-plus-lg ms-1"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="editMaterialModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">تعديل المادة</h5>
+        <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4 text-end">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">اسم المادة *</label>
+          <input type="text" class="form-control custom-input" [(ngModel)]="selectedMaterial.name" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">الوحدة *</label>
+          <select class="form-select custom-input" [(ngModel)]="selectedMaterial.unit">
+            <option *ngFor="let u of units" [ngValue]="u.id">{{ u.label }}</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <div class="col-6">
+            <label class="form-label small fw-bold">التكلفة *</label>
+            <input type="number" step="0.1" class="form-control custom-input" [(ngModel)]="selectedMaterial.costPerUnit" />
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-bold">التحميل *</label>
+            <input type="number" step="0.1" class="form-control custom-input" [(ngModel)]="selectedMaterial.chargePerUnit" />
+          </div>
+        </div>
+
+        <div class="form-check mt-3">
+          <input class="form-check-input" type="checkbox" id="matActiveChk" [(ngModel)]="selectedMaterial.isActive" />
+          <label class="form-check-label fw-bold" for="matActiveChk">Active</label>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-orange px-4 py-2 fw-bold rounded-3"
+                (click)="saveMaterialChanges()" data-bs-dismiss="modal">
+          حفظ
+        </button>
+        <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-bold rounded-3" data-bs-dismiss="modal">
+          إلغاء
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
