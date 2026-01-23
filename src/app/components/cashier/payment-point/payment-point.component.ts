@@ -1,134 +1,200 @@
-import { Component } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { ServiceCatalogService , ServiceItem} from 'src/app/services/service-catalog.service';
-import { ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
+import { ApiService } from 'src/app/services/api.service';
+
+type ProductApiDto = {
+  id: number;
+  name: string;
+  sku?: string;
+  salePrice: number;
+  costPerUnit?: number;
+  isActive: boolean;
+};
+
+type ProductVm = {
+  id: number;        // productId
+  name: string;
+  price: number;     // salePrice
+  sku?: string;
+  isActive: boolean;
+};
+
+type CartItemVm = {
+  product: ProductVm;
+  qty: number;
+};
 
 @Component({
   selector: 'app-payment-point',
   templateUrl: './payment-point.component.html',
   styleUrls: ['./payment-point.component.scss']
 })
-export class PaymentPointComponent {
+export class PaymentPointComponent implements OnInit {
+  branchId = 1;
+  cashierId = 5;
 
-  selectedTimeId: string = '';
+  isSubmitting = false;
 
-    orderForm: FormGroup = new FormGroup({
-        fullName: new FormControl('', [Validators.required]),
-        phone: new FormControl('', [Validators.required]),
-        carNumber: new FormControl('', [Validators.required]),
-        carType: new FormControl('', [Validators.required]),
-        paymentMethod: new FormControl('cash', [Validators.required]),
-        services: new FormControl([], [Validators.required, Validators.minLength(1)]),
-        code: new FormControl('')
-      });
+  products: ProductVm[] = [];
+  cart: CartItemVm[] = [];
 
-allServices: ServiceItem[] = [];
-selectedServices: ServiceItem[] = [];
-selectedService: ServiceItem | null = null;
-availableTimes: string[] = ['10:00 AM', '11:30 AM', '01:00 PM', '03:00 PM'];
-
-
-
-  carCategories = [
-    { id: 1, nameAr: 'سيدان (Sedan)' },
-    { id: 2, nameAr: 'دفع رباعي (SUV)' },
-    { id: 3, nameAr: 'هاتشباك (Hatchback)' },
-    { id: 4, nameAr: 'كوبيه (Coupe)' },
-    { id: 5, nameAr: 'بيك أب (Pickup)' },
-    { id: 6, nameAr: 'فان (Van)' },
-    { id: 7, nameAr: 'شاحنة (Truck)' },
-    { id: 99, nameAr: 'أخرى (Other)' }
-  ];
-
-
-
-
-constructor(private serviceCatalog: ServiceCatalogService) {
-
-  this.serviceCatalog.getServices().subscribe(services => {
-    this.allServices = services;
+  orderForm = new FormGroup({
+    fullName: new FormControl('', [Validators.required]),
+    phoneNumber: new FormControl('', [Validators.required]),
+    notes: new FormControl(''),
   });
 
-}
+  constructor(
+    private api: ApiService,
+    private toastr: ToastrService
+  ) { }
 
-
-toggleService(service: ServiceItem) {
-  const index = this.selectedServices.findIndex(s => s.id === service.id);
-  if (index === -1) {
-    this.selectedServices.push(service);
-  } else {
-    this.selectedServices.splice(index, 1);
+  ngOnInit(): void {
+    this.loadProducts();
   }
 
-  this.orderForm.patchValue({
-    services: this.selectedServices.length > 0 ? this.selectedServices : []
-  });
+  private loadProducts(): void {
+    this.api.getProducts().subscribe({
+      next: (res: any) => {
+        const data: ProductApiDto[] = res?.data ?? [];
 
-  this.orderForm.get('services')?.updateValueAndValidity();
-  if (this.selectedServices.length === 0) {
-    this.selectedTimeId = '';
-  }
-}
+        // ✅ map + keep only active products
+        this.products = data
+          .filter(p => p.isActive)
+          .map(p => ({
+            id: p.id,
+            name: p.name,
+            price: Number(p.salePrice ?? 0),
+            sku: p.sku,
+            isActive: p.isActive
+          }));
 
-isServiceSelected(serviceId: number): boolean {
-  return this.selectedServices.some(s => s.id === serviceId);
-}
-
-
-
-
-onServiceSelected() {
-  if (this.selectedService) {
-
-    this.orderForm.patchValue({
-      service: this.selectedService
+        // optional: sort by name
+        this.products.sort((a, b) => a.name.localeCompare(b.name));
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastr.error('فشل تحميل المنتجات', 'خطأ');
+      }
     });
-    this.selectedTimeId = '';
-  }
-}
-  selectTime(id: string) {
-    this.selectedTimeId = id;
   }
 
-onSubmit() {
-  if (this.orderForm.valid && this.selectedTimeId) {
-    const finalData = {
-      ...this.orderForm.value,
-      selectedTime: this.selectedTimeId,
-      subTotal: this.totalServicesPrice,
-      tax: this.taxAmount,
-      totalAmount: this.finalTotal,
-      createdAt: new Date().toISOString()
+  // ===== Cart helpers =====
+  getItem(productId: number): CartItemVm | undefined {
+    return this.cart.find(x => x.product.id === productId);
+  }
+
+  isProductSelected(productId: number): boolean {
+    return !!this.getItem(productId);
+  }
+
+  toggleProduct(product: ProductVm) {
+    const item = this.getItem(product.id);
+    if (item) {
+      this.cart = this.cart.filter(x => x.product.id !== product.id);
+    } else {
+      this.cart.push({ product, qty: 1 });
+    }
+  }
+
+  increaseQty(product: ProductVm) {
+    const item = this.getItem(product.id);
+    if (!item) {
+      this.cart.push({ product, qty: 1 });
+      return;
+    }
+    item.qty += 1;
+  }
+
+  decreaseQty(product: ProductVm) {
+    const item = this.getItem(product.id);
+    if (!item) return;
+
+    item.qty -= 1;
+    if (item.qty <= 0) {
+      this.cart = this.cart.filter(x => x.product.id !== product.id);
+    }
+  }
+
+  setQty(product: ProductVm, value: any) {
+    const qty = Number(value);
+    if (Number.isNaN(qty)) return;
+
+    if (qty <= 0) {
+      this.cart = this.cart.filter(x => x.product.id !== product.id);
+      return;
+    }
+
+    const item = this.getItem(product.id);
+    if (!item) {
+      this.cart.push({ product, qty });
+    } else {
+      item.qty = qty;
+    }
+  }
+
+  get totalItemsCount(): number {
+    return this.cart.reduce((sum, x) => sum + x.qty, 0);
+  }
+
+  // ✅ Total = sum(qty * salePrice)
+  get totalAmount(): number {
+    return this.cart.reduce((sum, x) => sum + (x.product.price * x.qty), 0);
+  }
+
+  // ===== Submit POS invoice =====
+  onSubmit() {
+    if (this.orderForm.invalid) {
+      this.toastr.error('يرجى إدخال بيانات العميل', 'خطأ');
+      return;
+    }
+
+    if (this.cart.length === 0) {
+      this.toastr.warning('اختر منتج واحد على الأقل', 'تنبيه');
+      return;
+    }
+
+    const v = this.orderForm.value;
+
+    const payload = {
+      branchId: this.branchId,
+      cashierId: this.cashierId,
+      items: this.cart.map(x => ({
+        productId: x.product.id,
+        qty: x.qty
+      })),
+      occurredAt: new Date().toISOString(),
+      notes: String(v.notes || ''),
+      customer: {
+        phoneNumber: String(v.phoneNumber || ''),
+        fullName: String(v.fullName || '')
+      }
     };
 
+    this.isSubmitting = true;
 
-    this.serviceCatalog.addCustomer(finalData);
-    console.log('البيانات النهائية شاملة المبالغ:', finalData);
+    this.api.createPosInvoice(payload).subscribe({
+      next: (res: any) => {
+        this.isSubmitting = false;
+        console.log(payload);
+
+        if (res?.success === false) {
+          this.toastr.error(res?.message || 'فشل إنشاء الفاتورة', 'خطأ');
+          return;
+        }
+
+        this.toastr.success('تم إنشاء الفاتورة بنجاح', 'نجاح');
+
+        // reset
+        this.cart = [];
+        this.orderForm.reset({ fullName: '', phoneNumber: '', notes: '' });
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        console.error(err);
+        this.toastr.error(err?.error?.message || 'فشل إنشاء الفاتورة', 'خطأ');
+      }
+    });
   }
-}
-
-  isButtonDisabled(): boolean {
-    return this.orderForm.invalid || this.selectedTimeId === '';
-  }
-
-
-
-
-
-
-get totalServicesPrice(): number {
-  return this.selectedServices.reduce((sum, service) => sum + service.price, 0);
-}
-
-get taxAmount(): number {
-
-  return this.totalServicesPrice * 0.14;
-}
-
-get finalTotal(): number {
-  return this.totalServicesPrice + this.taxAmount;
-}
-
-
-
 }

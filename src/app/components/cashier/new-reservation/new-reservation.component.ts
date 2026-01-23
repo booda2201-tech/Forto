@@ -84,7 +84,7 @@ export class NewReservationComponent implements OnInit {
     private api: ApiService,
     private router: Router,
     private toastr: ToastrService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // 1) Load services (IMPORTANT: pass categoryId if your ApiService supports it)
@@ -100,16 +100,20 @@ export class NewReservationComponent implements OnInit {
     });
 
     // 2) When car category changes -> rebuild services, clear selections & slots
-    this.customerForm.get('carCategory')!.valueChanges.subscribe(() => {
-      this.selectedServices = [];
-      this.totalPrice = 0;
+this.customerForm.get('carCategory')!.valueChanges.subscribe(() => {
+  this.selectedServices = [];
+  this.totalPrice = 0;
 
-      this.availableSlots = [];
-      this.selectedSlotHour = null;
+  this.availableSlots = [];
+  this.selectedSlotHour = null;
 
-      this.rebuildServicesForBodyType();
-      this.loadAvailableSlots(); // will clear if no services/date
-    });
+  // ✅ ensure value is settled
+  queueMicrotask(() => {
+    this.rebuildServicesForBodyType();
+    this.loadAvailableSlots();
+  });
+});
+
 
     // 3) When date changes -> reload slots (if services selected)
     this.customerForm.get('appointmentDate')!.valueChanges.subscribe(() => {
@@ -179,40 +183,40 @@ export class NewReservationComponent implements OnInit {
   // ======================
   // Available Slots
   // ======================
-loadAvailableSlots(): void {
-  const date = this.customerForm.value.appointmentDate;
-  const serviceIds = this.selectedServices.map((s) => s.id);
+  loadAvailableSlots(): void {
+    const date = this.customerForm.value.appointmentDate;
+    const serviceIds = this.selectedServices.map((s) => s.id);
 
-  console.log('[Slots] date =', date, 'serviceIds =', serviceIds);
+    console.log('[Slots] date =', date, 'serviceIds =', serviceIds);
 
-  if (!date) {
-    console.log('[Slots] return: no date');
-    this.availableSlots = [];
-    return;
-  }
-
-  if (serviceIds.length === 0) {
-    console.log('[Slots] return: no selected services');
-    this.availableSlots = [];
-    return;
-  }
-
-  this.isSlotsLoading = true;
-
-  this.api.getAvailableSlots(this.branchId, String(date), serviceIds).subscribe({
-    next: (res: any) => {
-      console.log('[Slots] API response:', res);
-      this.availableSlots = res?.data?.slots ?? [];
-      this.isSlotsLoading = false;
-    },
-    error: (err) => {
-      console.log('[Slots] API error:', err);
-      this.isSlotsLoading = false;
+    if (!date) {
+      console.log('[Slots] return: no date');
       this.availableSlots = [];
-      this.toastr.error(err?.error?.message || 'فشل تحميل المواعيد', 'خطأ');
-    },
-  });
-}
+      return;
+    }
+
+    if (serviceIds.length === 0) {
+      console.log('[Slots] return: no selected services');
+      this.availableSlots = [];
+      return;
+    }
+
+    this.isSlotsLoading = true;
+
+    this.api.getAvailableSlots(this.branchId, String(date), serviceIds).subscribe({
+      next: (res: any) => {
+        console.log('[Slots] API response:', res);
+        this.availableSlots = res?.data?.slots ?? [];
+        this.isSlotsLoading = false;
+      },
+      error: (err) => {
+        console.log('[Slots] API error:', err);
+        this.isSlotsLoading = false;
+        this.availableSlots = [];
+        this.toastr.error(err?.error?.message || 'فشل تحميل المواعيد', 'خطأ');
+      },
+    });
+  }
 
   // ======================
   // Submit quick-create
@@ -233,10 +237,7 @@ loadAvailableSlots(): void {
 
     const v = this.customerForm.value;
 
-    const scheduledStart = this.toIsoFromDateAndHour(
-      String(v.appointmentDate),
-      this.selectedSlotHour
-    );
+    const scheduledStart = this.toLocalIsoNoZ(String(v.appointmentDate), this.selectedSlotHour);
 
     const bodyType = Number(v.carCategory);
     const { brand, model, year } = this.parseBrandModelYear(String(v.carType ?? ''));
@@ -265,10 +266,13 @@ loadAvailableSlots(): void {
       notes: '',
     };
 
+
     this.api.quickCreateBooking(payload).subscribe({
       next: (res: any) => {
+        console.log("1 : ", payload);
+
         console.log(res);
-        
+
         if (res?.success === false) {
           this.toastr.error(res?.message || 'فشل إنشاء الحجز', 'خطأ');
           return;
@@ -278,8 +282,10 @@ loadAvailableSlots(): void {
         this.router.navigate(['/cashier/cashier-page']);
       },
       error: (err) => {
+        console.log("2 : ", payload);
+
         console.log(err);
-        
+
         if (err?.status === 409) {
           this.toastr.error(
             err?.error?.message || 'الموعد غير متاح، اختر موعدًا آخر',
@@ -296,13 +302,19 @@ loadAvailableSlots(): void {
     });
   }
 
-  private toIsoFromDateAndHour(dateStr: string, hourStr: string): string {
-    // date: "2026-01-20", hour: "08:00"
+  private toLocalIsoNoZ(dateStr: string, hourStr: string): string {
     const [y, m, d] = dateStr.split('-').map(Number);
     const [hh, mm] = hourStr.split(':').map(Number);
-    const local = new Date(y, m - 1, d, hh, mm, 0, 0);
-    return local.toISOString();
+
+    // local date
+    const dt = new Date(y, m - 1, d, hh, mm, 0, 0);
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    // "YYYY-MM-DDTHH:mm:ss"
+    return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}:00`;
   }
+
 
   private parseBrandModelYear(carTypeText: string): { brand: string; model: string; year?: number } {
     const text = carTypeText.trim();

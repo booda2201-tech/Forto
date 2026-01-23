@@ -1,180 +1,109 @@
+<section class="contt" dir="rtl">
+  <div class="page-wrap">
 
-
-
-<section class="contt py-4 bg-light min-vh-100" dir="rtl">
-  <div class="container-fluid px-4 py-4">
-    <div class="row ">
-
-    <div class="header-box mb-4 d-flex justify-content-between align-items-center flex-wrap px-2">
-      <h3 class="fw-bold text-dark">إنشاء طلب جديد</h3>
-      <span class="badge bg-warning text-dark rounded-pill px-3 py-2">خطوة الحجز</span>
+    <!-- Title -->
+    <div class="page-title">
+      <h2 class="title">
+        <i class="bi bi-plus-square text-orange"></i>
+        طلب جديد
+      </h2>
+      <p class="subtitle">اختر المنتجات وأدخل بيانات العميل لإصدار فاتورة</p>
     </div>
 
-      <div class="col-lg-8 m-auto">
-      <form [formGroup]="orderForm" class="custom-card-form p-4 mb-5 w-100 shadow-sm">
-        <div class="row mb-4">
-          <div class="col-md-6 mb-3">
-            <label class="form-label-custom"><i class="bi bi-person text-orange mx-1"></i> اسم العميل <span class="text-danger">*</span></label>
-            <input type="text" formControlName="fullName" class="form-control custom-input" placeholder="أدخل الاسم بالكامل" />
-          </div>
-
-          <div class="col-md-6 mb-3">
-            <label class="form-label-custom"><i class="bi bi-telephone text-orange mx-1"></i> رقم الهاتف <span class="text-danger">*</span></label>
-            <input type="text" formControlName="phone" class="form-control custom-input" placeholder="01xxxxxxxxx" />
-          </div>
-
-          <div class="col-md-6 mb-3">
-            <label class="form-label-custom"><i class="bi bi-card-checklist text-orange mx-1"></i> رقم لوحة السيارة <span class="text-danger">*</span></label>
-            <input type="text" formControlName="carNumber" class="form-control custom-input" placeholder="أ ب ج 123" />
-          </div>
-
-          <div class="col-md-6 mb-3">
-            <label class="form-label-custom"><i class="bi bi-car-front text-orange mx-1"></i> نوع السيارة <span class="text-danger">*</span></label>
-            <input type="text" formControlName="carType" class="form-control custom-input" placeholder="مثال: مرسيدس C200" />
-          </div>
-            <div class="form-group mb-3">
-              <label><i class="bi bi-car-front mx-1"></i> فئة السيارة </label>
-                <select class="form-select custom-select" formControlName="carCategory">
-                <option value="" disabled selected>اختر فئة السيارة</option>
-                <option *ngFor="let cat of carCategories" [value]="cat.id" class="text-dark">
-                        {{ cat.nameAr }} </option>
-              </select>
-            </div>
-          <div class="col-md-6 mb-3">
-              <label class="form-label-custom mb-4 d-block">
-                <i class="bi bi-cash-stack text-orange mx-1"></i> طريقة الدفع <span class="text-danger">*</span>
-              </label>
-              <div class="d-flex gap-3 payment-toggle">
-                <input type="radio"
-                        class="btn-check"
-                        formControlName="paymentMethod"
-                        id="payCash"
-                        value="cash"
-                        name="paymentMethodGroup">
-                <label class="btn payment-btn w-100" for="payCash">
-                  <i class="bi bi-wallet2 mb-1"></i>
-                  <span>كاش</span>
-                </label>
-
-                <input type="radio"
-                        class="btn-check"
-                        formControlName="paymentMethod"
-                        id="payVisa"
-                        value="visa"
-                        name="paymentMethodGroup">
-                <label class="btn payment-btn w-100" for="payVisa">
-                  <i class="bi bi-credit-card mb-1"></i>
-                  <span>فيزا</span>
-                </label>
-              </div>
-            </div>
+    <!-- Card 1: Customer -->
+    <div class="card-box">
+      <div class="card-head text-center d-flex align-items-center justify-content-start">
+        <div class="card-head-title fs-4">
+          <i class="bi bi-people text-orange"></i>
+          بيانات العميل
         </div>
+      </div>
 
-        <hr class="divider mb-4">
-
-        <div class="mb-4">
-          <label class="form-label-custom mb-3 fw-bold"><i class="bi bi-wrench text-orange mx-1"></i> اختر الخدمات المطلوبة</label>
-          <div class="services-grid">
-            <div *ngFor="let service of allServices"
-                  (click)="toggleService(service)"
-                  class="service-card"
-                  [class.selected-active]="isServiceSelected(service.id)">
-              <div class="service-name">{{ service.name }}</div>
-              <div class="service-price">{{ service.price }} ج.م</div>
-              <div class="check-mark" *ngIf="isServiceSelected(service.id)">
-                <i class="bi bi-check-circle-fill"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="mb-4 animate__animated animate__fadeIn" *ngIf="selectedServices.length > 0">
-          <label class="form-label-custom mb-3 fw-bold"><i class="bi bi-clock me-2 text-warning"></i> المواعيد المتاحة</label>
-          <div class="row g-2">
-            <div class="col-6 col-md-3" *ngFor="let time of availableTimes">
-              <input type="radio" class="btn-check" name="timeSlot"
-                      [id]="time" [value]="time"
-                      [(ngModel)]="selectedTimeId"
-                      [ngModelOptions]="{standalone: true}">
-                <label class="time-label w-100"
-                      [class.active-time]="selectedTimeId === time"
-                      [for]="time">
-                  {{ time }}
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- <div class="text-center mt-5">
-          <button type="submit"
-                  class="btn-submit-order shadow"
-                  (click)="onSubmit()"
-                  [disabled]="orderForm.invalid || !selectedTimeId || selectedServices.length === 0">
-            تأكيد وحفظ الطلب
-          </button>
-              </div> -->
-
-            </form>
-        </div>
-
-      <!-- <div class="col-4">
-        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
-          <div class="d-flex align-items-center mb-3">
-            <i class="bi bi-clock-history fs-4 me-2 text-dark"></i>
-            <h6 class="fw-bold mb-0">إدارة الورديات</h6>
-          </div>
-          <p class="text-muted small">إدارة ورديات نقطة البيع</p>
-
-          <div class="alert alert-light border text-center py-2 mb-3">
-              <small class="text-muted">يوجد وردية نشطة قيد التشغيل حالياً</small>
+      <div class="card-body">
+        <div class="grid-2">
+          <div class="field">
+            <label class="form-label-custom">
+              <i class="bi bi-person text-orange mx-1"></i> اسم العميل
+            </label>
+            <input class="form-control custom-input" type="text" [formControl]="orderForm.controls.fullName"
+              placeholder="مثال: عصام الشوالي" />
           </div>
 
-          <div class="shift-details p-3 bg-white border rounded-3 mb-3">
-            <div class="d-flex justify-content-between mb-2">
-              <span class="text-muted small">رقم الوردية:</span>
-              <span class="badge bg-dark">#1</span>
-            </div>
-            <div class="mb-1"><small class="text-muted">بدأت في:</small> <small class="fw-bold"> 1/13/2026 </small></div>
-            <div class="mb-1"><small class="text-muted">بواسطة:</small> <small class="fw-bold"> اسم المستخدم </small></div>
-          </div>
-
-          <button class="btn btn-danger w-100 rounded-3 py-2 fw-bold">
-            <i class="bi bi-power me-1"></i> إنهاء الوردية
-          </button>
-        </div>
-      </div> -->
-
-      <div class="col-lg-4">
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden sticky-top" style="top: 20px;">
-          <div class="p-4">
-            <h5 class="fw-bold mb-4">ملخص الطلب</h5>
-
-            <div class="d-flex justify-content-between mb-2">
-              <span class="text-muted small">المجموع الفرعي</span>
-              <span class="fw-bold">{{ totalServicesPrice | number:'1.2-2' }} ج.م</span>
-            </div>
-
-            <div class="d-flex justify-content-between mb-4 border-bottom pb-3">
-              <span class="text-muted small">الضريبة (14%)</span>
-              <span class="fw-bold text-secondary">{{ taxAmount | number:'1.2-2' }} ج.م</span>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h5 class="fw-bold mb-0">المجموع الكلي</h5>
-              <h4 class="fw-bold mb-0 text-dark">{{ finalTotal | number:'1.2-2' }} ج.م</h4>
-            </div>
-
-        <div class="text-center">
-          <button type="submit"
-                  class="btn-submit-order shadow"
-                  (click)="onSubmit()"
-                  [disabled]="orderForm.invalid || !selectedTimeId || selectedServices.length === 0">
-            تأكيد وحفظ الطلب
-          </button>
-              </div>
+          <div class="field">
+            <label class="form-label-custom">
+              <i class="bi bi-telephone text-orange mx-1"></i> رقم الهاتف
+            </label>
+            <input class="form-control custom-input text-end" type="text" [formControl]="orderForm.controls.phoneNumber"
+              placeholder="+966 5x xxx xxxx" />
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Card 2: Products -->
+    <div class="card-box">
+      <div class="card-head d-flex align-items-center justify-content-start">
+        <div class="card-head-title fs-4">
+          <i class="bi bi-bag text-orange"></i>
+          اختر المنتجات
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="services-grid">
+          <div *ngFor="let p of products" class="service-card" [class.selected-active]="isProductSelected(p.id)"
+            (click)="toggleProduct(p)">
+            <div class="service-name">{{ p.name }}</div>
+            <div class="service-price" *ngIf="p.price != null">{{ p.price }} ج.م</div>
+
+            <div class="check-mark" *ngIf="isProductSelected(p.id)">
+              <i class="bi bi-check-circle-fill"></i>
+            </div>
+
+            <!-- Qty controls -->
+            <div class="qty-row" (click)="$event.stopPropagation()">
+              <button type="button" class="qty-btn" (click)="$event.stopPropagation(); decreaseQty(p)">-</button>
+
+              <input type="number" min="0" class="qty-input" [value]="getItem(p.id)?.qty || 0"
+                (change)="setQty(p, $any($event.target).value)" />
+
+              <button type="button" class="qty-btn" (click)="$event.stopPropagation(); increaseQty(p)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="field mt-3">
+          <label class="form-label-custom">
+            <i class="bi bi-sticky text-orange mx-1"></i> ملاحظات
+          </label>
+          <textarea class="form-control custom-input" rows="2" [formControl]="orderForm.controls.notes"
+            placeholder="ملاحظات اختيارية..."></textarea>
+        </div>
       </div>
     </div>
+
+    <!-- Bottom sticky summary bar -->
+    <div class="bottom-bar ">
+      <div class="bar-left">
+        <button type="button" class="btn-primary" (click)="onSubmit()"
+          [disabled]="orderForm.invalid || cart.length === 0 || isSubmitting">
+          {{ isSubmitting ? 'جارٍ الحفظ...' : 'تأكيد' }}
+        </button>
+
+        <button type="button" class="btn-ghost"
+          (click)="cart = []; orderForm.reset({fullName:'', phoneNumber:'', notes:''});">
+          إلغاء
+        </button>
+      </div>
+
+      <div class="bar-right">
+        <div class="total-text">
+          <span class="muted">الإجمالي:</span>
+          <span class="total">{{ totalAmount | number:'1.2-2' }} ج.م</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </section>

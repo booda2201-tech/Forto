@@ -1,128 +1,61 @@
-
-<!-- <div class="contt">
-<div class="invoices-page p-2 p-md-4" dir="rtl">
-    <div class="header-box mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <h3 class="fw-bold text-dark mb-0">سجل الفواتير</h3>
-        <span class="badge bg-success rounded-pill px-3 py-2">مكتمل</span>
-      </div>
-
-      <div class="row g-3 mb-4 no-print">
-        <div class="col-6 col-md-3">
-          <div class="card border-0 shadow-sm p-3 bg-white">
-            <div class="text-muted small mb-1">إجمالي الفواتير</div>
-            <div class="h4 fw-bold text-dark mb-0">{{ totalInvoicesCount }}</div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="card border-0 shadow-sm p-3 bg-orange-light">
-            <div class="text-muted small mb-1">إجمالي الإيراد (شامل الضريبة)</div>
-            <div class="h4 fw-bold text-success mb-0">{{ totalDailyAmount | number:'1.1-1' }} <small style="font-size: 12px;">ج.م</small></div>
-          </div>
-        </div>
-      </div>
-
-  <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0 text-center">
-        <thead class="bg-light">
-          <tr class="text-muted small">
-            <th class="text">رقم الفاتورة</th>
-            <th class="text-end">العميل</th>
-            <th class="d-none d-md-table-cell">الخدمات</th>
-            <th>المبلغ</th>
-            <th class="d-none d-lg-table-cell">التاريخ</th>
-            <th>التحكم</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let invoice of invoices$ | async">
-            <td class="fw-bold text-orange">#{{invoice.id}}</td>
-            <td class="text-end">
-              <div class="fw-bold text-truncate" style="max-width: 120px;">{{invoice.customerName}}</div>
-              <small class="text-muted d-none d-sm-block">{{invoice.phone}}</small>
-            </td>
-            <td class="d-none d-md-table-cell">
-              <div class="d-flex flex-wrap justify-content-center gap-1">
-                <span class="badge bg-light text-dark border small" *ngFor="let s of invoice.serviceItem">
-                  {{s.name}}
-                </span>
-              </div>
-            </td>
-            <td>
-              <span class="fw-bold text-success text-nowrap">
-                {{ calculateFinalTotal(invoice) | number:'1.1-1' }} <small>ج.م</small>
-              </span>
-            </td>
-            <td class="small text-muted d-none d-lg-table-cell">{{invoice.appointmentDate}}</td>
-            <td>
-              <div class="d-flex justify-content-center gap-1 gap-md-2">
-                <button class="btn btn-sm btn-outline-success rounded-3" (click)="exportToExcel(invoice)" title="تصدير Excel">
-                  <i class="bi bi-file-earmark-excel"></i>
-                  <span class="d-none d-xl-inline ms-1">Excel</span>
-                </button>
-                  <button class="btn btn-sm btn-orange text-white rounded-3"
-                          (click)="openInvoice(invoice)"
-                          data-bs-toggle="modal"
-                          data-bs-target="#invoiceModal">
-                    <i class="bi bi-printer"></i>
-                  </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-</div> -->
-
-
-
-<!-- <div class="contt">
+<div class="contt">
   <div class="invoices-page p-2 p-md-4" dir="rtl">
-    <div class="header-box mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-      <h3 class="fw-bold text-dark mb-0">سجل الفواتير</h3>
-      <span class="badge bg-success rounded-pill px-3 py-2">نظام الإدارة</span>
-    </div>
 
+    <!-- Stats -->
     <div class="row g-3 mb-4 no-print">
-      <div class="col-6 col-md-3">
-        <div class="card border-0 shadow-sm p-3 bg-white">
-          <div class="text-muted small mb-1">عدد الفواتير المعروضة</div>
-          <div class="h4 fw-bold text-dark mb-0">{{ totalInvoicesCount }}</div>
+      <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm p-3">
+          <span class="text-muted small">عدد العمليات</span>
+          <h4 class="fw-bold mb-0">{{ totalInvoicesCount }}</h4>
         </div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="card border-0 shadow-sm p-3 bg-orange-light">
-          <div class="text-muted small mb-1">إجمالي المبلغ المفلتر</div>
-          <div class="h4 fw-bold text-success mb-0">{{ totalDailyAmount | number:'1.1-1' }} <small style="font-size: 12px;">ج.م</small></div>
+
+      <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm p-3 bg-orange-light text-orange">
+          <span class="small">إجمالي الدخل المفلتر</span>
+          <h4 class="fw-bold mb-0">{{ totalDailyAmount | number:'1.0-0' }} ج.م</h4>
         </div>
       </div>
     </div>
 
-    <div class="card border-0 shadow-sm p-3 mb-4 no-print rounded-3 bg-white">
-      <div class="row g-2 align-items-center">
-        <div class="col-md-5">
-          <div class="input-group">
-            <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
-            <input type="text" id="searchInput" class="form-control bg-light border-0 shadow-none"
-                    placeholder="ابحث بالاسم، التليفون، أو رقم الفاتورة..." (input)="onSearch($event)">
-          </div>
+    <!-- Filters -->
+    <div class="filter-bar card border-0 shadow-sm p-3 mb-4 no-print">
+      <div class="row g-2">
+        <div class="col-lg-4 col-md-6">
+          <input
+            type="text"
+            id="searchInput"
+            class="form-control custom-input"
+            placeholder="رقم الفاتورة، اسم العميل، التليفون..."
+            (input)="onSearch($event)"
+          />
         </div>
-        <div class="col-md-4">
-          <div class="input-group">
-            <span class="input-group-text bg-light border-0"><i class="bi bi-calendar3"></i></span>
-            <input type="date" id="dateInput" class="form-control bg-light border-0 shadow-none" (change)="onDateChange($event)">
-          </div>
+
+        <div class="col-lg-2 col-md-6">
+          <input type="date" id="fromInput" class="form-control custom-input" (change)="onFromChange($event)" />
         </div>
-        <div class="col-md-3">
-          <button class="btn text-danger w-100 border-0 bg-light" (click)="resetFilters()">
-              مسح الفلاتر
+
+        <div class="col-lg-2 col-md-6">
+          <input type="date" id="toInput" class="form-control custom-input" (change)="onToChange($event)" />
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <select id="methodInput" class="form-select custom-input" (change)="onMethodChange($event)">
+            <option value="">كل طرق الدفع</option>
+            <option value="1">كاش</option>
+            <option value="2">فيزا / ماستر كارد</option>
+          </select>
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <button class="btn btn-light w-100 text-danger fw-bold" (click)="resetFilters()">
+            عرض الفواتير
           </button>
         </div>
       </div>
     </div>
 
+    <!-- Table -->
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0 text-center">
@@ -130,178 +63,84 @@
             <tr class="text-muted small">
               <th>رقم الفاتورة</th>
               <th class="text-end">العميل</th>
-              <th class="d-none d-md-table-cell">الخدمات</th>
-              <th>المبلغ</th>
-              <th class="d-none d-lg-table-cell">التاريخ</th>
-              <th>التحكم</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let invoice of invoices$ | async">
-              <td class="fw-bold text-orange">#{{invoice.id}}</td>
-              <td class="text-end">
-                <div class="fw-bold text-truncate" style="max-width: 150px;">{{invoice.customerName}}</div>
-                <small class="text-muted d-none d-sm-block">{{invoice.phone}}</small>
-              </td>
-              <td class="d-none d-md-table-cell">
-                <div class="d-flex flex-wrap justify-content-center gap-1">
-                  <span class="badge bg-light text-dark border-0 small py-1 px-2" *ngFor="let s of invoice.serviceItem">
-                    {{s.name}}
-                  </span>
-                </div>
-              </td>
-              <td>
-                <span class="fw-bold text-success">
-                  {{ calculateFinalTotal(invoice) | number:'1.1-1' }} <small>ج.م</small>
-                </span>
-              </td>
-              <td class="small text-muted d-none d-lg-table-cell">{{invoice.appointmentDate}}</td>
-              <td>
-                <div class="d-flex justify-content-center gap-2">
-                  <button class="btn btn-sm btn-outline-success rounded-3" (click)="exportToExcel(invoice)">
-                    <i class="bi bi-file-earmark-excel"></i>
-                  </button>
-                  <button class="btn btn-sm btn-orange text-white rounded-3 shadow-sm"
-                          (click)="openInvoice(invoice)"
-                          data-bs-toggle="modal"
-                          data-bs-target="#invoiceModal">
-                    <i class="bi bi-printer"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="(invoices$ | async)?.length === 0">
-              <td colspan="6" class="py-5 text-muted">
-                <i class="bi bi-inbox h1 d-block mb-2"></i>
-                لا توجد فواتير مطابقة للبحث
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
--->
-
-<div class="contt">
-<div class="invoices-page p-2 p-md-4" dir="rtl">
-  <div class="row g-3 mb-4 no-print">
-    <div class="col-md-3">
-      <div class="card stat-card border-0 shadow-sm p-3">
-        <span class="text-muted small">عدد العمليات</span>
-        <h4 class="fw-bold mb-0">{{ totalInvoicesCount }}</h4>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card stat-card border-0 shadow-sm p-3 bg-orange-light text-orange">
-        <span class="small">إجمالي الدخل المفلتر</span>
-        <h4 class="fw-bold mb-0">{{ totalDailyAmount | number:'1.0-0' }} ج.م</h4>
-      </div>
-    </div>
-  </div>
-
-  <div class="filter-bar card border-0 shadow-sm p-3 mb-4 no-print">
-    <div class="row g-2">
-      <div class="col-lg-4 col-md-6">
-        <input type="text" id="searchInput" class="form-control custom-input"
-                placeholder="رقم الفاتورة، اسم العميل، التليفون..." (input)="onSearch($event)">
-      </div>
-      <div class="col-lg-3 col-md-6">
-        <input type="date" id="dateInput" class="form-control custom-input" (change)="onDateChange($event)">
-      </div>
-      <div class="col-lg-3 col-md-6">
-        <select id="methodInput" class="form-select custom-input" (change)="onMethodChange($event)">
-          <option value="">كل طرق الدفع</option>
-          <option value="cash">كاش</option>
-          <option value="visa">فيزا / ماستر كارد</option>
-        </select>
-      </div>
-      <div class="col-lg-2 col-md-6">
-        <button class="btn btn-light w-100 text-danger fw-bold" (click)="resetFilters()">عرض الفواتير</button>
-      </div>
-    </div>
-  </div>
-
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0 text-center">
-          <thead class="bg-light">
-            <tr class="text-muted small">
-              <th>رقم الفاتورة</th>
-              <th class="text-end">العميل</th>
-              <th class="d-none d-md-table-cell">الخدمات</th>
+              <th class="d-none d-md-table-cell">البنود</th>
               <th>المبلغ</th>
               <th>طريقة الدفع</th>
               <th class="d-none d-lg-table-cell">التاريخ</th>
               <th>إجراءات</th>
             </tr>
           </thead>
+
           <tbody>
-            <tr *ngFor="let invoice of invoices$ | async">
-              <td class="fw-bold text-orange">#{{invoice.id}}</td>
+            <tr *ngFor="let invoice of (invoices$ | async)">
+              <td class="fw-bold text-orange">#{{ invoice.id }}</td>
+
               <td class="text-end">
-                <div class="fw-bold text-truncate" style="max-width: 150px;">{{invoice.customerName}}</div>
-                <small class="text-muted d-none d-sm-block">{{invoice.phone}}</small>
-              </td>
-              <td class="d-none d-md-table-cell">
-                <div class="d-flex flex-wrap justify-content-center gap-1">
-                  <span class="badge bg-light text-dark border-0 small py-1 px-2" *ngFor="let s of invoice.serviceItem">
-                    {{s.name}}
-                  </span>
+                <div class="fw-bold text-truncate" style="max-width:150px;">
+                  {{ invoice.customerName || 'Walk-in' }}
                 </div>
+                <small class="text-muted d-none d-sm-block">{{ invoice.phone || '-' }}</small>
               </td>
+
+              <td class="d-none d-md-table-cell">
+                <!-- API gives itemsText string -->
+                <span class="text-muted small">{{ invoice.itemsText || '-' }}</span>
+              </td>
+
               <td>
                 <span class="fw-bold text-success">
-                  {{ calculateFinalTotal(invoice) | number:'1.1-1' }} <small>ج.م</small>
+                  {{ invoice.total | number:'1.1-1' }} <small>ج.م</small>
                 </span>
               </td>
+
               <td>
-                <span [class]="invoice.paymentMode === 'cash' ? 'text-primary' : 'text-purple'">
-                  <i [class]="invoice.paymentMode === 'cash' ? 'bi bi-cash' : 'bi bi-credit-card'"></i>
-                              {{ invoice.paymentMode === 'cash' ? 'كاش' : 'فيزا' }}
+                <span [class]="invoice.paymentMethod === 1 ? 'text-primary' : 'text-purple'">
+                  <i [class]="paymentIcon(invoice.paymentMethod)"></i>
+                  {{ paymentLabel(invoice.paymentMethod) }}
                 </span>
-            </td>
-              <td class="small text-muted d-none d-lg-table-cell">{{invoice.appointmentDate}}</td>
+              </td>
+
+              <td class="small text-muted d-none d-lg-table-cell">
+                {{ invoice.date }}
+              </td>
+
               <td>
                 <div class="d-flex justify-content-center gap-2">
                   <button class="btn btn-sm btn-outline-success rounded-3" (click)="exportToExcel(invoice)">
                     <i class="bi bi-file-earmark-excel"></i>
                   </button>
-                  <button class="btn btn-sm btn-orange text-white rounded-3 shadow-sm"
-                          (click)="openInvoice(invoice)"
-                          data-bs-toggle="modal"
-                          data-bs-target="#invoiceModal">
+
+                  <button
+                    class="btn btn-sm btn-orange text-white rounded-3 shadow-sm"
+                    (click)="openInvoice(invoice)"
+                    data-bs-toggle="modal"
+                    data-bs-target="#invoiceModal"
+                  >
                     <i class="bi bi-printer"></i>
                   </button>
                 </div>
               </td>
+            </tr>
 
-            <tr *ngIf="(invoices$ | async)?.length === 0">
-              <td colspan="6" class="py-5 text-muted">
+            <tr *ngIf="((invoices$ | async)?.length || 0) === 0">
+              <td colspan="7" class="py-5 text-muted">
                 <i class="bi bi-inbox h1 d-block mb-2"></i>
-                  لا توجد فواتير مطابقة للبحث
+                لا توجد فواتير مطابقة للبحث
               </td>
             </tr>
+
           </tbody>
         </table>
       </div>
     </div>
+
+  </div>
 </div>
-</div>
 
-
-
-
-
-
-
-
-
-
-
+<!-- Modal -->
 <div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;"> <div class="modal-content border-0 shadow-lg">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+    <div class="modal-content border-0 shadow-lg">
 
       <div class="text-end p-2 no-print">
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -310,32 +149,33 @@
       <div class="modal-body p-4 forto-invoice-container" id="printableInvoice">
         <div class="text-center mb-3">
           <img src="../../../../assets/imeg/logo forto.png" class="brand-logo mb-1" style="max-width: 70px;">
-
           <div class="small">#{{ selectedInvoice?.id }}</div>
         </div>
 
         <hr class="my-2" style="border-top: 1px dashed #000;">
 
         <div class="client-data mb-3 fw-bold" style="font-size: 12px;">
-          <div><strong>العميل:</strong> {{ selectedInvoice?.customerName }}</div>
-          <div><strong>الهاتف:</strong> {{ selectedInvoice?.phone }}</div>
-          <div><strong>السيارة:</strong> {{ selectedInvoice?.cars?.[0]?.carModel }}</div>
-          <div><strong>التاريخ:</strong> {{ selectedInvoice?.appointmentDate }}</div>
+          <div><strong>العميل:</strong> {{ selectedInvoice?.customerName || 'Walk-in' }}</div>
+          <div><strong>الهاتف:</strong> {{ selectedInvoice?.phone || '-' }}</div>
+          <div><strong>التاريخ:</strong> {{ selectedInvoice?.date }}</div>
         </div>
 
+        <!-- Lines table (REAL prices + qty) -->
         <table class="table table-sm invoice-table mb-2" style="font-size: 12px;">
           <thead class="border-bottom">
             <tr>
-              <th class="text-end">الخدمة</th>
+              <th class="text-end">البند</th>
               <th class="text-center">الكمية</th>
-              <th class="text-center">السعر</th>
+              <th class="text-center">سعر الوحدة</th>
+              <th class="text-center">الإجمالي</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let service of selectedInvoice?.serviceItem">
-              <td class="text-end">{{ service.name }}</td>
-              <td class="text-center">1</td>
-              <td class="text-center fw-bold">{{ service.price }}</td>
+            <tr *ngFor="let line of selectedInvoice?.lines">
+              <td class="text-end">{{ line.description }}</td>
+              <td class="text-center">{{ line.qty }}</td>
+              <td class="text-center fw-bold">{{ line.unitPrice }} ج.م</td>
+              <td class="text-center fw-bold">{{ line.total }} ج.م</td>
             </tr>
           </tbody>
         </table>
@@ -345,11 +185,11 @@
         <div style="font-size: 13px; font-weight: bold;">
           <div class="d-flex justify-content-between">
             <span>المجموع:</span>
-            <span>{{ subTotal | number:'1.2-2' }}</span>
+            <span>{{ subTotal | number:'1.2-2' }} ج.م</span>
           </div>
           <div class="d-flex justify-content-between fw-bold">
             <span>الضريبة (14%):</span>
-            <span>{{ taxAmount | number:'1.2-2' }}</span>
+            <span>{{ taxAmount | number:'1.2-2' }} ج.م</span>
           </div>
           <div class="d-flex justify-content-between fw-bold mt-1" style="font-size: 15px;">
             <span>الإجمالي:</span>
@@ -371,6 +211,3 @@
     </div>
   </div>
 </div>
-
-
-

@@ -92,65 +92,40 @@
       <p>أدخل بيانات العميل وتفاصيل الخدمة المطلوبة</p>
     </div>
 
-    <form
-      [formGroup]="customerForm"
-      (ngSubmit)="onSubmit()"
-      class="reservation-form"
-    >
+    <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="reservation-form">
       <div class="form-section">
         <h3><i class="bi bi-people-fill mx-1"></i> بيانات العميل والسيارة</h3>
         <div class="row">
           <div class="form-group">
             <label><i class="bi bi-person mx-1"></i> اسم العميل </label>
-            <input
-              type="text"
-              formControlName="name"
-              placeholder="مثال: عصام الشوالي"
-            />
+            <input type="text" formControlName="name" placeholder="مثال: عصام الشوالي" />
           </div>
           <div class="form-group">
             <label><i class="bi bi-telephone mx-1"></i> رقم الهاتف </label>
-            <input
-              type="tel"
-              formControlName="phone"
-              placeholder="+966 5x xxx xxxx"
-              class="text-end"
-            />
+            <input type="tel" formControlName="phone" placeholder="+966 5x xxx xxxx" class="text-end" />
           </div>
         </div>
 
         <div class="row">
           <div class="form-group">
             <label><i class="bi bi-car-front mx-1"></i> نوع السيارة </label>
-            <input
-              type="text"
-              formControlName="carType"
-              placeholder="مثال: تويوتا كامري 2023"
-            />
+            <input type="text" formControlName="carType" placeholder="مثال: تويوتا كامري 2023" />
           </div>
           <div class="form-group">
             <label><i class="bi bi-map mx-1"></i> رقم اللوحة </label>
-            <input
-              type="text"
-              formControlName="carNumber"
-              placeholder="ب ص ج 1234"
-            />
+            <input type="text" formControlName="carNumber" placeholder="ب ص ج 1234" />
           </div>
           <div class="form-group mt-1">
             <label><i class="bi bi-car-front mx-1"></i> فئة السيارة </label>
-            <select
-              class="form-select custom-select"
-              formControlName="carCategory"
-            >
-              <option value="" disabled selected>اختر فئة السيارة</option>
-              <option
-                *ngFor="let cat of carCategories"
-                [value]="cat.id"
-                class="text-dark"
-              >
-                {{ cat.nameAr }}
-              </option>
-            </select>
+<select class="form-select custom-select" formControlName="carCategory">
+  <option [ngValue]="null" disabled>اختر فئة السيارة</option>
+
+  <option *ngFor="let cat of carCategories" [ngValue]="cat.id" class="text-dark">
+    {{ cat.nameAr }}
+  </option>
+</select>
+
+
           </div>
         </div>
       </div>
@@ -160,48 +135,40 @@
         <div class="row">
           <div class="form-group col-md-8">
             <label><i class="bi bi-calendar-date mx-1"></i> تاريخ الحجز </label>
-            <input
-              type="date"
-              formControlName="appointmentDate"
-              (change)="loadAvailableSlots()"
-            />
+            <input type="date" formControlName="appointmentDate" (change)="loadAvailableSlots()" />
           </div>
           <div class="form-group col-md-4">
-            <label><i class="bi bi-clock mx-1"></i> الوقت </label>
+            <label><i class="bi bi-clock mx-1"></i> الوقت
+
+              <small class="text-muted d-inline-block mb-2 mx-1" *ngIf="isSlotsLoading">
+                جاري تحميل المواعيد...
+              </small>
+
+            </label>
 
             <!-- Loading -->
-            <small class="text-muted d-block mb-2" *ngIf="isSlotsLoading">
+            <!-- <small class="text-muted d-block mb-2" *ngIf="isSlotsLoading">
               جاري تحميل المواعيد...
-            </small>
+            </small> -->
 
             <!-- Dropdown -->
-            <select
-              class="form-select"
-              [(ngModel)]="selectedSlotHour"
-              [ngModelOptions]="{ standalone: true }"
-              [disabled]="!availableSlots?.length"
-            >
+            <select class="form-select" [(ngModel)]="selectedSlotHour" [ngModelOptions]="{ standalone: true }"
+              [disabled]="availableSlots.length === 0"
+>
               <option [ngValue]="null" disabled selected>اختر وقت</option>
 
-              <option
-                *ngFor="let slot of availableSlots"
-                [ngValue]="slot.hour"
-                [disabled]="slot.available === 0"
-              >
+              <option *ngFor="let slot of availableSlots" [ngValue]="slot.hour" [disabled]="slot.available === 0">
                 {{ slot.hour }} - (متاح: {{ slot.available }})
               </option>
             </select>
 
             <!-- No slots message -->
-            <small
-              class="text-danger d-block mt-2"
-              *ngIf="
+            <small class="text-danger d-block mt-2" *ngIf="
                 !isSlotsLoading &&
                 selectedServices.length > 0 &&
                 customerForm.value.appointmentDate &&
                 (!availableSlots || availableSlots.length === 0)
-              "
-            >
+              ">
               لا توجد مواعيد متاحة لهذا اليوم.
             </small>
           </div>
@@ -220,21 +187,12 @@
         </div> -->
 
         <div class="form-group">
-          <label class="mb-3"
-            ><i class="bi bi-wrench mx-2"></i> اختر الخدمة
+          <label class="mb-3"><i class="bi bi-wrench mx-2"></i> اختر الخدمة
           </label>
           <div class="services-container">
-            <div
-              class="service-card"
-              *ngFor="let service of services"
-              [class.selected]="isServiceSelected(service)"
-            >
-              <input
-                type="checkbox"
-                [id]="'service-' + service.id"
-                (change)="toggleService(service, $event)"
-                [checked]="isServiceSelected(service)"
-              />
+            <div class="service-card" *ngFor="let service of services" [class.selected]="isServiceSelected(service)">
+              <input type="checkbox" [id]="'service-' + service.id" (change)="toggleService(service, $event)"
+                [checked]="isServiceSelected(service)" />
               <label [for]="'service-' + service.id" class="service-content">
                 <span class="service-name">{{ service.name }}</span>
                 <span class="service-price">{{ service.price }} ج.م</span>
@@ -253,11 +211,7 @@
           <strong>{{ totalPrice }} ج.م</strong>
         </div>
         <div class="actions">
-          <button
-            type="button"
-            class="btn-cancel"
-            (click)="customerForm.reset()"
-          >
+          <button type="button" class="btn-cancel" (click)="customerForm.reset()">
             إلغاء
           </button>
           <button type="submit" class="btn-save">تأكيد الحجز</button>

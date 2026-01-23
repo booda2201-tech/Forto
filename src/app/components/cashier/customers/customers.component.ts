@@ -48,7 +48,7 @@ export class CustomersComponent implements OnInit {
   servicesRaw: ServiceApiDto[] = [];
 
   // services prepared for dropdown (price depends on selectedCar.bodyType)
-allServices: ServiceViewModel[] = [];
+  allServices: ServiceViewModel[] = [];
 
 
   // selected item from dropdown
@@ -80,12 +80,14 @@ allServices: ServiceViewModel[] = [];
   // ===== Add car modal =====
   currentCustomerForCar: any = null; // optional separation (you can use currentCustomer too)
   bodyTypes = [
-    { label: 'Sedan', value: 1 },
-    { label: 'SUV', value: 2 },
-    { label: 'Hatchback', value: 4 },
-    { label: 'Coupe', value: 3 },
-    { label: 'Pickup', value: 5 },
-    { label: 'Van', value: 6 },
+    { label: 'سيدان (Sedan)', value: 1 },
+    { label: 'دفع رباعي (SUV)', value: 2 },
+    { label: 'هاتشباك (Hatchback)', value: 4 },
+    { label: 'كوبيه (Coupe)', value: 3 },
+    { label: 'بيك أب (Pickup)', value: 5 },
+    { label: 'فان (Van)', value: 6 },
+    { label: 'شاحنة (Truck)', value: 7 },
+    { label: 'أخرى (Other)', value: 99 }
   ];
 
   newCarData = {
@@ -106,7 +108,7 @@ allServices: ServiceViewModel[] = [];
   createdByType = 1;
   createdByEmployeeId = 681; // replace with real logged-in employee id later
 
-  constructor(private api: ApiService, private toastr: ToastrService) {}
+  constructor(private api: ApiService, private toastr: ToastrService) { }
 
   ngOnInit() {
     this.loadClients();
@@ -157,73 +159,73 @@ allServices: ServiceViewModel[] = [];
   // ======================
   // Services
   // ======================
-loadServices() {
-  this.api.getServices().subscribe({
-    next: (res: any) => {
-      this.servicesRaw = res?.data ?? [];
+  loadServices() {
+    this.api.getServices().subscribe({
+      next: (res: any) => {
+        this.servicesRaw = res?.data ?? [];
 
-      // ✅ لو المودال مفتوح وعندك عربية مختارة، ابنِ الخدمات فورًا
-      if (this.selectedCar?.bodyType != null) {
-        this.buildServicesForSelectedCar();
-      }
+        // ✅ لو المودال مفتوح وعندك عربية مختارة، ابنِ الخدمات فورًا
+        if (this.selectedCar?.bodyType != null) {
+          this.buildServicesForSelectedCar();
+        }
 
-      console.log('servicesRaw loaded:', this.servicesRaw.length);
-    },
-    error: (err) => {
-      this.toastr.error('فشل تحميل الخدمات', 'خطأ');
-      console.error(err);
-    },
-  });
-}
+        console.log('servicesRaw loaded:', this.servicesRaw.length);
+      },
+      error: (err) => {
+        this.toastr.error('فشل تحميل الخدمات', 'خطأ');
+        console.error(err);
+      },
+    });
+  }
 
 
 
   // ======================
   // Booking modal flow
   // ======================
-selectCar(carDetail: any, customer: any) {
-  this.selectedCar = carDetail;
-  this.currentCustomer = customer;
+  selectCar(carDetail: any, customer: any) {
+    this.selectedCar = carDetail;
+    this.currentCustomer = customer;
 
-  this.selectedSlotHour = null;
-  this.availableSlots = [];
-  this.selectedDate = new Date().toISOString().slice(0, 10);
+    this.selectedSlotHour = null;
+    this.availableSlots = [];
+    this.selectedDate = new Date().toISOString().slice(0, 10);
 
-  this.buildServicesForSelectedCar();
-}
-
-
- 
-private buildServicesForSelectedCar() {
-  const bodyType = this.selectedCar?.bodyType;
-
-  if (bodyType == null) {
-    this.allServices = [];
-    this.toastr.error('نوع هيكل العربية (bodyType) غير موجود في بيانات السيارة', 'خطأ');
-    return;
+    this.buildServicesForSelectedCar();
   }
 
-  const built = (this.servicesRaw ?? [])
-    .map((s) => {
-      const rate = (s.rates ?? []).find((r) => r.bodyType === bodyType);
-      if (!rate) return null;
 
-      return {
-        id: s.id,
-        name: s.name,
-        price: rate.price,
-        durationMinutes: rate.durationMinutes,
-        selected: false
-      } as ServiceViewModel;
-    })
-    .filter(Boolean) as ServiceViewModel[];
 
-  this.allServices = built;
+  private buildServicesForSelectedCar() {
+    const bodyType = this.selectedCar?.bodyType;
 
-  if (this.allServices.length === 0) {
-    this.toastr.warning('لا توجد خدمات متاحة لنوع هيكل هذه السيارة', 'تنبيه');
+    if (bodyType == null) {
+      this.allServices = [];
+      this.toastr.error('نوع هيكل العربية (bodyType) غير موجود في بيانات السيارة', 'خطأ');
+      return;
+    }
+
+    const built = (this.servicesRaw ?? [])
+      .map((s) => {
+        const rate = (s.rates ?? []).find((r) => r.bodyType === bodyType);
+        if (!rate) return null;
+
+        return {
+          id: s.id,
+          name: s.name,
+          price: rate.price,
+          durationMinutes: rate.durationMinutes,
+          selected: false
+        } as ServiceViewModel;
+      })
+      .filter(Boolean) as ServiceViewModel[];
+
+    this.allServices = built;
+
+    if (this.allServices.length === 0) {
+      this.toastr.warning('لا توجد خدمات متاحة لنوع هيكل هذه السيارة', 'تنبيه');
+    }
   }
-}
 
 
 
@@ -233,118 +235,122 @@ private buildServicesForSelectedCar() {
     this.loadAvailableSlots();
   }
 
-loadAvailableSlots() {
-  const serviceIds = this.getSelectedServiceIds();
-  if (!serviceIds.length || !this.selectedDate) return;
+  loadAvailableSlots() {
+    const serviceIds = this.getSelectedServiceIds();
+    if (!serviceIds.length || !this.selectedDate) return;
 
-  this.isSlotsLoading = true;
+    this.isSlotsLoading = true;
 
-  this.api.getAvailableSlots(this.branchId, this.selectedDate, serviceIds).subscribe({
-    next: (res: any) => {
-      this.availableSlots = res?.data?.slots ?? [];
-      this.isSlotsLoading = false;
-    },
-    error: (err) => {
-      this.isSlotsLoading = false;
-      this.toastr.error(err?.error?.message || 'فشل تحميل المواعيد المتاحة', 'خطأ');
-      console.error(err);
-    },
-  });
-}
-
-
-saveChanges(): void {
-  if (!this.currentCustomer?.id) {
-    this.toastr.error('clientId غير موجود', 'خطأ');
-    return;
-  }
-  const carId = this.selectedCar?.id ?? this.selectedCar?.carId;
-  if (!carId) {
-    this.toastr.error('carId غير موجود في بيانات السيارة', 'خطأ');
-    return;
+    this.api.getAvailableSlots(this.branchId, this.selectedDate, serviceIds).subscribe({
+      next: (res: any) => {
+        this.availableSlots = res?.data?.slots ?? [];
+        this.isSlotsLoading = false;
+      },
+      error: (err) => {
+        this.isSlotsLoading = false;
+        this.toastr.error(err?.error?.message || 'فشل تحميل المواعيد المتاحة', 'خطأ');
+        console.error(err);
+      },
+    });
   }
 
-  const serviceIds = this.getSelectedServiceIds();
-  if (!serviceIds.length) {
-    this.toastr.error('اختر خدمة واحدة على الأقل', 'خطأ');
-    return;
-  }
 
-  if (!this.selectedDate || !this.selectedSlotHour) {
-    this.toastr.error('اختر التاريخ والساعة', 'خطأ');
-    return;
-  }
+  saveChanges(): void {
+    if (!this.currentCustomer?.id) {
+      this.toastr.error('clientId غير موجود', 'خطأ');
+      return;
+    }
+    const carId = this.selectedCar?.id ?? this.selectedCar?.carId;
+    if (!carId) {
+      this.toastr.error('carId غير موجود في بيانات السيارة', 'خطأ');
+      return;
+    }
 
-  const scheduledStart = this.combineDateAndHourToIso(this.selectedDate, this.selectedSlotHour);
+    const serviceIds = this.getSelectedServiceIds();
+    if (!serviceIds.length) {
+      this.toastr.error('اختر خدمة واحدة على الأقل', 'خطأ');
+      return;
+    }
 
-  const payload = {
-    branchId: this.branchId,
-    carId,
-    clientId: this.currentCustomer.id,
-    scheduledStart,
-    serviceIds, // ✅ متعدد
-    createdByType: this.createdByType,
-    createdByEmployeeId: this.createdByEmployeeId,
-    createdByClientId: this.currentCustomer.id,
-    notes: ''
-  };
+    if (!this.selectedDate || !this.selectedSlotHour) {
+      this.toastr.error('اختر التاريخ والساعة', 'خطأ');
+      return;
+    }
 
-  this.isBookingLoading = true;
+    const scheduledStart = this.toLocalIsoNoZ(this.selectedDate, this.selectedSlotHour);
 
-  this.api.createBooking(payload).subscribe({
-    next: () => {
-      this.isBookingLoading = false;
-      this.toastr.success('تم إنشاء الحجز بنجاح', 'نجاح');
-    },
-    error: (err) => {
-      this.isBookingLoading = false;
+    const payload = {
+      branchId: this.branchId,
+      carId,
+      clientId: this.currentCustomer.id,
+      scheduledStart,
+      serviceIds, // ✅ متعدد
+      createdByType: this.createdByType,
+      createdByEmployeeId: this.createdByEmployeeId,
+      createdByClientId: this.currentCustomer.id,
+      notes: ''
+    };
 
-      // ✅ handle 409 conflict nicely
-      if (err?.status === 409) {
+    this.isBookingLoading = true;
+
+    this.api.createBooking(payload).subscribe({
+      next: () => {
+        this.isBookingLoading = false;
+        this.toastr.success('تم إنشاء الحجز بنجاح', 'نجاح');
+      },
+      error: (err) => {
+        this.isBookingLoading = false;
+
+        // ✅ handle 409 conflict nicely
+        if (err?.status === 409) {
           this.loadAvailableSlots();
 
-        const msg = err?.error?.message || 'هذا الموعد غير متاح (Conflict). اختر موعدًا آخر.';
-        this.toastr.error(msg, 'تعارض في الحجز');
-        return;
+          const msg = err?.error?.message || 'هذا الموعد غير متاح (Conflict). اختر موعدًا آخر.';
+          this.toastr.error(msg, 'تعارض في الحجز');
+          return;
+        }
+
+        this.toastr.error(err?.error?.message || 'فشل إنشاء الحجز', 'خطأ');
+        console.error(err);
       }
-
-      this.toastr.error(err?.error?.message || 'فشل إنشاء الحجز', 'خطأ');
-      console.error(err);
-    }
-  });
-}
-
-
-  private combineDateAndHourToIso(date: string, hour: string): string {
-    // date: "2026-01-20", hour: "08:00"
-    // Creates a local Date and returns ISO string.
-    const [y, m, d] = date.split('-').map(Number);
-    const [hh, mm] = hour.split(':').map(Number);
-
-    const local = new Date(y, m - 1, d, hh, mm, 0, 0);
-    return local.toISOString();
+    });
   }
 
+
+
+
+  private toLocalIsoNoZ(dateStr: string, hourStr: string): string {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const [hh, mm] = hourStr.split(':').map(Number);
+
+    // local date
+    const dt = new Date(y, m - 1, d, hh, mm, 0, 0);
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    // "YYYY-MM-DDTHH:mm:ss"
+    return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}:00`;
+  }
 
 
   toggleService(svc: ServiceViewModel): void {
-  svc.selected = !svc.selected;
-  this.selectedSlotHour = null;
-  this.availableSlots = [];
+    svc.selected = !svc.selected;
+    this.selectedSlotHour = null;
+    this.availableSlots = [];
 
-  // لو فيه تاريخ مختار، اعمل refresh للـ slots فورًا
-  if (this.selectedDate) {
-    this.loadAvailableSlots();
+    // لو فيه تاريخ مختار، اعمل refresh للـ slots فورًا
+    if (this.selectedDate) {
+      this.loadAvailableSlots();
+    }
   }
-}
 
-hasSelectedServices(): boolean {
-  return this.allServices.some(s => s.selected);
-}
+  hasSelectedServices(): boolean {
+    return this.allServices.some(s => s.selected);
+  }
 
-private getSelectedServiceIds(): number[] {
-  return this.allServices.filter(s => s.selected).map(s => s.id);
-}
+  private getSelectedServiceIds(): number[] {
+    return this.allServices.filter(s => s.selected).map(s => s.id);
+  }
 
 
   // ======================
