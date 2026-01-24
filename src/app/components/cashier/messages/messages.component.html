@@ -1,89 +1,86 @@
-<!-- <div class="contt">
-<div class="messages-container p-4" dir="rtl">
-  <div class="header d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold m-0">مركز التنبيهات</h3>
-    <button class="btn btn-outline-secondary btn-sm rounded-pill" (click)="clearAll()">
-      مسح الكل <i class="bi bi-trash3 ms-1"></i>
-    </button>
-  </div>
-
-  <div class="messages-list">
-    <div *ngIf="messages.length === 0" class="text-center py-5">
-      <i class="bi bi-chat-dots text-light-emphasis display-1"></i>
-      <p class="mt-3 text-muted fs-5">لا توجد رسائل جديدة حالياً</p>
-    </div>
-
-    <div *ngFor="let msg of messages" class="message-card shadow-sm border-0 mb-3 rounded-15 animate__animated animate__fadeInRight">
-      <div class="card-body d-flex align-items-center gap-3">
-        <div class="icon-wrapper rounded-circle p-3" [ngClass]="getStatusClass(msg.type)">
-          <i class="bi" [ngClass]="getIconClass(msg.type)"></i>
-        </div>
-
-        <div class="flex-grow-1 d-flex flex-column justify-content-center">
-          <div class="d-flex justify-content-between align-items-start">
-            <h6 class="fw-bold mb-1">{{ msg.workerName }}</h6>
-            <small class="text-muted small-time">{{ msg.time | date:'hh:mm a' }}</small>
-          </div>
-          <p class="text-secondary mb-0 small">{{ msg.content }}</p>
-
-          <div *ngIf="msg.type === 'edit_request'" class="mt-3 d-flex gap-2">
-            <button class="btn btn-success btn-sm px-4 rounded-2" (click)="approveEdit(msg)">تأكيد التعديل</button>
-            <button class="btn btn-outline-danger btn-sm px-4 rounded-2" (click)="rejectEdit(msg)">رفض</button>
-          </div>
-        </div>
-
-        <button class="btn-close ms-auto shadow-none" (click)="removeMessage(msg.id)"></button>
-      </div>
-    </div>
-  </div>
-</div>
-</div> -->
-
-
-
-
-
-
 <div class="contt">
   <div class="messages-container" dir="rtl">
-    <div class="header d-flex justify-content-between align-items-center mb-5">
+
+    <div class="header d-flex justify-content-between align-items-center mb-4">
       <div>
-        <h3 class="fw-bold m-0" style="color: #2d3436;">مركز التنبيهات</h3>
-        <p class="text-muted small m-0 mt-1">لديك {{messages.length}} تنبيهات جديدة اليوم</p>
+        <h3 class="fw-bold m-0" style="color:#2d3436;">طلبات تعديل المواد</h3>
+        <p class="text-muted small m-0 mt-1">لديك {{ pendingRequests.length }} طلبات اليوم</p>
       </div>
-      <button class="btn btn-light btn-sm text-danger fw-medium px-3 rounded-3" (click)="clearAll()">
-        <i class="bi bi-trash3 me-1"></i> مسح الكل
-      </button>
+
+      <div class="d-flex gap-2 align-items-center">
+        <input type="date"
+               class="form-control form-control-sm"
+               style="max-width:170px"
+               [value]="selectedDate"
+               (change)="onDateChange($event)">
+
+        <button class="btn btn-outline-secondary btn-sm" (click)="loadRequests()">
+          تحديث
+        </button>
+
+        <button class="btn btn-light btn-sm text-danger fw-medium px-3 rounded-3" (click)="clearAll()">
+          <i class="bi bi-trash3 me-1"></i> مسح الكل
+        </button>
+      </div>
     </div>
 
-    <div class="messages-list">
-      <div *ngFor="let msg of messages" class="message-card animate__animated animate__fadeInUp">
+    <div *ngIf="isLoading" class="text-center text-muted py-5">
+      جاري تحميل الطلبات...
+    </div>
+
+    <div *ngIf="!isLoading && pendingRequests.length === 0" class="text-center py-5">
+      <i class="bi bi-inbox text-light-emphasis display-1"></i>
+      <p class="mt-3 text-muted fs-5">لا توجد طلبات حالياً</p>
+    </div>
+
+    <div class="messages-list" *ngIf="!isLoading && pendingRequests.length > 0">
+
+      <div *ngFor="let req of pendingRequests" class="message-card animate__animated animate__fadeInUp">
         <div class="card-body d-flex align-items-start gap-3">
 
-          <div class="icon-wrapper"
-                  [ngClass]="{
-                  'bg-edit': msg.type === 'edit_request',
-                  'bg-start': msg.type === 'start',
-                  'bg-end': msg.type === 'end'}">
-                <i class="bi" [ngClass]="getIconClass(msg.type)"></i>
+          <div class="icon-wrapper bg-edit">
+            <i class="bi bi-pencil-square"></i>
           </div>
 
           <div class="flex-grow-1">
             <div class="d-flex justify-content-between align-items-center mb-1">
-              <h6 class="worker-name fw-bold m-0">{{ msg.workerName }}</h6>
-              <span class="small-time">{{ msg.time | date:'hh:mm a' }}</span>
+              <h6 class="worker-name fw-bold m-0">
+                {{ req.requestedByEmployeeName }}
+              </h6>
+              <span class="small-time">
+                {{ req.requestedAt | date:'hh:mm a' }}
+              </span>
             </div>
-            <p class="message-content m-0">{{ msg.content }}</p>
 
-            <div *ngIf="msg.type === 'edit_request'" class="mt-3 d-flex gap-2">
-              <button class="btn-approve" (click)="approveEdit(msg)">تأكيد التعديل</button>
-              <button class="btn-reject" (click)="rejectEdit(msg)">رفض</button>
+            <p class="message-content m-0">
+              طلب تعديل مواد للحجز #{{ req.bookingId }} (Item #{{ req.bookingItemId }})
+            </p>
+
+            <div class="mt-3 border rounded-3 p-2 bg-light">
+              <div class="d-flex justify-content-between small fw-bold mb-2">
+                <span>المادة</span>
+                <span>الافتراضي</span>
+                <span>الحالي</span>
+                <span>المقترح</span>
+              </div>
+
+              <div *ngFor="let line of req.lines" class="d-flex justify-content-between small py-1 border-bottom">
+                <span>{{ line.materialName }}</span>
+                <span>{{ line.defaultQty }}</span>
+                <span>{{ line.currentActualQty }}</span>
+                <span class="text-orange fw-bold">{{ line.proposedActualQty }}</span>
+              </div>
+            </div>
+
+            <div class="mt-3 d-flex gap-2">
+              <button class="btn-approve" (click)="approve(req)">موافقة</button>
+              <button class="btn-reject" (click)="reject(req)">رفض</button>
             </div>
           </div>
 
-          <button class="btn-close" (click)="removeMessage(msg.id)"></button>
         </div>
       </div>
+
     </div>
   </div>
 </div>

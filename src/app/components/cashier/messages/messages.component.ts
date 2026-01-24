@@ -1,5 +1,22 @@
 import { Component, OnInit } from '@angular/core';
-import { NotificationService, AppMessage  } from 'src/app/services/notification.service';
+import { ApiService } from 'src/app/services/api.service';
+
+type PendingMaterialRequest = {
+  requestId: number;
+  bookingItemId: number;
+  bookingId: number;
+  scheduledStart: string;
+  requestedByEmployeeId: number;
+  requestedByEmployeeName: string;
+  requestedAt: string;
+  lines: {
+    materialId: number;
+    materialName: string;
+    defaultQty: number;
+    currentActualQty: number;
+    proposedActualQty: number;
+  }[];
+};
 
 @Component({
   selector: 'app-messages',
@@ -8,70 +25,82 @@ import { NotificationService, AppMessage  } from 'src/app/services/notification.
 })
 export class MessagesComponent implements OnInit {
 
-  messages: AppMessage[] = [];
+  branchId = 1;
+  cashierId = 5; // ✅ حطي cashierId الحقيقي
+  selectedDate = this.todayYYYYMMDD();
 
-  constructor(private notificationService: NotificationService) {}
+  isLoading = false;
+
+  pendingRequests: PendingMaterialRequest[] = [];
+
+  constructor(private api: ApiService) {}
 
   ngOnInit(): void {
-
-  this.notificationService.messages$.subscribe((data) => {
-    this.messages = data;
-
-    window.addEventListener('storage', (event) => {
-    if (event.key === 'forto_notifications') {
-      this.notificationService.loadFromStorage();
-    }
-  });
-  });
-
-
-  window.addEventListener('storage', (event) => {
-    if (event.key === 'forto_notifications') {
-
-      this.notificationService.loadFromStorage();
-    }
-  });
-}
-
-
-  getStatusClass(type: string): string {
-    switch (type) {
-      case 'start': return 'bg-primary-subtle text-primary';
-      case 'edit_request': return 'bg-warning-subtle text-warning';
-      case 'end': return 'bg-success-subtle text-success';
-      default: return 'bg-light text-secondary';
-    }
+    this.loadRequests();
   }
 
-
-  getIconClass(type: string): string {
-    switch (type) {
-      case 'start': return 'bi-play-circle-fill';
-      case 'edit_request': return 'bi-pencil-square';
-      case 'end': return 'bi-check-circle-fill';
-      default: return 'bi-bell';
-    }
+  onDateChange(e: any) {
+    this.selectedDate = (e.target.value || '').trim();
+    this.loadRequests();
   }
 
+  loadRequests(): void {
+    this.isLoading = true;
 
-  removeMessage(id: number): void {
-    this.notificationService.removeMessage(id);
+    this.api.getPendingMaterialRequests(this.branchId, this.selectedDate).subscribe({
+      next: (res: any) => {
+        this.pendingRequests = res?.data ?? [];
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.pendingRequests = [];
+        this.isLoading = false;
+        alert(err?.error?.message || 'فشل تحميل الطلبات');
+      }
+    });
   }
 
+  approve(req: PendingMaterialRequest): void {
+    const note = ''; // اختياري
+    const payload = { cashierId: this.cashierId, note };
+
+    this.api.approveMaterialRequest(req.bookingItemId, req.requestId, payload).subscribe({
+      next: () => {
+        alert('تمت الموافقة');
+        this.pendingRequests = this.pendingRequests.filter(x => x.requestId !== req.requestId);
+      },
+      error: (err) => {
+        console.error(err);
+        alert(err?.error?.message || 'فشل الموافقة');
+      }
+    });
+  }
+
+  reject(req: PendingMaterialRequest): void {
+    const note = ''; // اختياري
+    const payload = { cashierId: this.cashierId, note };
+
+    this.api.rejectMaterialRequest(req.bookingItemId, req.requestId, payload).subscribe({
+      next: () => {
+        alert('تم الرفض');
+        this.pendingRequests = this.pendingRequests.filter(x => x.requestId !== req.requestId);
+      },
+      error: (err) => {
+        console.error(err);
+        alert(err?.error?.message || 'فشل الرفض');
+      }
+    });
+  }
 
   clearAll(): void {
-    this.notificationService.clearAll();
+    // هنا "مسح الكل" = تفريغ عرض القائمة فقط (مش API)
+    this.pendingRequests = [];
   }
 
-
-  approveEdit(msg: AppMessage): void {
-    console.log('تمت الموافقة على تعديلات الحجز رقم:', msg.id);
-
-    this.removeMessage(msg.id);
-  }
-
-  rejectEdit(msg: AppMessage): void {
-    console.log('تم رفض طلب التعديل:', msg.id);
-    this.removeMessage(msg.id);
+  private todayYYYYMMDD(): string {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 }

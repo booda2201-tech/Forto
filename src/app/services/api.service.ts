@@ -6,7 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-  private baseUrl = 'https://api.fortolaundry.com';
+  // private baseUrl = 'https://api.fortolaundry.com';
+  private baseUrl = 'https://localhost:7179';
 
   constructor(private http: HttpClient) {}
 
@@ -342,37 +343,51 @@ export class ApiService {
     );
   }
 
-startBookingItem(itemId: number, payload: { employeeId: number }) {
-  return this.http.put(
-    `${this.baseUrl}/api/booking-items/${itemId}/start`,
-    payload
-  );
-}
-
-completeBookingItem(itemId: number, payload: { employeeId: number }) {
-  return this.http.put(
-    `${this.baseUrl}/api/booking-items/${itemId}/complete`,
-    payload
-  );
-}
-
-updateBookingItemMaterials(
-  bookingItemId: number,
-  payload: {
-    employeeId: number;
-    materials: { materialId: number; actualQty: number }[];
+  startBookingItem(itemId: number, payload: { employeeId: number }) {
+    return this.http.put(
+      `${this.baseUrl}/api/booking-items/${itemId}/start`,
+      payload,
+    );
   }
-) {
-  return this.http.put(
-    `${this.baseUrl}/api/booking-items/${bookingItemId}/materials/UpdateBookingItemMaterials`,
+
+  completeBookingItem(itemId: number, payload: { employeeId: number }) {
+    return this.http.put(
+      `${this.baseUrl}/api/booking-items/${itemId}/complete`,
+      payload,
+    );
+  }
+
+  updateBookingItemMaterials(
+    bookingItemId: number,
+    payload: {
+      employeeId: number;
+      materials: { materialId: number; actualQty: number }[];
+    },
+  ) {
+    return this.http.put(
+      `${this.baseUrl}/api/booking-items/${bookingItemId}/materials/requests`,
+      payload,
+    );
+  }
+
+getPendingMaterialRequests(branchId: number, date: string) {
+  return this.http.get(`${this.baseUrl}/api/booking-items/pending`, {
+    params: { branchId: String(branchId), date }
+  });
+}
+
+approveMaterialRequest(bookingItemId: number, requestId: number, payload: { cashierId: number; note: string }) {
+  return this.http.post(
+    `${this.baseUrl}/api/booking-items/${bookingItemId}/materials/requests/${requestId}/approve`,
     payload
   );
 }
 
+rejectMaterialRequest(bookingItemId: number, requestId: number, payload: { cashierId: number; note: string }) {
+  return this.http.post(
+    `${this.baseUrl}/api/booking-items/${bookingItemId}/materials/requests/${requestId}/reject`,
+    payload
+  );
+}
 
-
-  // // (Optional but very useful for materials dropdown)
-  // getMaterials() {
-  //   return this.http.get(`${this.baseUrl}/api/materials/GetAll`);
-  // }
 }
