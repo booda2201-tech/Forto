@@ -172,7 +172,7 @@ export class ApiService {
   }
 
   getProducts() {
-    return this.http.get(`${this.baseUrl}/api/products/GetAll`);
+    return this.http.get(`${this.baseUrl}/api/products/with-stock?branchId=1`);
   }
 
   createProduct(payload: {
