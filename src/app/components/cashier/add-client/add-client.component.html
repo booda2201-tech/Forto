@@ -94,10 +94,12 @@
               <span class="text-danger">*</span></label
             >
             <input
-              type="tel"
+              type="text"
               formControlName="phone"
               class="form-control custom-input text-end"
-              placeholder="01xxxxxxxxx"
+              placeholder="+966 5x xxx xxxx"
+              (keypress)="onlyNumbers($event)"
+              inputmode="numeric"
             />
           </div>
 

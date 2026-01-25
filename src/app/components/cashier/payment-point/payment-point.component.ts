@@ -433,6 +433,15 @@ downloadInvoice() {
   }
 
 
+onlyNumbers(event: any) {
+  const pattern = /[0-9]/; // يسمح فقط بالأرقام من 0 إلى 9
+  const inputChar = String.fromCharCode(event.charCode);
+
+  if (!pattern.test(inputChar)) {
+    // إذا لم يكن المدخل رقماً، يتم إلغاء الحدث ومنع الكتابة
+    event.preventDefault();
+  }
+}
 
 
 

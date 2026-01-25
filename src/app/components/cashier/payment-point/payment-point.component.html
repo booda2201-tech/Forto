@@ -163,8 +163,12 @@
             <label class="form-label-custom">
               <i class="bi bi-telephone text-orange mx-1"></i> رقم الهاتف
             </label>
-            <input class="form-control custom-input text-end" type="text" [formControl]="orderForm.controls.phoneNumber"
-              placeholder="+966 5x xxx xxxx" />
+<input class="form-control custom-input text-end"
+        type="text"
+        [formControl]="orderForm.controls.phoneNumber"
+        placeholder="+966 5x xxx xxxx"
+        (keypress)="onlyNumbers($event)"
+        inputmode="numeric" />
           </div>
         </div>
       </div>
@@ -251,7 +255,12 @@
           </div>
           <div class="form-group">
             <label><i class="bi bi-telephone mx-1"></i> رقم الهاتف </label>
-            <input type="tel" formControlName="phone" placeholder="+966 5x xxx xxxx" class="text-end" />
+<input class="form-control custom-input text-end"
+        type="text"
+        [formControl]="orderForm.controls.phoneNumber"
+        placeholder="+966 5x xxx xxxx"
+        (keypress)="onlyNumbers($event)"
+        inputmode="numeric" />
           </div>
         </div>
 
