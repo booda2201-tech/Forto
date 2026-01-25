@@ -31,19 +31,43 @@ type CartItemVm = {
   styleUrls: ['./payment-point.component.scss']
 })
 export class PaymentPointComponent implements OnInit {
+  activeTab: 'new-order' | 'quick-booking' = 'new-order';
   branchId = 1;
   cashierId = 5;
-
   isSubmitting = false;
-
   products: ProductVm[] = [];
   cart: CartItemVm[] = [];
-
   orderForm = new FormGroup({
     fullName: new FormControl('', [Validators.required]),
     phoneNumber: new FormControl('', [Validators.required]),
     notes: new FormControl(''),
   });
+
+  customerForm = new FormGroup({
+    name: new FormControl('', [Validators.required]),
+    phone: new FormControl('', [Validators.required]),
+    carType: new FormControl(''),
+    carNumber: new FormControl(''),
+    carCategory: new FormControl(null, [Validators.required]),
+    appointmentDate: new FormControl('', [Validators.required])
+  });
+
+  services: any[] = [];
+  selectedServices: any[] = [];
+  carCategories: any[] = [];
+  availableSlots: any[] = [];
+  selectedSlotHour: any = null;
+  isSlotsLoading = false;
+  totalPrice = 0;
+
+  selectedInvoice: any = null;
+  subTotal = 0;
+  taxAmount = 0;
+  finalTotal = 0;
+
+
+
+
 
   constructor(
     private api: ApiService,
@@ -52,6 +76,7 @@ export class PaymentPointComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProducts();
+    this.loadInitialBookingData();
   }
 
   private loadProducts(): void {
@@ -79,6 +104,69 @@ export class PaymentPointComponent implements OnInit {
       }
     });
   }
+
+  loadInitialBookingData() {
+
+    this.carCategories = [
+      { id: 1, nameAr: 'سيدان صغير' },
+      { id: 2, nameAr: 'دفع رباعي / SUV' }
+    ];
+    this.services = [
+      { id: 101, name: 'غسيل خارجي', price: 100 },
+      { id: 102, name: 'تلميع داخلي', price: 250 }
+    ];
+  }
+
+
+  loadAvailableSlots() {
+    const date = this.customerForm.value.appointmentDate;
+    if (!date) return;
+
+    this.isSlotsLoading = true;
+    // هنا يتم استدعاء الـ API الخاص بالمواعيد المتاحة
+    setTimeout(() => {
+      this.availableSlots = [
+        { hour: '10:00 AM', available: 2 },
+        { hour: '11:00 AM', available: 1 }
+      ];
+      this.isSlotsLoading = false;
+    }, 1000);
+  }
+
+  toggleService(service: any, event: any) {
+    if (event.target.checked) {
+      this.selectedServices.push(service);
+    } else {
+      this.selectedServices = this.selectedServices.filter(s => s.id !== service.id);
+    }
+    this.calculateBookingTotal();
+  }
+
+  isServiceSelected(service: any): boolean {
+    return this.selectedServices.some(s => s.id === service.id);
+  }
+
+  calculateBookingTotal() {
+    this.totalPrice = this.selectedServices.reduce((sum, s) => sum + s.price, 0);
+  }
+
+  onBookingSubmit() {
+    if (this.customerForm.invalid || this.selectedServices.length === 0) {
+      this.toastr.error('يرجى استكمال بيانات الحجز');
+      return;
+    }
+    // تنفيذ عملية الحجز هنا
+    this.toastr.success('تم تسجيل الحجز بنجاح');
+  }
+
+
+
+
+
+
+
+
+
 
   // ===== Cart helpers =====
   getItem(productId: number): CartItemVm | undefined {
@@ -144,7 +232,127 @@ export class PaymentPointComponent implements OnInit {
   }
 
   // ===== Submit POS invoice =====
+  // onSubmit() {
+  //   if (this.orderForm.invalid) {
+  //     this.toastr.error('يرجى إدخال بيانات العميل', 'خطأ');
+  //     return;
+  //   }
+
+  //   if (this.cart.length === 0) {
+  //     this.toastr.warning('اختر منتج واحد على الأقل', 'تنبيه');
+  //     return;
+  //   }
+
+
+
+  //   const v = this.orderForm.value;
+
+  //   const payload = {
+  //     branchId: this.branchId,
+  //     cashierId: this.cashierId,
+  //     items: this.cart.map(x => ({
+  //       productId: x.product.id,
+  //       qty: x.qty
+  //     })),
+  //     occurredAt: new Date().toISOString(),
+  //     notes: String(v.notes || ''),
+  //     customer: {
+  //       phoneNumber: String(v.phoneNumber || ''),
+  //       fullName: String(v.fullName || '')
+  //     }
+  //   };
+
+  //   this.isSubmitting = true;
+
+  //   this.api.createPosInvoice(payload).subscribe({
+  //     next: (res: any) => {
+  //       this.isSubmitting = false;
+  //       console.log(payload);
+
+  //       if (res?.success === false) {
+  //         this.toastr.error(res?.message || 'فشل إنشاء الفاتورة', 'خطأ');
+  //         return;
+  //       }
+
+  //       this.toastr.success('تم إنشاء الفاتورة بنجاح', 'نجاح');
+
+  //       // reset
+  //       this.cart = [];
+  //       this.orderForm.reset({ fullName: '', phoneNumber: '', notes: '' });
+  //     },
+  //     error: (err) => {
+  //       this.isSubmitting = false;
+  //       console.error(err);
+  //       this.toastr.error(err?.error?.message || 'فشل إنشاء الفاتورة', 'خطأ');
+  //     }
+  //   });
+  // }
+
+  prepareInvoiceData() {
+  const v = this.orderForm.value;
+  this.subTotal = this.totalAmount;
+  this.taxAmount = this.subTotal * 0.14;
+  this.finalTotal = this.subTotal + this.taxAmount;
+
+  this.selectedInvoice = {
+    id: Math.floor(1000 + Math.random() * 9000),
+    customerName: v.fullName,
+    phone: v.phoneNumber,
+    date: new Date().toLocaleString('ar-EG'),
+    lines: this.cart.map(item => ({
+      description: item.product.name,
+      qty: item.qty,
+      unitPrice: item.product.price,
+      total: item.product.price * item.qty
+    }))
+  };
+}
+
+  prepareBookingInvoice() {
+  const v = this.customerForm.value;
+  this.subTotal = this.totalPrice;
+  this.taxAmount = this.subTotal * 0.14;
+  this.finalTotal = this.subTotal + this.taxAmount;
+
+  this.selectedInvoice = {
+    id: 'R-' + Math.floor(Math.random() * 1000),
+    customerName: v.name,
+    phone: v.phone,
+    date: v.appointmentDate,
+    lines: this.selectedServices.map(s => ({
+      description: s.name + ' (' + v.carType + ')',
+      qty: 1,
+      unitPrice: s.price,
+      total: s.price
+    }))
+  };
+}
+
+
+downloadInvoice() {
+  const printContents = document.getElementById('printableInvoice')?.innerHTML;
+  const originalContents = document.body.innerHTML;
+
+  if (printContents) {
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents;
+    window.location.reload(); // لإعادة تهيئة الصفحة بعد الطباعة
+  }
+}
+
+
+
   onSubmit() {
+    if (this.activeTab === 'new-order') {
+      this.submitOrder(); // تنفيذ وظيفة البيع المباشر
+    } else if (this.activeTab === 'quick-booking') {
+      this.submitBooking(); // تنفيذ وظيفة الحجز الفوري
+    }
+  }
+
+  // أولاً: وظيفة البيع المباشر (POS)
+  private submitOrder() {
     if (this.orderForm.invalid) {
       this.toastr.error('يرجى إدخال بيانات العميل', 'خطأ');
       return;
@@ -156,14 +364,10 @@ export class PaymentPointComponent implements OnInit {
     }
 
     const v = this.orderForm.value;
-
     const payload = {
       branchId: this.branchId,
       cashierId: this.cashierId,
-      items: this.cart.map(x => ({
-        productId: x.product.id,
-        qty: x.qty
-      })),
+      items: this.cart.map(x => ({ productId: x.product.id, qty: x.qty })),
       occurredAt: new Date().toISOString(),
       notes: String(v.notes || ''),
       customer: {
@@ -173,28 +377,66 @@ export class PaymentPointComponent implements OnInit {
     };
 
     this.isSubmitting = true;
-
     this.api.createPosInvoice(payload).subscribe({
       next: (res: any) => {
         this.isSubmitting = false;
-        console.log(payload);
+        this.toastr.success('تم إنشاء الفاتورة بنجاح');
 
-        if (res?.success === false) {
-          this.toastr.error(res?.message || 'فشل إنشاء الفاتورة', 'خطأ');
-          return;
-        }
+        // تحضير بيانات الفاتورة للمودال الخاص بالمنتجات
+        this.prepareInvoiceData();
+        this.showInvoiceModal();
 
-        this.toastr.success('تم إنشاء الفاتورة بنجاح', 'نجاح');
-
-        // reset
+        // إعادة التعيين
         this.cart = [];
         this.orderForm.reset({ fullName: '', phoneNumber: '', notes: '' });
       },
       error: (err) => {
         this.isSubmitting = false;
-        console.error(err);
-        this.toastr.error(err?.error?.message || 'فشل إنشاء الفاتورة', 'خطأ');
+        this.toastr.error('فشل إنشاء الفاتورة');
       }
     });
   }
+
+  // ثانياً: وظيفة الحجز الفوري (Booking)
+  private submitBooking() {
+    if (this.customerForm.invalid || this.selectedServices.length === 0) {
+      this.toastr.error('يرجى استكمال بيانات الحجز والخدمات');
+      return;
+    }
+
+    // هنا يتم استدعاء API الحجز (افترضنا أن لديك API مختلف للحجز)
+    this.isSubmitting = true;
+
+    // محاكاة استدعاء API النجاح للحجز
+    setTimeout(() => {
+      this.isSubmitting = false;
+      this.toastr.success('تم تسجيل الحجز بنجاح');
+
+      // تحضير بيانات الفاتورة الخاصة بالحجز للمودال
+      this.prepareBookingInvoice();
+      this.showInvoiceModal();
+
+      // إعادة تعيين فورم الحجز
+      this.customerForm.reset();
+      this.selectedServices = [];
+      this.totalPrice = 0;
+    }, 1000);
+  }
+
+  // دالة مساعدة لفتح المودال
+  private showInvoiceModal() {
+    const modalElement = document.getElementById('invoiceModal');
+    if (modalElement) {
+      const bootstrapModal = new (window as any).bootstrap.Modal(modalElement);
+      bootstrapModal.show();
+    }
+  }
+
+
+
+
+
+
+
+
 }

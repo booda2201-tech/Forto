@@ -117,15 +117,12 @@
           </div>
           <div class="form-group mt-1">
             <label><i class="bi bi-car-front mx-1"></i> فئة السيارة </label>
-<select class="form-select custom-select" formControlName="carCategory">
-  <option [ngValue]="null" disabled>اختر فئة السيارة</option>
-
-  <option *ngFor="let cat of carCategories" [ngValue]="cat.id" class="text-dark">
-    {{ cat.nameAr }}
-  </option>
-</select>
-
-
+              <select class="form-select custom-select" formControlName="carCategory">
+                <option [ngValue]="null" disabled>اختر فئة السيارة</option>
+                <option *ngFor="let cat of carCategories" [ngValue]="cat.id" class="text-dark">
+                  {{ cat.nameAr }}
+                </option>
+              </select>
           </div>
         </div>
       </div>
@@ -214,7 +211,7 @@
           <button type="button" class="btn-cancel" (click)="customerForm.reset()">
             إلغاء
           </button>
-          <button type="submit" class="btn-save">تأكيد الحجز</button>
+          <button type="submit" class="btn-save" routerLink="cashier/reservations">تأكيد الحجز</button>
         </div>
       </div>
     </form>

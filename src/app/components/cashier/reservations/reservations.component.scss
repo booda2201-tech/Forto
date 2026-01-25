@@ -451,3 +451,227 @@
 .modal-body {
   overflow-x: hidden;
 }
+
+
+
+
+
+
+
+
+
+
+
+$bg-main: #fcfcfc;
+$item-bg: #ffffff;
+$text-main: #444444;
+$text-muted: #888888;
+$accent-soft: #eef4ff;
+$accent-border: #d1e3ff;
+$success-soft: #f0f9f4;
+$success-border: #c3e6cb;
+$border-light: #ececec;
+
+.modal-content {
+  background-color: $bg-main;
+  border-radius: 24px;
+  color: $text-main;
+}
+
+
+.service-badge {
+  background: $item-bg;
+  border: 1px solid $border-light;
+  padding: 10px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+
+  .fw-bold {
+    color: $text-main;
+    font-size: 0.95rem;
+  }
+
+
+  &.active-service {
+    background-color: $accent-soft;
+    border-color: $accent-border;
+    transform: scale(1.02);
+  }
+
+
+  &.completed-service {
+    background-color: $success-soft;
+    border-color: $success-border;
+
+    .fw-bold { color: darken($success-border, 40%); }
+  }
+}
+
+
+.worker-card {
+  background: $item-bg;
+  border: 1px solid $border-light;
+  margin-bottom: 8px;
+  border-radius: 14px;
+  padding: 12px 16px;
+  transition: background 0.2s;
+
+  &:hover {
+    background-color: darken($item-bg, 10%);
+    border-color: $accent-border;
+  }
+}
+
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+
+
+  &.dot-available {
+    background-color: #8ccf9a;
+    box-shadow: 0 0 5px rgba(140, 207, 154, 0.4);
+  }
+
+
+  &.dot-busy {
+    background-color: #f2a6a6;
+    box-shadow: 0 0 5px rgba(242, 166, 166, 0.4);
+  }
+}
+
+.status-text {
+  font-size: 11px;
+  color: #999;
+}
+
+.worker-card {
+
+  border: 1px solid #f0f0f0;
+  background: #fff;
+
+  &:hover {
+    background-color: #fafafa;
+    border-color: #e0e0e0;
+  }
+}
+
+
+
+.rounded-12 { border-radius: 12px !important; }
+.rounded-15 { border-radius: 15px !important; }
+
+.current-services-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 5px;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 10px;
+  }
+}
+
+.service-badge.pointer:hover {
+  transform: scale(1.02);
+  filter: brightness(0.95);
+}
+
+
+
+
+// حاوية الخدمات لمنع السكرول الأفقي
+.services-wrapper {
+  max-height: 420px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 5px;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #e0e0e0;
+    border-radius: 10px;
+  }
+}
+
+// الكارت الخاص بالخدمة
+.service-selection-card {
+  background: #ffffff;
+  border: 1.5px solid #f2f2f2;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+
+  .service-name {
+    font-size: 0.95rem;
+    color: #444;
+  }
+
+  .service-price {
+    font-size: 0.85rem;
+    color: #28a745; // الأخضر السعري
+  }
+
+  .check-container {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.7rem;
+  }
+
+  // الحالة النشطة (عند الاختيار)
+  &.active {
+    background-color: #f8fff9; // خلفية خضراء باهتة جداً
+    border-color: #28a745 !important;
+
+    .check-container {
+      background-color: #28a745; // نفس لون زر تفعيل الحجز
+      border-color: #28a745;
+    }
+
+    .service-name {
+      color: #1b5e20;
+    }
+  }
+
+  &:hover {
+    border-color: #28a745;
+    transform: translateY(-2px);
+  }
+}
+
+// بار الإجمالي السفلي
+.total-bar {
+  background: #fdfdfd;
+  border: 1px solid #eee;
+  padding: 15px 20px;
+  border-radius: 15px;
+
+  .amount {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #28a745;
+  }
+
+  .currency {
+    font-size: 0.8rem;
+    margin-left: 5px;
+    color: #28a745;
+  }
+}

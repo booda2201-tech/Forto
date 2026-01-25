@@ -6,8 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-  // private baseUrl = 'https://api.fortolaundry.com';
-  private baseUrl = 'https://localhost:7179';
+  private baseUrl = 'https://api.fortolaundry.com';
+  // private baseUrl = 'https://localhost:7179';
 
   constructor(private http: HttpClient) {}
 
@@ -16,6 +16,7 @@ export class ApiService {
       `${this.baseUrl}/api/catalog/services/GetAll?categoryId=${categoryId}`,
     );
   }
+
 
   getAllClients(): Observable<any> {
     return this.http.get(`${this.baseUrl}/api/clients/GetAll`);
@@ -324,6 +325,7 @@ export class ApiService {
     );
   }
 
+
   // getCatalogServices(categoryId: number) {
   //   return this.http.get(`${this.baseUrl}/api/catalog/services/GetAll`, {
   //     params: { categoryId: String(categoryId) },
@@ -333,6 +335,7 @@ export class ApiService {
   // getCatalogCategories() {
   //   return this.http.get(`${this.baseUrl}/api/catalog/categories/GetAll`);
   // }
+
 
   getEmployeeTasks(employeeId: number, date: string) {
     return this.http.get(
@@ -389,5 +392,11 @@ rejectMaterialRequest(bookingItemId: number, requestId: number, payload: { cashi
     payload
   );
 }
+
+updateBookingServices(payload: any) {
+
+  return this.http.post(`${this.baseUrl}/api/bookings/update-services`, payload);
+}
+
 
 }

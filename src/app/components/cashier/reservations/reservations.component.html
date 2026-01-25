@@ -124,26 +124,33 @@
           </div>
         </div>
 
-        <div class="card-actions mt-0 d-flex gap-2">
+        <!-- <div class="card-actions mt-0 d-flex gap-2">
           <button class="btn btn-sm btn-outline-danger rounded-3"
             *ngIf="customer.status !== 'canceled' && customer.status !== 'completed'" (click)="onCancel(customer)">
             <i class="bi bi-trash"></i>
           </button>
+
+            <button class="btn btn-outline-secondary rounded-15 flex-grow-0 px-3"
+            (click)="onEditBooking(customer)"
+            title="تعديل الخدمات">
+        <i class="bi bi-pencil-square"></i>
+            </button>
 
           <button class="btn btn-update flex-grow-1 text-white fw-bold" *ngIf="customer.status === 'waiting'"
             (click)="onActivate(customer.id)">
             تفعيل الحجز <i class="bi bi-check2-circle ms-1"></i>
           </button>
 
-          <!-- <button class="btn btn-success flex-grow-1 text-white fw-bold" *ngIf="customer.status === 'active'"
-            (click)="onComplete(customer.id)">
-            انهاء <i class="bi bi-check-circle ms-1"></i>
-          </button> -->
-<!-- 
-          <button class="btn btn-sm btn-outline-primary rounded-3" *ngIf="customer.status === 'active'"
-            (click)="onEdit(customer)">
-            تعديل <i class="bi bi-pencil-square"></i>
-          </button> -->
+<div class="card-actions mt-0 d-flex gap-2">
+
+  <button *ngIf="currentTab === 'active'"
+          class="btn btn-success w-50 flex-grow-1 text-white fw-bold rounded-"
+          (click)="onCompleteBooking(customer.id)">
+    إنهاء الخدمة <i class="bi bi-check-circle ms-1"></i>
+  </button>
+
+</div>
+
 
           <div class="w-100 mt-2" *ngIf="customer.status === 'completed'">
             <button class="btn btn-success w-100 fw-bold rounded-3" (click)="openInvoice(customer)"
@@ -155,7 +162,34 @@
           <span class="text-danger w-100 text-center py-2" *ngIf="customer.status === 'canceled'">
             حجز ملغي
           </span>
-        </div>
+        </div> -->
+      <div class="card-actions mt-0 d-flex gap-2 w-100">
+  <button class="btn btn-sm btn-outline-danger rounded-3"
+          *ngIf="customer.status !== 'canceled' && customer.status !== 'completed'"
+          (click)="onCancel(customer)">
+    <i class="bi bi-trash"></i>
+  </button>
+
+  <button class="btn btn-outline-secondary rounded-15 px-3"
+          *ngIf="customer.status !== 'completed' && customer.status !== 'canceled'"
+          (click)="onEditBooking(customer)"
+          title="تعديل الخدمات">
+    <i class="bi bi-pencil-square"></i>
+  </button>
+
+  <button *ngIf="currentTab === 'active'"
+          class="btn btn-success flex-grow-1 text-white fw-bold rounded-15 shadow-sm"
+          (click)="onComplete(customer.id)">
+    إنهاء الخدمة <i class="bi bi-check2-circle ms-1"></i>
+  </button>
+
+  <button class="btn btn-update flex-grow-1 text-white fw-bold"
+          *ngIf="customer.status === 'waiting'"
+          (click)="onActivate(customer.id)">
+    تفعيل الحجز <i class="bi bi-check2-circle ms-1"></i>
+  </button>
+</div>
+
 
       </div>
     </div>
@@ -166,63 +200,188 @@
 
 
 
-<div class="modal fade" id="workerModal" tabindex="-1" aria-hidden="true">
+<!-- <div class="modal fade" id="workerModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+
       <div class="modal-header border-0 pb-0 d-flex justify-content-center pt-4">
         <h5 class="modal-title fw-bold">تفعيل الحجز وتعيين عامل</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body p-4">
+
         <div class="mb-4">
-          <label class="d-block text-secondary mb-2 text-end small">
-            الخدمات المطلوبة (اختر خدمة لتعيين عامل):
-          </label>
+          <label class="d-block text-secondary mb-2 text-end small">الخدمات المطلوبة:</label>
           <div class="d-flex flex-wrap gap-2 justify-content-end">
-            <div *ngFor="let svc of selectedReservationServices" (click)="selectServiceItem(svc)"
-              [class.active-service]="selectedServiceItem?.bookingItemId === svc.bookingItemId"
-              class="service-badge pointer transition-all">
-              {{ svc.name }}
-            </div>
-          </div>
+            <div *ngFor="let svc of selectedReservationServices"
+                  (click)="selectServiceItem(svc)"
+                  [class.active-service]="selectedServiceItem?.bookingItemId === svc.bookingItemId"
+                  [class.completed-service]="assignments[svc.bookingItemId]"
+                  class="service-badge pointer transition-all">
 
-        </div>
-
-        <hr class="opacity-25">
-
-        <div *ngIf="selectedServiceItem">
-          <h6 class="fw-bold mb-3 text-end">العمال المختصين المتاحين:</h6>
-
-          <div *ngIf="isEmployeesLoading" class="text-center py-3 text-muted">
-            جاري تحميل العمال...
-          </div>
-
-          <div class="worker-selection-container" *ngIf="!isEmployeesLoading">
-            <div *ngFor="let worker of employeesForService" (click)="selectWorkerAndActivate(worker)"
-              class="worker-card p-3 mb-2 rounded-15 border transition-all pointer">
-              <div class="worker-info text-end">
-                <div class="fw-bold">{{ worker.name }}</div>
-                <div class="small text-secondary">{{ worker.phoneNumber }}</div>
+              <div class="text-end d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill text-success" *ngIf="assignments[svc.bookingItemId]"></i>
+                <span class="fw-bold">{{ svc.name }}</span>
               </div>
+
+              <small class="text-muted d-block mt-1" *ngIf="assignments[svc.bookingItemId]" style="font-size: 10px;">
+                العامل: {{ assignments[svc.bookingItemId].workerName }}
+              </small>
             </div>
           </div>
         </div>
 
+        <div class="worker-section animate__animated animate__fadeIn" *ngIf="selectedServiceItem">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="badge bg-primary-subtle text-primary p-2">اختر عامل لخدمة: {{ selectedServiceItem.name }}</span>
+              <h6 class="fw-bold m-0">العمال المتاحين</h6>
+          </div>
 
-        <div *ngIf="!selectedServiceItem" class="text-center py-4">
-          <i class="bi bi-hand-index-fill text-orange opacity-25 fs-1"></i>
-          <p class="text-muted mt-2">يرجى الضغط على خدمة أولاً لعرض العمال المختصين بها</p>
+          <div *ngIf="isEmployeesLoading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-2">جاري جلب العمال المختصين...</p>
+          </div>
+
+          <div class="worker-grid" *ngIf="!isEmployeesLoading">
+            <div *ngFor="let worker of employeesForService"
+                (click)="selectWorkerAndStore(worker)"
+                class="worker-card p-3 mb-2 rounded-15 border d-flex justify-content-between align-items-center pointer transition-all">
+
+                  <div class="status-indicator-wrapper d-flex align-items-center">
+                    <span class="status-dot"
+                          [class.dot-available]="worker.isActive && !isWorkerSelectedElsewhere(worker.id)"
+                          [class.dot-busy]="!worker.isActive || isWorkerSelectedElsewhere(worker.id)">
+                    </span>
+                    <small class="mx-2 status-text">
+                      {{ (worker.isActive && !isWorkerSelectedElsewhere(worker.id)) ?    'متاح' : 'مشغول' }}
+                    </small>
+                  </div>
+
+                  <div class="text-end">
+                    <div class="fw-bold">{{ worker.name }}</div>
+                    <div class="text-secondary">{{ worker.phoneNumber }}</div>
+                  </div>
+                </div>
+
+
+            <div *ngIf="employeesForService.length === 0" class="alert alert-warning text-center py-2 small">
+              عذراً، لا يوجد عمال متاحين لهذه الخدمة حالياً.
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!selectedServiceItem && assignedCount < selectedReservationServices.length" class="text-center py-5 border rounded-15 bg-light-subtle">
+          <i class="bi bi-cursor-fill text-primary opacity-25 fs-1"></i>
+          <p class="text-muted mt-2">اضغط على اسم الخدمة في الأعلى <br> لإظهار العمال المتاحين لها</p>
+        </div>
+
+        <div class="modal-footer border-0 mt-3 p-0">
+          <button class="btn btn-success w-100 py-3 fw-bold shadow rounded-15"
+                  [disabled]="assignedCount < selectedReservationServices.length"
+                  (click)="confirmAllAssignments()">
+            تفعيل الحجز ({{ assignedCount }} من {{ selectedReservationServices.length }})
+            <i class="bi bi-lightning-auto ms-2"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div> -->
+
+
+<div class="modal fade" id="workerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+
+      <div class="modal-header border-0 pb-0 d-flex justify-content-center pt-4">
+        <h5 class="modal-title fw-bold">تفعيل الحجز وتعيين عامل</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="mb-4">
+          <label class="d-block text-secondary mb-2 text-end small">الخدمات المطلوبة:</label>
+          <div class="d-flex flex-wrap gap-2 justify-content-end">
+            <div *ngFor="let svc of selectedReservationServices"
+                 (click)="selectServiceItem(svc)"
+                 [class.active-service]="selectedServiceItem?.bookingItemId === svc.bookingItemId"
+                 [class.completed-service]="assignments[svc.bookingItemId]"
+                 class="service-badge pointer transition-all shadow-sm">
+
+              <div class="text-end d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill text-success" *ngIf="assignments[svc.bookingItemId]"></i>
+                <span class="fw-bold">{{ svc.name }}</span>
+              </div>
+
+              <small class="text-muted d-block mt-1" *ngIf="assignments[svc.bookingItemId]" style="font-size: 10px;">
+                العامل: {{ assignments[svc.bookingItemId].workerName }}
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <div class="worker-section animate__animated animate__fadeIn" *ngIf="selectedServiceItem">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="badge bg-primary-subtle text-primary p-2">
+                اختر عامل لخدمة: {{ selectedServiceItem.name }}
+              </span>
+              <h6 class="fw-bold m-0">العمال المتاحين</h6>
+          </div>
+
+          <div *ngIf="isEmployeesLoading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-2">جاري جلب العمال المختصين...</p>
+          </div>
+
+          <div class="worker-grid" *ngIf="!isEmployeesLoading">
+            <div *ngFor="let worker of employeesForService"
+                (click)="(worker.isActive && !isWorkerSelectedElsewhere(worker.id)) ? selectWorkerAndStore(worker) : null"
+                [class.disabled-worker]="!worker.isActive || isWorkerSelectedElsewhere(worker.id)"
+                class="worker-card p-3 mb-2 rounded-15 border d-flex justify-content-between align-items-center transition-all">
+
+                <div class="status-indicator-wrapper d-flex align-items-center">
+                  <span class="status-dot"
+                        [class.dot-available]="worker.isActive && !isWorkerSelectedElsewhere(worker.id)"
+                        [class.dot-busy]="!worker.isActive || isWorkerSelectedElsewhere(worker.id)">
+                  </span>
+                  <small class="mx-2 status-text">
+                    {{ (worker.isActive && !isWorkerSelectedElsewhere(worker.id)) ? 'متاح' : 'مشغول' }}
+                  </small>
+                </div>
+
+                <div class="text-end">
+                  <div class="fw-bold">{{ worker.name }}</div>
+                  <div class="small text-secondary">{{ worker.phoneNumber }}</div>
+                </div>
+            </div>
+
+            <div *ngIf="employeesForService.length === 0" class="alert alert-warning text-center py-2 small">
+              عذراً، لا يوجد عمال متاحين لهذه الخدمة حالياً.
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!selectedServiceItem && assignedCount < selectedReservationServices.length"
+             class="text-center py-5 border rounded-15 bg-light-subtle">
+          <i class="bi bi-cursor-fill text-primary opacity-25 fs-1"></i>
+          <p class="text-muted mt-2">اضغط على اسم الخدمة في الأعلى <br> لإظهار العمال المتاحين لها</p>
+        </div>
+
+        <div class="modal-footer border-0 mt-3 p-0">
+          <button class="btn btn-success w-100 py-3 fw-bold shadow rounded-15"
+                  [disabled]="assignedCount < selectedReservationServices.length"
+                  (click)="confirmAllAssignments()">
+            تفعيل الحجز ({{ assignedCount }} من {{ selectedReservationServices.length }})
+            <i class="bi bi-lightning-auto ms-2"></i>
+          </button>
         </div>
 
       </div>
     </div>
   </div>
 </div>
-
-
-
-
 
 
 
@@ -325,6 +484,55 @@
           <i class="bi bi-printer me-2"></i> طباعة الفاتورة
         </button>
       </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+<div class="modal fade" id="editServicesModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+
+      <div class="modal-header border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+        <button type="button" class="btn-close m-0" data-bs-dismiss="modal"></button>
+        <h5 class="modal-title fw-bold text-success">تعديل خدمات الحجز</h5>
+      </div>
+
+<div class="modal-body p-4 text-end" dir="rtl">
+  <div class="services-wrapper">
+    <p class="text-muted small mb-3">اختر الخدمات المراد تعديلها للحجز:</p>
+
+    <div class="row g-3">
+      <div class="col-6" *ngFor="let service of allAvailableServices">
+        <div class="service-selection-card p-3"
+             [class.active]="isServiceSelected(service.id)"
+             (click)="toggleServiceSelection(service)">
+
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="check-container">
+              <i class="fas fa-check" *ngIf="isServiceSelected(service.id)"></i>
+            </div>
+
+            <div class="info">
+              <span class="service-name d-block fw-bold">{{ service.name }}</span>
+              <span class="service-price">{{ service.price }} ج.م</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="total-bar mt-4 d-flex justify-content-between align-items-center shadow-sm">
+    <div class="price-box">
+      <span class="currency">ج.م</span>
+      <span class="amount">{{ calculateEditingTotal() }}</span>
+    </div>
+    <span class="label fw-bold">إجمالي الخدمات المختارة</span>
+  </div>
+</div>
     </div>
   </div>
 </div>

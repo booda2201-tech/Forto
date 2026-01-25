@@ -11,8 +11,7 @@ import { ChangeDetectorRef } from '@angular/core';
 export class OrderInformationComponent {
 
   selectedTimeId: string = '';
-
-    orderForm: FormGroup = new FormGroup({
+  orderForm: FormGroup = new FormGroup({
         fullName: new FormControl('', [Validators.required]),
         phone: new FormControl('', [Validators.required]),
         carNumber: new FormControl('', [Validators.required]),

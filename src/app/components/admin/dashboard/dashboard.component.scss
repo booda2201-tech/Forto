@@ -1,12 +1,12 @@
 .dashboard-container {
-  max-width: 1200px; /* المقاس المطلوب لشاشات الكاشير */
+  max-width: 1200px;
   margin: 0 auto;
   padding: 15px;
   direction: rtl;
   // background: #fdfdfd;
 }
 
-/* Stats Row */
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -17,7 +17,7 @@
 .mini-card {
   background: #fff;
   padding: 15px;
-  border-radius: 15px; /* نفس حواف كروت الحجز */
+  border-radius: 15px;
   border: 1px solid #eee;
   display: flex;
   flex-direction: column;
@@ -129,4 +129,86 @@
   background-color: #cacaca35;
   padding: 10px;
   border-radius: 5px;
+}
+
+
+
+
+
+
+
+
+
+
+
+@media (max-width: 991px) {
+
+  .dashboard-container, .messages-container, .contt {
+    padding: 10px !important;
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
+
+  .stats-grid, .main-content-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+
+  .filter-card, .header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+
+    .d-flex, input, button {
+      width: 100% !important;
+      max-width: none !important;
+      margin: 0 !important;
+    }
+  }
+
+
+  .table-wrapper {
+    width: 100% !important;
+    overflow-x: auto;
+
+    .pos-table {
+      width: 100% !important;
+      min-width: unset !important;
+
+      th, td {
+        padding: 8px 4px !important;
+        font-size: 15px !important;
+      }
+    }
+  }
+
+
+  .mini-card {
+    width: 100% !important;
+    align-items: center;
+    text-align: center;
+
+    .value {
+      font-size: 1.1rem !important;
+    }
+  }
+
+
+  .btn-reject {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    flex-direction: row !important;
+  }
+
+
+  .chart-area {
+    .d-flex {
+      font-size: 12px !important;
+    }
+  }
 }

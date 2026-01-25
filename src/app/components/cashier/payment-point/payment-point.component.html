@@ -1,7 +1,7 @@
-<section class="contt" dir="rtl">
+<!-- <section class="contt" dir="rtl">
   <div class="page-wrap">
 
-    <!-- Title -->
+
     <div class="page-title">
       <h2 class="title">
         <i class="bi bi-plus-square text-orange"></i>
@@ -10,7 +10,7 @@
       <p class="subtitle">اختر المنتجات وأدخل بيانات العميل لإصدار فاتورة</p>
     </div>
 
-    <!-- Card 1: Customer -->
+
     <div class="card-box">
       <div class="card-head text-center d-flex align-items-center justify-content-start">
         <div class="card-head-title fs-4">
@@ -40,11 +40,141 @@
       </div>
     </div>
 
-    <!-- Card 2: Products -->
+
     <div class="card-box">
       <div class="card-head d-flex align-items-center justify-content-start">
         <div class="card-head-title fs-4">
           <i class="bi bi-bag text-orange"></i>
+          اختر المنتجات
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="services-grid">
+          <div *ngFor="let p of products" class="service-card" [class.selected-active]="isProductSelected(p.id)"
+            (click)="toggleProduct(p)">
+            <div class="service-name">{{ p.name }}</div>
+            <div class="service-price" *ngIf="p.price != null">{{ p.price }} ج.م</div>
+
+            <div class="check-mark" *ngIf="isProductSelected(p.id)">
+              <i class="bi bi-check-circle-fill"></i>
+            </div>
+
+
+            <div class="qty-row" (click)="$event.stopPropagation()">
+              <button type="button" class="qty-btn" (click)="$event.stopPropagation(); decreaseQty(p)">-</button>
+
+              <input type="number" min="0" class="qty-input" [value]="getItem(p.id)?.qty || 0"
+                (change)="setQty(p, $any($event.target).value)" />
+
+              <button type="button" class="qty-btn" (click)="$event.stopPropagation(); increaseQty(p)">+</button>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="field mt-3">
+          <label class="form-label-custom">
+            <i class="bi bi-sticky text-orange mx-1"></i> ملاحظات
+          </label>
+          <textarea class="form-control custom-input" rows="2" [formControl]="orderForm.controls.notes"
+            placeholder="ملاحظات اختيارية..."></textarea>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="bottom-bar ">
+
+      <div class="bar-right">
+        <div class="total-text">
+          <span class="muted">الإجمالي:</span>
+          <span class="total">{{ totalAmount | number:'1.2-2' }} ج.م</span>
+        </div>
+      </div>
+
+      <div class="bar-left">
+        <button type="button" class="btn-ghost"
+          (click)="cart = []; orderForm.reset({fullName:'', phoneNumber:'', notes:''});">
+          إلغاء
+        </button>
+
+        <button type="button" class="btn-primary" (click)="onSubmit()"
+          [disabled]="orderForm.invalid || cart.length === 0 || isSubmitting">
+          {{ isSubmitting ? 'جارٍ الحفظ...' : 'تأكيد' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section> -->
+
+
+
+
+<section class="contt" dir="rtl">
+    <div class="header-wrapper d-flex justify-content-between align-items-center mb-3">
+        <div class="page-title mx-4 text-end">
+          <h2 class="title fs-3">
+            <i class="bi bi-plus-square text-orange"></i>
+            طلب جديد
+          </h2>
+        </div>
+
+        <div class="sub-tabs-container m-0">
+          <div class="sub-tabs">
+            <button class="tab-item" [class.active]="activeTab === 'new-order'" (click)="activeTab = 'new-order'">
+            <i class="bi bi-cup-hot-fill me-2"></i>
+                المشروبات
+            </button>
+            <button class="tab-item" [class.active]="activeTab === 'quick-booking'" (click)="activeTab = 'quick-booking'">
+              <i class="bi bi-droplet-fill"></i>  المغسلة
+            </button>
+          </div>
+        </div>
+    </div>
+
+  <div class="page-wrap" *ngIf="activeTab === 'new-order'">
+    <div class="page-wrap">
+
+    <!-- Title -->
+
+
+    <!-- Card 1: Customer -->
+    <div class="card-box">
+      <div class="card-head text-center d-flex align-items-center justify-content-start">
+        <div class="card-head-title fs-4">
+          <i class="bi bi-people-fill text-orange"></i>
+          بيانات العميل
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="grid-2">
+          <div class="field">
+            <label class="form-label-custom">
+              <i class="bi bi-person text-orange mx-1"></i> اسم العميل
+            </label>
+            <input class="form-control custom-input" type="text" [formControl]="orderForm.controls.fullName"
+              placeholder="مثال: عصام الشوالي" />
+          </div>
+
+          <div class="field">
+            <label class="form-label-custom">
+              <i class="bi bi-telephone text-orange mx-1"></i> رقم الهاتف
+            </label>
+            <input class="form-control custom-input text-end" type="text" [formControl]="orderForm.controls.phoneNumber"
+              placeholder="+966 5x xxx xxxx" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Products -->
+    <div class="card-box">
+      <div class="card-head d-flex align-items-center justify-content-start">
+        <div class="card-head-title fs-4">
+          <i class="bi bi-bag-fill text-orange"></i>
           اختر المنتجات
         </div>
       </div>
@@ -85,17 +215,6 @@
 
     <!-- Bottom sticky summary bar -->
     <div class="bottom-bar ">
-      <div class="bar-left">
-        <button type="button" class="btn-primary" (click)="onSubmit()"
-          [disabled]="orderForm.invalid || cart.length === 0 || isSubmitting">
-          {{ isSubmitting ? 'جارٍ الحفظ...' : 'تأكيد' }}
-        </button>
-
-        <button type="button" class="btn-ghost"
-          (click)="cart = []; orderForm.reset({fullName:'', phoneNumber:'', notes:''});">
-          إلغاء
-        </button>
-      </div>
 
       <div class="bar-right">
         <div class="total-text">
@@ -103,7 +222,228 @@
           <span class="total">{{ totalAmount | number:'1.2-2' }} ج.م</span>
         </div>
       </div>
+
+      <div class="bar-left">
+        <button type="button" class="btn-ghost"
+          (click)="cart = []; orderForm.reset({fullName:'', phoneNumber:'', notes:''});">
+          إلغاء
+        </button>
+
+        <button type="button" class="btn-primary" (click)="onSubmit()"
+          [disabled]="orderForm.invalid || cart.length === 0 || isSubmitting">
+          {{ isSubmitting ? 'جارٍ الحفظ...' : 'تأكيد' }}
+        </button>
+      </div>
     </div>
+    </div>
+  </div>
+
+  <div class="page-wrap" *ngIf="activeTab === 'quick-booking'">
+
+    <div class="new-reservation-container">
+    <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="reservation-form">
+      <div class="form-section">
+        <h3><i class="bi bi-people-fill mx-1"></i> بيانات العميل والسيارة</h3>
+        <div class="row">
+          <div class="form-group">
+            <label><i class="bi bi-person mx-1"></i> اسم العميل </label>
+            <input type="text" formControlName="name" placeholder="مثال: عصام الشوالي" />
+          </div>
+          <div class="form-group">
+            <label><i class="bi bi-telephone mx-1"></i> رقم الهاتف </label>
+            <input type="tel" formControlName="phone" placeholder="+966 5x xxx xxxx" class="text-end" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-group">
+            <label><i class="bi bi-car-front mx-1"></i> نوع السيارة </label>
+            <input type="text" formControlName="carType" placeholder="مثال: تويوتا كامري 2023" />
+          </div>
+          <div class="form-group">
+            <label><i class="bi bi-map mx-1"></i> رقم اللوحة </label>
+            <input type="text" formControlName="carNumber" placeholder="ب ص ج 1234" />
+          </div>
+          <div class="form-group mt-1">
+            <label><i class="bi bi-car-front mx-1"></i> فئة السيارة </label>
+              <select class="form-select custom-select" formControlName="carCategory">
+                <option [ngValue]="null" disabled>اختر فئة السيارة</option>
+                <option *ngFor="let cat of carCategories" [ngValue]="cat.id" class="text-dark">
+                  {{ cat.nameAr }}
+                </option>
+              </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3><i class="bi bi-info-circle-fill mx-1"></i> تفاصيل الخدمة</h3>
+        <div class="row">
+          <div class="form-group col-md-8">
+            <label><i class="bi bi-calendar-date mx-1"></i> تاريخ الحجز </label>
+            <input type="date" formControlName="appointmentDate" (change)="loadAvailableSlots()" />
+          </div>
+          <div class="form-group col-md-4">
+            <label><i class="bi bi-clock mx-1"></i> الوقت
+
+              <small class="text-muted d-inline-block mb-2 mx-1" *ngIf="isSlotsLoading">
+                جاري تحميل المواعيد...
+              </small>
+
+            </label>
+
+            <!-- Loading -->
+            <!-- <small class="text-muted d-block mb-2" *ngIf="isSlotsLoading">
+              جاري تحميل المواعيد...
+            </small> -->
+
+            <!-- Dropdown -->
+            <select class="form-select" [(ngModel)]="selectedSlotHour" [ngModelOptions]="{ standalone: true }"
+              [disabled]="availableSlots.length === 0"
+>
+              <option [ngValue]="null" disabled selected>اختر وقت</option>
+
+              <option *ngFor="let slot of availableSlots" [ngValue]="slot.hour" [disabled]="slot.available === 0">
+                {{ slot.hour }} - (متاح: {{ slot.available }})
+              </option>
+            </select>
+
+            <!-- No slots message -->
+            <small class="text-danger d-block mt-2" *ngIf="
+                !isSlotsLoading &&
+                selectedServices.length > 0 &&
+                customerForm.value.appointmentDate &&
+                (!availableSlots || availableSlots.length === 0)
+              ">
+              لا توجد مواعيد متاحة لهذا اليوم.
+            </small>
+          </div>
+        </div>
+
+        <!-- <div class="form-group">
+          <label><i class="bi bi-grid-fill me-2 text-warning"></i> الخدمات المتاحة</label>
+          <div class="services-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; max-height: 300px; overflow-y: auto; padding: 10px; border: 1px solid #eee; border-radius: 8px;">
+
+            <label class="service-item" *ngFor="let service of services" style="display: flex; align-items: center; background: #f9f9f9; padding: 10px; border-radius: 5px; cursor: pointer;">
+              <input type="checkbox" (change)="toggleService(service, $event)" style="margin-left: 10px;">
+              <span>{{ service.name }} ({{ service.price }} ج.م)</span>
+            </label>
+
+          </div>
+        </div> -->
+
+        <div class="form-group">
+          <label class="mb-3"><i class="bi bi-wrench mx-2"></i> اختر الخدمة
+          </label>
+          <div class="services-container">
+            <div class="service-card" *ngFor="let service of services" [class.selected]="isServiceSelected(service)">
+              <input type="checkbox" [id]="'service-' + service.id" (change)="toggleService(service, $event)"
+                [checked]="isServiceSelected(service)" />
+              <label [for]="'service-' + service.id" class="service-content">
+                <span class="service-name">{{ service.name }}</span>
+                <span class="service-price">{{ service.price }} ج.م</span>
+                <div class="check-icon" *ngIf="isServiceSelected(service)">
+                  <i class="bi bi-check-circle-fill"></i>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <div class="total-price">
+          <span>الإجمالي المتوقع: </span>
+          <strong>{{ totalPrice }} ج.م</strong>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn-cancel" (click)="customerForm.reset()">
+            إلغاء
+          </button>
+          <button type="submit" class="btn-save" routerLink="cashier/reservations">تأكيد الدفع</button>
+        </div>
+      </div>
+    </form>
+  </div>
 
   </div>
 </section>
+
+
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+    <div class="modal-content border-0 shadow-lg">
+
+      <div class="text-end p-2 no-print">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4 forto-invoice-container" id="printableInvoice">
+        <div class="text-center mb-3">
+          <img src="../../../../assets/imeg/logo forto.png" class="brand-logo mb-1" style="max-width: 70px;">
+          <div class="small">#{{ selectedInvoice?.id }}</div>
+        </div>
+
+        <hr class="my-2" style="border-top: 1px dashed #000;">
+
+        <div class="client-data mb-3 fw-bold" style="font-size: 12px;">
+          <div><strong>العميل:</strong> {{ selectedInvoice?.customerName || 'Walk-in' }}</div>
+          <div><strong>الهاتف:</strong> {{ selectedInvoice?.phone || '-' }}</div>
+          <div><strong>التاريخ:</strong> {{ selectedInvoice?.date }}</div>
+        </div>
+
+        <!-- Lines table (REAL prices + qty) -->
+        <table class="table table-sm invoice-table mb-2" style="font-size: 12px;">
+          <thead class="border-bottom">
+            <tr>
+              <th class="text-end">البند</th>
+              <th class="text-center">الكمية</th>
+              <th class="text-center">سعر الوحدة</th>
+              <th class="text-center">الإجمالي</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let line of selectedInvoice?.lines">
+              <td class="text-end">{{ line.description }}</td>
+              <td class="text-center">{{ line.qty }}</td>
+              <td class="text-center fw-bold">{{ line.unitPrice }} ج.م</td>
+              <td class="text-center fw-bold">{{ line.total }} ج.م</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <hr class="my-2" style="border-top: 1px dashed #000;">
+
+        <div style="font-size: 13px; font-weight: bold;">
+          <div class="d-flex justify-content-between">
+            <span>المجموع:</span>
+            <span>{{ subTotal | number:'1.2-2' }} ج.م</span>
+          </div>
+          <div class="d-flex justify-content-between fw-bold">
+            <span>الضريبة (14%):</span>
+            <span>{{ taxAmount | number:'1.2-2' }} ج.م</span>
+          </div>
+          <div class="d-flex justify-content-between fw-bold mt-1" style="font-size: 15px;">
+            <span>الإجمالي:</span>
+            <span>{{ finalTotal | number:'1.2-2' }} ج.م</span>
+          </div>
+        </div>
+
+        <div class="text-center mt-4" style="font-size: 11px;">
+          <div>شكراً لزيارتكم فورتو</div>
+          <div class="mt-1">نظام فورتو لإدارة المغاسل</div>
+        </div>
+      </div>
+
+      <div class="modal-footer no-print justify-content-center bg-light">
+        <button type="button" class="btn btn-warning text-white px-5 rounded-pill shadow-sm fw-bold print-btn" (click)="downloadInvoice()">
+          <i class="bi bi-printer me-2"></i> طباعة الفاتورة
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

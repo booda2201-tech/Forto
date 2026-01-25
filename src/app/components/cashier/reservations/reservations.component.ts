@@ -1,3 +1,7 @@
+
+declare var bootstrap: any;
+
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -63,11 +67,17 @@ type EmployeeDto = {
 })
 export class ReservationsComponent implements OnInit {
   branchId = 1;
+  editingBookingId: number | null = null;
+  editingBookingServices: any[] = [];
+  allAvailableServices: any[] = [];
+  editingBookingPlateNumber: string = '';
+
 
   // ✅ لازم تظبطه لقيمة الكاشير الحقيقي
   cashierId = 5;
   selectedCancelBookingId: number | null = null;
   usedOverride: { materialId: number; actualQty: number }[] = [];
+  assignments: { [bookingItemId: number]: { workerId: number, workerName: string } } = {};
 
   // refresh trigger
   private refresh$ = new BehaviorSubject<void>(undefined);
@@ -123,25 +133,189 @@ export class ReservationsComponent implements OnInit {
   }
 
   // ===== Activate: open modal + load booking services =====
-  onActivate(bookingId: number) {
-    this.bookings$.pipe(take(1)).subscribe(list => {
-      const booking = list.find(b => b.id === bookingId);
-      if (!booking) return;
+  // onActivate(bookingId: number) {
+  //   this.bookings$.pipe(take(1)).subscribe(list => {
+  //     const booking = list.find(b => b.id === bookingId);
+  //     if (!booking) return;
 
-      this.selectedReservationId = bookingId;
-      this.selectedServiceItem = null;
-      this.employeesForService = [];
-      this.isEmployeesLoading = false;
+  //     this.selectedReservationId = bookingId;
+  //     this.selectedServiceItem = null;
+  //     this.employeesForService = [];
+  //     // this.isEmployeesLoading = false;
+  //     this.assignments = {};
+  //     // ✅ services inside booking (contains bookingItemId + serviceId)
+  //     this.selectedReservationServices = booking.serviceItem || [];
 
-      // ✅ services inside booking (contains bookingItemId + serviceId)
-      this.selectedReservationServices = booking.serviceItem || [];
+  //     // open modal
+  //     const modalElement = document.getElementById('workerModal');
+  //     this.modalInstance = new (window as any).bootstrap.Modal(modalElement);
+  //     this.modalInstance.show();
+  //   });
+  // }
 
-      // open modal
-      const modalElement = document.getElementById('workerModal');
-      this.modalInstance = new (window as any).bootstrap.Modal(modalElement);
-      this.modalInstance.show();
+
+
+
+onCompleteBooking(bookingId: number) {
+  Swal.fire({
+    title: 'تأكيد إنهاء الخدمة',
+    text: "سيتم ترحيل الحجز للمكتمل وإصدار الفاتورة",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#28a745',
+    confirmButtonText: 'إتمام العملية',
+    cancelButtonText: 'إلغاء'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // بناءً على سطر 115 في ApiService الذي أرسلته
+      const payload = {
+        cashierId: this.cashierId, // تأكد أن cashierId معرف في المكون
+        reason: 'تم الإنهاء من لوحة التحكم',
+        usedOverride: []
+      };
+
+      this.api.completeBooking(bookingId, payload).subscribe({
+        next: () => {
+          Swal.fire('تم!', 'انتقل الحجز إلى الفواتير والمكتمل.', 'success');
+          this.refresh(); // لتحديث الواجهة واختفاء الكارت من "نشط"
+        },
+        error: (err: any) => { // إضافة : any هنا تحل خطأ الصورة 63234f
+          Swal.fire('خطأ', 'حدثت مشكلة أثناء الإنهاء', 'error');
+        }
+      });
+    }
+  });
+}
+
+
+
+
+
+
+
+onEditBooking(booking: any) {
+    this.editingBookingId = booking.id;
+    this.editingBookingPlateNumber = booking.cars?.[0]?.plateNumber || 'بدون لوحة';
+
+    // استخراج الخدمات الموجودة فعلياً في الحجز الآن
+    // نضعها في مصفوفة بسيطة للمقارنة والتبديل
+    this.editingBookingServices = booking.serviceItem.map((s: any) => ({
+      serviceId: s.serviceId,
+      name: s.name,
+      price: s.price
+    }));
+
+    // جلب "كل الخدمات" من السيرفر لعرضها في الشبكة (Grid)
+    this.api.getAllServices().subscribe({
+      next: (res: any) => {
+        this.allAvailableServices = res.data;
+
+        // فتح المودال برمجياً
+        const modalElement = document.getElementById('editServicesModal');
+        if (modalElement) {
+          this.modalInstance = new (window as any).bootstrap.Modal(modalElement);
+          this.modalInstance.show();
+        }
+      },
+      error: (err: any) => {
+        console.error('Error fetching services:', err);
+        Swal.fire('خطأ', 'فشل تحميل قائمة الخدمات العامة', 'error');
+      }
     });
   }
+
+  addNewServiceToBooking(serviceId: any) {
+    if (!serviceId) return;
+    const service = this.allAvailableServices.find(s => s.id == serviceId);
+    if (service) {
+        // إضافة الخدمة للمصفوفة المؤقتة
+        this.editingBookingServices.push({
+            serviceId: service.id,
+            name: service.name,
+            price: service.price
+        });
+    }
+}
+
+  removeServiceFromEditing(index: number) {
+    this.editingBookingServices.splice(index, 1);
+}
+
+  calculateEditingTotal() {
+    return this.editingBookingServices.reduce((acc, curr) => acc + curr.price, 0);
+}
+
+saveEditedServices() {
+    if (!this.editingBookingId) return;
+
+    // تجهيز البيانات المطلوبة للـ API (إرسال الـ IDs فقط)
+    const payload = {
+      bookingId: this.editingBookingId,
+      services: this.editingBookingServices.map(s => ({ serviceId: s.serviceId })),
+      cashierId: this.cashierId
+    };
+
+    Swal.showLoading();
+    this.api.updateBookingServices(payload).subscribe({
+      next: () => {
+        Swal.fire({
+          icon: 'success',
+          title: 'تم تحديث خدمات الحجز',
+          timer: 1500,
+          showConfirmButton: false
+        });
+
+        if (this.modalInstance) this.modalInstance.hide();
+        this.refresh(); // تحديث القائمة الرئيسية
+      },
+error: (err: any) => { // أضف : any هنا
+  Swal.fire('خطأ', 'فشل في تحديث الخدمات', 'error');
+}
+    });
+  }
+
+// دالة لتبديل اختيار الخدمة (إضافة أو حذف)
+toggleServiceSelection(service: any) {
+    const index = this.editingBookingServices.findIndex(s => s.serviceId === service.id);
+
+    if (index > -1) {
+        // العميل تراجع عن هذه الخدمة -> حذف
+        this.editingBookingServices.splice(index, 1);
+    } else {
+        // العميل يريد إضافة هذه الخدمة -> إضافة
+        this.editingBookingServices.push({
+            serviceId: service.id,
+            name: service.name,
+            price: service.price
+        });
+    }
+}
+
+// للتحقق هل الخدمة مختارة حالياً أم لا لتغيير اللون
+isServiceSelected(serviceId: number): boolean {
+    return this.editingBookingServices.some(s => s.serviceId === serviceId);
+}
+
+
+  onActivate(bookingId: number) {
+  this.bookings$.pipe(take(1)).subscribe(list => {
+    const booking = list.find(b => b.id === bookingId);
+    if (!booking) return;
+
+    this.selectedReservationId = bookingId;
+    this.assignments = {}; // تصفير التعيينات القديمة
+    this.selectedReservationServices = booking.serviceItem || [];
+
+    // اختيار أول خدمة تلقائياً عند فتح المودال لتوفير ضغطة على الكاشير
+    if (this.selectedReservationServices.length > 0) {
+      this.selectServiceItem(this.selectedReservationServices[0]);
+    }
+
+    const modalElement = document.getElementById('workerModal');
+    this.modalInstance = new (window as any).bootstrap.Modal(modalElement);
+    this.modalInstance.show();
+  });
+}
 
   // user clicks on a service badge inside modal
   selectServiceItem(item: BookingServiceItem) {
@@ -167,6 +341,7 @@ export class ReservationsComponent implements OnInit {
   }
 
   // click worker -> assign
+
   selectWorkerAndActivate(worker: EmployeeDto) {
     if (!this.selectedReservationId || !this.selectedServiceItem) return;
 
@@ -201,6 +376,111 @@ export class ReservationsComponent implements OnInit {
       }
     });
   }
+
+selectWorkerAndStore(worker: EmployeeDto) {
+  if (!this.selectedServiceItem) return;
+
+  // 1. تخزين التعيين محلياً
+  this.assignments[this.selectedServiceItem.bookingItemId] = {
+    workerId: worker.id,
+    workerName: worker.name
+  };
+
+  // 2. البحث عن الخدمة التالية التي لم يتم تعيين عامل لها بعد
+  const nextService = this.selectedReservationServices.find(s => !this.assignments[s.bookingItemId]);
+
+  if (nextService) {
+    this.selectServiceItem(nextService); // انتقال تلقائي
+  } else {
+    this.selectedServiceItem = null; // تم الانتهاء من جميع الخدمات
+  }
+}
+
+//   confirmAllAssignments() {
+//   if (!this.selectedReservationId) return;
+
+//   // تحويل التعيينات المخزنة إلى الشكل المطلوب للـ API
+//   const assignmentPayload = Object.keys(this.assignments).map(itemId => ({
+//     bookingItemId: +itemId,
+//     employeeId: this.assignments[+itemId].workerId
+//   }));
+
+//   if (assignmentPayload.length < this.selectedReservationServices.length) {
+//     Swal.fire('تنبيه', 'يرجى تعيين عامل لكل الخدمات أولاً', 'warning');
+//     return;
+//   }
+
+//   const payload = {
+//     cashierId: this.cashierId,
+//     assignments: assignmentPayload
+//   };
+
+//   this.api.assignBooking(this.selectedReservationId, payload).subscribe({
+//     next: () => {
+//       Swal.fire({ icon: 'success', title: 'تم تفعيل الحجز بنجاح', timer: 1500, showConfirmButton: false });
+//       if (this.modalInstance) this.modalInstance.hide();
+//       this.refresh();
+//     },
+//     error: (err) => {
+//       Swal.fire('خطأ', err?.error?.message || 'فشل تفعيل الحجز', 'error');
+//     }
+//   });
+// }
+
+confirmAllAssignments() {
+  if (!this.selectedReservationId) return;
+
+  // 1. التأكد من تعيين عمال لجميع الخدمات المطلوبة
+  const totalRequired = this.selectedReservationServices.length;
+  const totalAssigned = Object.keys(this.assignments).length;
+
+  if (totalAssigned < totalRequired) {
+    Swal.fire('تنبيه', `يرجى تعيين عمال لجميع الخدمات (${totalAssigned} من ${totalRequired})`, 'warning');
+    return;
+  }
+
+  // 2. بناء البيانات بدقة
+  const payload = {
+    cashierId: this.cashierId, // تأكد أن الرقم 5 له صلاحية تفعيل
+    assignments: Object.keys(this.assignments).map(itemId => ({
+      bookingItemId: Number(itemId),
+      employeeId: this.assignments[Number(itemId)].workerId
+    }))
+  };
+
+  // 3. إرسال الطلب مع شاشة تحميل
+  Swal.showLoading();
+  this.api.assignBooking(this.selectedReservationId, payload).subscribe({
+    next: () => {
+      Swal.fire({ icon: 'success', title: 'تم تفعيل الحجز بنجاح', timer: 1500, showConfirmButton: false });
+      if (this.modalInstance) this.modalInstance.hide();
+      this.refresh();
+    },
+    error: (err) => {
+      console.error('API Error:', err);
+      // إظهار سبب الخطأ القادم من السيرفر بدقة
+      const errorMsg = err?.error?.message || 'فشل تفعيل الحجز، تأكد من البيانات';
+      Swal.fire('خطأ', errorMsg, 'error');
+    }
+  });
+}
+
+get assignedCount(): number {
+  return Object.keys(this.assignments).length;
+}
+
+get hasAssignments(): boolean {
+  return this.assignedCount > 0;
+}
+
+
+isWorkerSelectedElsewhere(workerId: number): boolean {
+  return Object.values(this.assignments).some(assignment => assignment.workerId === workerId);
+}
+
+
+
+
 
   // // ===== placeholders for now (until endpoints provided) =====
   // onComplete(bookingId: number) {
@@ -377,7 +657,7 @@ onComplete(bookingId: number) {
     const d = new Date();
     const pad = (n: number) => String(n).padStart(2, '0');
     console.log(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);
-    
+
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 

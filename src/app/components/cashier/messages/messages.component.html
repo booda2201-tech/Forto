@@ -9,18 +9,19 @@
 
       <div class="d-flex gap-2 align-items-center">
         <input type="date"
-               class="form-control form-control-sm"
-               style="max-width:170px"
-               [value]="selectedDate"
-               (change)="onDateChange($event)">
+                class="form-control form-control-sm"
+                style="max-width:170px"
+                [value]="selectedDate"
+                (change)="onDateChange($event)">
 
         <button class="btn btn-outline-secondary btn-sm" (click)="loadRequests()">
           تحديث
         </button>
 
-        <button class="btn btn-light btn-sm text-danger fw-medium px-3 rounded-3" (click)="clearAll()">
-          <i class="bi bi-trash3 me-1"></i> مسح الكل
-        </button>
+          <button class="btn-reject btn btn-sm fw-medium" (click)="clearAll()">
+            <span>مسح الكل</span>
+            <i class="bi bi-trash3"></i>
+          </button>
       </div>
     </div>
 
