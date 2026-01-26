@@ -59,7 +59,7 @@
     }
 
     .card-head-title {
-      font-weight: 800;
+      // font-weight: 800;
       color: #111827;
       display: flex;
       gap: 10px;
@@ -116,7 +116,7 @@
   }
 
   .service-card {
-    background: #f1f2f4;
+    background: #eee;
     border: 1.5px solid #eee;
     border-radius: 16px;
     padding: 16px 12px;
@@ -127,7 +127,7 @@
     user-select: none;
 
     &:hover {
-      background: #e6e7ea;
+      background: #cccccc;
       transform: translateY(-3px);
       box-shadow: 0 10px 22px rgba(0,0,0,0.12);
     }
