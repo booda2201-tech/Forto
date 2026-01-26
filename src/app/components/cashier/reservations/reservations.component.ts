@@ -334,22 +334,6 @@ export class ReservationsComponent implements OnInit {
     this.loadEmployeesForService(item.serviceId);
   }
 
-  // private loadEmployeesForService(serviceId: number) {
-  //   this.isEmployeesLoading = true;
-  //   this.employeesForService = [];
-
-  //   this.api.getServiceEmployees(serviceId).subscribe({
-  //     next: (res: any) => {
-  //       this.employeesForService = res?.data ?? [];
-  //       this.isEmployeesLoading = false;
-  //     },
-  //     error: (err) => {
-  //       this.isEmployeesLoading = false;
-  //       console.error(err);
-  //       Swal.fire('خطأ', err?.error?.message || 'فشل تحميل العمال', 'error');
-  //     },
-  //   });
-  // }
 
   selectWorkerAndActivate(worker: EmployeeDto) {
     if (!this.selectedReservationId || !this.selectedServiceItem) return;
@@ -750,6 +734,8 @@ loadEmployeesForService(serviceId: number) {
 
   this.api.getServiceEmployees(serviceId).subscribe({
     next: (res: any) => {
+      console.log(res);
+      
       this.serviceEmployees[serviceId] = res?.data ?? [];
     },
     error: (err: any) => {

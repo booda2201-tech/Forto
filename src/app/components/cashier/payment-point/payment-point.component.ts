@@ -85,10 +85,10 @@ export class PaymentPointComponent implements OnInit {
   this.loadServices();
 
 
-    const today = new Date().toISOString().split('T')[0];
-    this.customerForm.patchValue({
-      appointmentDate: today
-    });
+    // const today = new Date().toISOString().split('T')[0];
+    // this.customerForm.patchValue({
+    //   appointmentDate: today
+    // });
 
     this.setupFormListeners();
     this.loadAvailableSlots();
