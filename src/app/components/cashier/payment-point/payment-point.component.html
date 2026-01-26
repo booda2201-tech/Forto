@@ -244,8 +244,7 @@
 
   <div class="page-wrap" *ngIf="activeTab === 'quick-booking'">
 
-    <div class="new-reservation-container">
-    <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="reservation-form">
+  <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="reservation-form">
       <div class="form-section">
         <h3><i class="bi bi-people-fill mx-1"></i> بيانات العميل والسيارة</h3>
         <div class="row">
@@ -253,15 +252,17 @@
             <label><i class="bi bi-person mx-1"></i> اسم العميل </label>
             <input type="text" formControlName="name" placeholder="مثال: عصام الشوالي" />
           </div>
-          <div class="form-group">
-            <label><i class="bi bi-telephone mx-1"></i> رقم الهاتف </label>
-<input class="form-control custom-input text-end"
-        type="text"
-        [formControl]="orderForm.controls.phoneNumber"
-        placeholder="+966 5x xxx xxxx"
-        (keypress)="onlyNumbers($event)"
-        inputmode="numeric" />
-          </div>
+            <div class="form-group">
+              <label><i class="bi bi-telephone mx-1"></i> رقم الهاتف </label>
+              <input
+                type="text"
+                formControlName="phone"
+                placeholder="+966 5x xxx xxxx"
+                class="text-end"
+                (keypress)="onlyNumbers($event)"
+                inputmode="numeric"
+              />
+            </div>
         </div>
 
         <div class="row">
@@ -301,11 +302,6 @@
 
             </label>
 
-            <!-- Loading -->
-            <!-- <small class="text-muted d-block mb-2" *ngIf="isSlotsLoading">
-              جاري تحميل المواعيد...
-            </small> -->
-
             <!-- Dropdown -->
             <select class="form-select" [(ngModel)]="selectedSlotHour" [ngModelOptions]="{ standalone: true }"
               [disabled]="availableSlots.length === 0"
@@ -329,18 +325,6 @@
           </div>
         </div>
 
-        <!-- <div class="form-group">
-          <label><i class="bi bi-grid-fill me-2 text-warning"></i> الخدمات المتاحة</label>
-          <div class="services-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; max-height: 300px; overflow-y: auto; padding: 10px; border: 1px solid #eee; border-radius: 8px;">
-
-            <label class="service-item" *ngFor="let service of services" style="display: flex; align-items: center; background: #f9f9f9; padding: 10px; border-radius: 5px; cursor: pointer;">
-              <input type="checkbox" (change)="toggleService(service, $event)" style="margin-left: 10px;">
-              <span>{{ service.name }} ({{ service.price }} ج.م)</span>
-            </label>
-
-          </div>
-        </div> -->
-
         <div class="form-group">
           <label class="mb-3"><i class="bi bi-wrench mx-2"></i> اختر الخدمة
           </label>
@@ -357,8 +341,41 @@
               </label>
             </div>
           </div>
+
+
+      <div class="card-head d-flex align-items-center justify-content-start">
+        <div class="card-head-title fs-4">
+          <i class="bi bi-bag-fill text-orange"></i>
+          اختر المنتجات
         </div>
       </div>
+
+
+        <div class="services-grid mt-4">
+          <div *ngFor="let p of products" class="service-card" [class.selected-active]="isProductSelected(p.id)"
+            (click)="toggleProduct(p)">
+            <div class="service-name">{{ p.name }}</div>
+            <div class="service-price" *ngIf="p.price != null">{{ p.price }} ج.م</div>
+
+            <div class="check-mark" *ngIf="isProductSelected(p.id)">
+              <i class="bi bi-check-circle-fill"></i>
+            </div>
+
+            <!-- Qty controls -->
+            <div class="qty-row" (click)="$event.stopPropagation()">
+              <button type="button" class="qty-btn" (click)="$event.stopPropagation(); decreaseQty(p)">-</button>
+
+              <input type="number" min="0" class="qty-input" [value]="getItem(p.id)?.qty || 0"
+                (change)="setQty(p, $any($event.target).value)" />
+
+              <button type="button" class="qty-btn" (click)="$event.stopPropagation(); increaseQty(p)">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
 
       <div class="form-footer">
         <div class="total-price">
@@ -369,11 +386,10 @@
           <button type="button" class="btn-cancel" (click)="customerForm.reset()">
             إلغاء
           </button>
-          <button type="submit" class="btn-save" routerLink="cashier/reservations">تأكيد الدفع</button>
+          <button type="submit" class="btn-save">تأكيد الحجز</button>
         </div>
       </div>
     </form>
-  </div>
 
   </div>
 </section>
@@ -383,7 +399,7 @@
 
 
 <!-- Modal -->
-<div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+<!-- <div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
     <div class="modal-content border-0 shadow-lg">
 
@@ -405,7 +421,7 @@
           <div><strong>التاريخ:</strong> {{ selectedInvoice?.date }}</div>
         </div>
 
-        <!-- Lines table (REAL prices + qty) -->
+
         <table class="table table-sm invoice-table mb-2" style="font-size: 12px;">
           <thead class="border-bottom">
             <tr>
@@ -449,6 +465,85 @@
       </div>
 
       <div class="modal-footer no-print justify-content-center bg-light">
+        <button type="button" class="btn btn-warning text-white px-5 rounded-pill shadow-sm fw-bold print-btn" (click)="downloadInvoice()">
+          <i class="bi bi-printer me-2"></i> طباعة الفاتورة
+        </button>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+    <div class="modal-content border-0 shadow-lg">
+
+      <div class="text-end p-2 no-print">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4 forto-invoice-container" id="printableInvoice">
+        <div class="text-center mb-3">
+          <img src="../../../../assets/imeg/logo forto.png" class="brand-logo mb-1" style="max-width: 70px;">
+          <div class="small fw-bold text-secondary">فاتورة ضريبية مبسطة</div>
+          <div class="small text-dark">#{{ selectedInvoice?.id }}</div>
+        </div>
+
+        <hr class="my-2" style="border-top: 1px dashed #000;">
+
+        <div class="client-data mb-3 fw-bold" style="font-size: 12px; line-height: 1.6;">
+          <div><strong>العميل:</strong> {{ selectedInvoice?.customerName || 'عميل نقدي' }}</div>
+          <div><strong>الهاتف:</strong> {{ selectedInvoice?.phone || '-' }}</div>
+          <div><strong>التاريخ:</strong> {{ selectedInvoice?.date }}</div>
+          <div *ngIf="selectedSlotHour && activeTab === 'quick-booking'">
+              <strong>وقت الحجز:</strong> {{ selectedSlotHour }}
+          </div>
+        </div>
+
+        <table class="table table-sm invoice-table mb-2" style="font-size: 12px;">
+          <thead class="border-bottom">
+            <tr>
+              <th class="text-end" style="width: 45%;">البند</th>
+              <th class="text-center">الكمية</th>
+              <th class="text-center">السعر</th>
+              <th class="text-center">الإجمالي</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let line of selectedInvoice?.lines">
+              <td class="text-end">
+                {{ line.description }}
+                </td>
+              <td class="text-center">{{ line.qty }}</td>
+              <td class="text-center">{{ line.unitPrice }}</td>
+              <td class="text-center fw-bold">{{ line.total }} ج.م</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <hr class="my-2" style="border-top: 1px dashed #000;">
+
+        <div style="font-size: 13px;">
+          <div class="d-flex justify-content-between mb-1">
+            <span>المجموع الفرعي:</span>
+            <span>{{ subTotal | number:'1.2-2' }} ج.م</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span>الضريبة (14%):</span>
+            <span>{{ taxAmount | number:'1.2-2' }} ج.م</span>
+          </div>
+          <div class="d-flex justify-content-between fw-bold mt-2 pt-2 border-top" style="font-size: 16px;">
+            <span>الإجمالي النهائي:</span>
+            <span>{{ finalTotal | number:'1.2-2' }} ج.م</span>
+          </div>
+        </div>
+
+        <div class="text-center mt-4" style="font-size: 11px; color: #555;">
+          <div>شكراً لزيارتكم فورتو - Forto</div>
+          <div class="mt-1">يسعدنا دائماً تقديم أفضل خدمة لسيارتكم</div>
+        </div>
+      </div>
+
+      <div class="modal-footer no-print justify-content-center bg-light border-0">
         <button type="button" class="btn btn-warning text-white px-5 rounded-pill shadow-sm fw-bold print-btn" (click)="downloadInvoice()">
           <i class="bi bi-printer me-2"></i> طباعة الفاتورة
         </button>
