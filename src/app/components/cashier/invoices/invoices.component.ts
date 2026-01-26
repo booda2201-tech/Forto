@@ -152,7 +152,7 @@ export class InvoicesComponent {
       const onlyDate = dateStr ? dateStr.slice(0, 10) : '';
 
       return {
-        id: Number(x.invoiceId ?? 0),
+        id: x.invoiceNumber ?? "",
         date: onlyDate,
         createdAt: dateStr,
         paymentMethod: Number(x.paymentMethod ?? 0),

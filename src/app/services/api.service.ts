@@ -17,7 +17,6 @@ export class ApiService {
     );
   }
 
-
   getAllClients(): Observable<any> {
     return this.http.get(`${this.baseUrl}/api/clients/GetAll`);
   }
@@ -69,7 +68,7 @@ export class ApiService {
   }
 
   // employees for a specific service
-  getServiceEmployees(serviceId: number) {
+  getServiceEmployees2(serviceId: number) {
     return this.http.get(
       `${this.baseUrl}/api/catalog/services/${serviceId}/employees`,
     );
@@ -325,7 +324,6 @@ export class ApiService {
     );
   }
 
-
   // getCatalogServices(categoryId: number) {
   //   return this.http.get(`${this.baseUrl}/api/catalog/services/GetAll`, {
   //     params: { categoryId: String(categoryId) },
@@ -335,7 +333,6 @@ export class ApiService {
   // getCatalogCategories() {
   //   return this.http.get(`${this.baseUrl}/api/catalog/categories/GetAll`);
   // }
-
 
   getEmployeeTasks(employeeId: number, date: string) {
     return this.http.get(
@@ -373,30 +370,73 @@ export class ApiService {
     );
   }
 
-getPendingMaterialRequests(branchId: number, date: string) {
-  return this.http.get(`${this.baseUrl}/api/booking-items/pending`, {
-    params: { branchId: String(branchId), date }
-  });
-}
+  getPendingMaterialRequests(branchId: number, date: string) {
+    return this.http.get(`${this.baseUrl}/api/booking-items/pending`, {
+      params: { branchId: String(branchId), date },
+    });
+  }
 
-approveMaterialRequest(bookingItemId: number, requestId: number, payload: { cashierId: number; note: string }) {
-  return this.http.post(
-    `${this.baseUrl}/api/booking-items/${bookingItemId}/materials/requests/${requestId}/approve`,
-    payload
-  );
-}
+  approveMaterialRequest(
+    bookingItemId: number,
+    requestId: number,
+    payload: { cashierId: number; note: string },
+  ) {
+    return this.http.post(
+      `${this.baseUrl}/api/booking-items/${bookingItemId}/materials/requests/${requestId}/approve`,
+      payload,
+    );
+  }
 
-rejectMaterialRequest(bookingItemId: number, requestId: number, payload: { cashierId: number; note: string }) {
-  return this.http.post(
-    `${this.baseUrl}/api/booking-items/${bookingItemId}/materials/requests/${requestId}/reject`,
-    payload
-  );
-}
+  rejectMaterialRequest(
+    bookingItemId: number,
+    requestId: number,
+    payload: { cashierId: number; note: string },
+  ) {
+    return this.http.post(
+      `${this.baseUrl}/api/booking-items/${bookingItemId}/materials/requests/${requestId}/reject`,
+      payload,
+    );
+  }
 
-updateBookingServices(payload: any) {
+  updateBookingServices(payload: any) {
+    return this.http.post(
+      `${this.baseUrl}/api/bookings/update-services`,
+      payload,
+    );
+  }
 
-  return this.http.post(`${this.baseUrl}/api/bookings/update-services`, payload);
-}
+  addServiceToBookingCashier(
+    bookingId: number,
+    payload: {
+      cashierId: number;
+      serviceId: number;
+      assignedEmployeeId: number;
+    },
+  ) {
+    return this.http.post(
+      `${this.baseUrl}/api/bookings-cashier/${bookingId}/services`,
+      payload,
+    );
+  }
 
+  startBookingCashier(bookingId: number, payload: { cashierId: number }) {
+    return this.http.post(
+      `${this.baseUrl}/api/bookings-cashier/${bookingId}/start`,
+      payload,
+    );
+  }
 
+  completeBookingCashier(bookingId: number, payload: { cashierId: number }) {
+    return this.http.post(
+      `${this.baseUrl}/api/bookings-cashier/${bookingId}/complete`,
+      payload,
+    );
+  }
+
+  // you already have this (used to load employees per service)
+  getServiceEmployees(serviceId: number) {
+    return this.http.get(
+      `${this.baseUrl}/api/catalog/services/${serviceId}/employees`,
+    );
+  }
 }

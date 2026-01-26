@@ -55,7 +55,7 @@ const routes: Routes = [
     ],
   },
 
-  { path: 'worker-page', component: WorkerPageComponent },
+  // { path: 'worker-page', component: WorkerPageComponent },
 ];
 
 @NgModule({
