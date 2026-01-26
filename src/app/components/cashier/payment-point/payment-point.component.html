@@ -129,7 +129,7 @@
 
     <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="reservation-form">
       <div class="form-section">
-        <h3><i class="bi bi-people-fill mx-1"></i> بيانات العميل والسيارة</h3>
+        <h3 class="form-section-title"><i class="bi bi-people-fill mx-1 fs-4"></i> بيانات العميل والسيارة</h3>
         <div class="row">
           <div class="form-group">
             <label><i class="bi bi-person mx-1"></i> اسم العميل </label>
@@ -165,8 +165,8 @@
       </div>
 
       <div class="form-section">
-        <h3><i class="bi bi-info-circle-fill mx-1"></i> تفاصيل الخدمة</h3>
-        <div class="row">
+        <h3><i class="bi bi-info-circle-fill mx-1 fs-4"></i> تفاصيل الخدمة</h3>
+        <!-- <div class="row">
           <div class="form-group col-md-8">
             <label><i class="bi bi-calendar-date mx-1"></i> تاريخ الحجز </label>
             <input type="date" formControlName="appointmentDate" (change)="loadAvailableSlots()" />
@@ -180,7 +180,7 @@
 
             </label>
 
-            <!-- Dropdown -->
+
             <select class="form-select" [(ngModel)]="selectedSlotHour" [ngModelOptions]="{ standalone: true }"
               [disabled]="availableSlots.length === 0">
               <option [ngValue]="null" disabled selected>اختر وقت</option>
@@ -190,7 +190,7 @@
               </option>
             </select>
 
-            <!-- No slots message -->
+
             <small class="text-danger d-block mt-2" *ngIf="
                 !isSlotsLoading &&
                 selectedServices.length > 0 &&
@@ -200,6 +200,28 @@
               لا توجد مواعيد متاحة لهذا اليوم.
             </small>
           </div>
+
+        </div> -->
+
+        <div class="row">
+            <input type="hidden" formControlName="appointmentDate" />
+            <div class="form-group col-md-12">
+              <label><i class="bi bi-clock mx-1"></i> الوقت المتاح اليوم
+                <small class="text-muted d-inline-block mb-2 mx-1" *ngIf="isSlotsLoading">
+                  جاري تحميل المواعيد...
+                </small>
+              </label>
+              <select class="form-select" [(ngModel)]="selectedSlotHour" [ngModelOptions]="{ standalone: true }"
+                [disabled]="availableSlots.length === 0">
+                <option [ngValue]="null" disabled selected></option>
+                <option *ngFor="let slot of availableSlots" [ngValue]="slot.hour" [disabled]="slot.available === 0">
+                  {{ slot.hour }} - (متاح: {{ slot.available }})
+                </option>
+              </select>
+              <small class="text-danger d-block mt-2" *ngIf="!isSlotsLoading && selectedServices.length > 0 && availableSlots.length === 0">
+                عذراً، لا توجد مواعيد متاحة لبقية اليوم.
+              </small>
+            </div>
         </div>
 
         <div class="form-group">

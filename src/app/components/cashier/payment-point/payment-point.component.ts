@@ -48,6 +48,10 @@ export class PaymentPointComponent implements OnInit {
     { id: 5, nameAr: 'بيك أب (Pickup)' },
     { id: 6, nameAr: 'فان (Van)' },
     { id: 7, nameAr: 'شاحنة (Truck)' },
+    { id: 4, nameAr: 'كوبيه (Coupe)' },
+    { id: 5, nameAr: 'بيك أب (Pickup)' },
+    { id: 6, nameAr: 'فان (Van)' },
+    { id: 7, nameAr: 'شاحنة (Truck)' },
     { id: 99, nameAr: 'أخرى (Other)' },
   ];
 
@@ -78,8 +82,16 @@ export class PaymentPointComponent implements OnInit {
     this.loadAvailableSlots();
 
     this.loadProducts();
-    this.loadServices();
+  this.loadServices();
+
+
+    const today = new Date().toISOString().split('T')[0];
+    this.customerForm.patchValue({
+      appointmentDate: today
+    });
+
     this.setupFormListeners();
+    this.loadAvailableSlots();
   }
 
   // --- Core Data Loading ---
@@ -132,6 +144,7 @@ this.customerForm.get('carCategory')!.valueChanges.subscribe((val) => {
 
   // --- Cart Helpers ---
   getItem(productId: number) { return this.cart.find(x => x.product.id === productId); }
+
   isProductSelected(productId: number) { return !!this.getItem(productId); }
 
   toggleProduct(product: ProductVm) {
