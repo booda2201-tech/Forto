@@ -163,32 +163,29 @@
             حجز ملغي
           </span>
         </div> -->
-      <div class="card-actions mt-0 d-flex gap-2 w-100">
-  <button class="btn btn-sm btn-outline-danger rounded-3"
-          *ngIf="customer.status !== 'canceled' && customer.status !== 'completed'"
-          (click)="onCancel(customer)">
-    <i class="bi bi-trash"></i>
-  </button>
+        <div class="card-actions mt-0 d-flex gap-2 w-100">
+          <button class="btn btn-sm btn-outline-danger rounded-3"
+            *ngIf="customer.status !== 'canceled' && customer.status !== 'completed'" (click)="onCancel(customer)">
+            <i class="bi bi-trash"></i>
+          </button>
 
-  <button class="btn btn-outline-secondary rounded-15 px-3"
-          *ngIf="customer.status !== 'completed' && customer.status !== 'canceled'"
-          (click)="onEditBooking(customer)"
-          title="تعديل الخدمات">
-    <i class="bi bi-pencil-square"></i>
-  </button>
+          <button class="btn btn-outline-secondary rounded-15 px-3"
+            *ngIf="customer.status !== 'completed' && customer.status !== 'canceled'" (click)="onEditBooking(customer)"
+            title="تعديل الخدمات">
+            <i class="bi bi-pencil-square"></i>
+          </button>
 
-  <button *ngIf="currentTab === 'active'"
-          class="btn btn-success flex-grow-1 text-white fw-bold rounded-15 shadow-sm"
-          (click)="onComplete(customer.id)">
-    إنهاء الخدمة <i class="bi bi-check2-circle ms-1"></i>
-  </button>
+          <button *ngIf="currentTab === 'active'"
+            class="btn btn-success flex-grow-1 text-white fw-bold rounded-15 shadow-sm"
+            (click)="onComplete(customer.id)">
+            إنهاء الخدمة <i class="bi bi-check2-circle ms-1"></i>
+          </button>
 
-  <button class="btn btn-update flex-grow-1 text-white fw-bold"
-          *ngIf="customer.status === 'waiting'"
-          (click)="onActivate(customer.id)">
-    تفعيل الحجز <i class="bi bi-check2-circle ms-1"></i>
-  </button>
-</div>
+          <button class="btn btn-update flex-grow-1 text-white fw-bold" *ngIf="customer.status === 'waiting'"
+            (click)="onActivate(customer.id)">
+            تفعيل الحجز <i class="bi bi-check2-circle ms-1"></i>
+          </button>
+        </div>
 
 
       </div>
@@ -304,11 +301,10 @@
         <div class="mb-4">
           <label class="d-block text-secondary mb-2 text-end small">الخدمات المطلوبة:</label>
           <div class="d-flex flex-wrap gap-2 justify-content-end">
-            <div *ngFor="let svc of selectedReservationServices"
-                 (click)="selectServiceItem(svc)"
-                 [class.active-service]="selectedServiceItem?.bookingItemId === svc.bookingItemId"
-                 [class.completed-service]="assignments[svc.bookingItemId]"
-                 class="service-badge pointer transition-all shadow-sm">
+            <div *ngFor="let svc of selectedReservationServices" (click)="selectServiceItem(svc)"
+              [class.active-service]="selectedServiceItem?.bookingItemId === svc.bookingItemId"
+              [class.completed-service]="assignments[svc.bookingItemId]"
+              class="service-badge pointer transition-all shadow-sm">
 
               <div class="text-end d-flex align-items-center gap-2">
                 <i class="bi bi-check-circle-fill text-success" *ngIf="assignments[svc.bookingItemId]"></i>
@@ -324,10 +320,10 @@
 
         <div class="worker-section animate__animated animate__fadeIn" *ngIf="selectedServiceItem">
           <div class="d-flex justify-content-between align-items-center mb-3">
-              <span class="badge bg-primary-subtle text-primary p-2">
-                اختر عامل لخدمة: {{ selectedServiceItem.name }}
-              </span>
-              <h6 class="fw-bold m-0">العمال المتاحين</h6>
+            <span class="badge bg-primary-subtle text-primary p-2">
+              اختر عامل لخدمة: {{ selectedServiceItem.name }}
+            </span>
+            <h6 class="fw-bold m-0">العمال المتاحين</h6>
           </div>
 
           <div *ngIf="isEmployeesLoading" class="text-center py-4">
@@ -337,24 +333,24 @@
 
           <div class="worker-grid" *ngIf="!isEmployeesLoading">
             <div *ngFor="let worker of employeesForService"
-                (click)="(worker.isActive && !isWorkerSelectedElsewhere(worker.id)) ? selectWorkerAndStore(worker) : null"
-                [class.disabled-worker]="!worker.isActive || isWorkerSelectedElsewhere(worker.id)"
-                class="worker-card p-3 mb-2 rounded-15 border d-flex justify-content-between align-items-center transition-all">
+              (click)="(worker.isActive && !isWorkerSelectedElsewhere(worker.id)) ? selectWorkerAndStore(worker) : null"
+              [class.disabled-worker]="!worker.isActive || isWorkerSelectedElsewhere(worker.id)"
+              class="worker-card p-3 mb-2 rounded-15 border d-flex justify-content-between align-items-center transition-all">
 
-                <div class="status-indicator-wrapper d-flex align-items-center">
-                  <span class="status-dot"
-                        [class.dot-available]="worker.isActive && !isWorkerSelectedElsewhere(worker.id)"
-                        [class.dot-busy]="!worker.isActive || isWorkerSelectedElsewhere(worker.id)">
-                  </span>
-                  <small class="mx-2 status-text">
-                    {{ (worker.isActive && !isWorkerSelectedElsewhere(worker.id)) ? 'متاح' : 'مشغول' }}
-                  </small>
-                </div>
+              <div class="status-indicator-wrapper d-flex align-items-center">
+                <span class="status-dot"
+                  [class.dot-available]="worker.isActive && !isWorkerSelectedElsewhere(worker.id)"
+                  [class.dot-busy]="!worker.isActive || isWorkerSelectedElsewhere(worker.id)">
+                </span>
+                <small class="mx-2 status-text">
+                  {{ (worker.isActive && !isWorkerSelectedElsewhere(worker.id)) ? 'متاح' : 'مشغول' }}
+                </small>
+              </div>
 
-                <div class="text-end">
-                  <div class="fw-bold">{{ worker.name }}</div>
-                  <div class="small text-secondary">{{ worker.phoneNumber }}</div>
-                </div>
+              <div class="text-end">
+                <div class="fw-bold">{{ worker.name }}</div>
+                <div class="small text-secondary">{{ worker.phoneNumber }}</div>
+              </div>
             </div>
 
             <div *ngIf="employeesForService.length === 0" class="alert alert-warning text-center py-2 small">
@@ -364,15 +360,14 @@
         </div>
 
         <div *ngIf="!selectedServiceItem && assignedCount < selectedReservationServices.length"
-             class="text-center py-5 border rounded-15 bg-light-subtle">
+          class="text-center py-5 border rounded-15 bg-light-subtle">
           <i class="bi bi-cursor-fill text-primary opacity-25 fs-1"></i>
           <p class="text-muted mt-2">اضغط على اسم الخدمة في الأعلى <br> لإظهار العمال المتاحين لها</p>
         </div>
 
         <div class="modal-footer border-0 mt-3 p-0">
           <button class="btn btn-success w-100 py-3 fw-bold shadow rounded-15"
-                  [disabled]="assignedCount < selectedReservationServices.length"
-                  (click)="confirmAllAssignments()">
+            [disabled]="assignedCount < selectedReservationServices.length" (click)="confirmAllAssignments()">
             تفعيل الحجز ({{ assignedCount }} من {{ selectedReservationServices.length }})
             <i class="bi bi-lightning-auto ms-2"></i>
           </button>
@@ -491,48 +486,100 @@
 
 
 
-<div class="modal fade" id="editServicesModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+<div class="modal fade" id="editServicesModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow rounded-4">
 
-      <div class="modal-header border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-        <button type="button" class="btn-close m-0" data-bs-dismiss="modal"></button>
-        <h5 class="modal-title fw-bold text-success">تعديل خدمات الحجز</h5>
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">تعديل خدمات الحجز</h5>
+        <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
       </div>
 
-<div class="modal-body p-4 text-end" dir="rtl">
-  <div class="services-wrapper">
-    <p class="text-muted small mb-3">اختر الخدمات المراد تعديلها للحجز:</p>
+      <div class="modal-body p-4 text-end">
 
-    <div class="row g-3">
-      <div class="col-6" *ngFor="let service of allAvailableServices">
-        <div class="service-selection-card p-3"
-             [class.active]="isServiceSelected(service.id)"
-             (click)="toggleServiceSelection(service)">
+        <div *ngIf="isLoadingOptions" class="text-muted">جاري تحميل الخدمات...</div>
 
-          <div class="d-flex align-items-center justify-content-between">
-            <div class="check-container">
-              <i class="fas fa-check" *ngIf="isServiceSelected(service.id)"></i>
-            </div>
+        <ng-container *ngIf="!isLoadingOptions">
 
-            <div class="info">
-              <span class="service-name d-block fw-bold">{{ service.name }}</span>
-              <span class="service-price">{{ service.price }} ج.م</span>
+          <!-- Existing -->
+          <h6 class="fw-bold mb-2">الخدمات الحالية</h6>
+
+          <div *ngIf="inBooking.length === 0" class="text-muted small mb-3">
+            لا توجد خدمات داخل الحجز.
+          </div>
+
+          <div class="row g-2 mb-4" *ngIf="inBooking.length > 0">
+            <div class="col-md-6" *ngFor="let bi of inBooking">
+              <div class="p-3 border rounded-3 bg-light d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-bold">{{ bi.serviceName }}</div>
+                  <div class="text-muted small">Item #{{ bi.bookingItemId }}</div>
+                </div>
+
+                <button class="btn btn-sm btn-outline-danger" type="button" (click)="cancelExistingItem(bi)">
+                  إلغاء
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="total-bar mt-4 d-flex justify-content-between align-items-center shadow-sm">
-    <div class="price-box">
-      <span class="currency">ج.م</span>
-      <span class="amount">{{ calculateEditingTotal() }}</span>
+          <hr class="my-3">
+
+          <!-- Add -->
+          <h6 class="fw-bold mb-2">إضافة خدمات جديدة</h6>
+          <p class="text-muted small mb-3">الخدمات المتاحة للإضافة:</p>
+
+          <div class="row g-3">
+            <div class="col-6" *ngFor="let svc of notInBooking">
+              <div class="service-selection-card p-3" [class.active]="isServiceSelected(svc.serviceId)"
+                (click)="toggleServiceSelection(svc)">
+
+                <div class="d-flex align-items-center justify-content-between">
+                  <div class="check-container">
+                    <i class="fas fa-check" *ngIf="isServiceSelected(svc.serviceId)"></i>
+                  </div>
+
+                  <div class="info">
+                    <span class="service-name d-block fw-bold">{{ svc.serviceName }}</span>
+                    <span class="text-muted small" *ngIf="svc.unitPrice != null">
+                      {{ svc.unitPrice }} ج.م
+                    </span>
+                  </div>
+                </div>
+
+                <div class="mt-2" *ngIf="isServiceSelected(svc.serviceId)">
+                  <select class="form-select form-select-sm" [(ngModel)]="serviceEmployeeMap[svc.serviceId]"
+                    [ngModelOptions]="{ standalone: true }">
+                    <option [ngValue]="null" disabled>اختر العامل</option>
+                    <option *ngFor="let emp of (serviceEmployees[svc.serviceId] || [])" [ngValue]="emp.id">
+                      {{ emp.name }}
+                    </option>
+                  </select>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </ng-container>
+      </div>
+
+
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-success fw-bold px-4" (click)="confirmEditServices()"
+          [disabled]="isSavingEdit">
+          {{ isSavingEdit ? 'جاري الحفظ...' : 'حفظ التعديلات' }}
+        </button>
+
+        <button type="button" class="btn btn-outline-secondary fw-bold px-4" data-bs-dismiss="modal">
+          إغلاق
+        </button>
+      </div>
+
     </div>
-    <span class="label fw-bold">إجمالي الخدمات المختارة</span>
   </div>
 </div>
-    </div>
-  </div>
-</div>
+
+
+
+

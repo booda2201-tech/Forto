@@ -9,7 +9,7 @@ export class ApiService {
   private baseUrl = 'https://api.fortolaundry.com';
   // private baseUrl = 'https://localhost:7179';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getAllServices(categoryId: number = 4): Observable<any> {
     return this.http.get(
@@ -133,15 +133,15 @@ export class ApiService {
     return this.http.delete(`${this.baseUrl}/api/clients/DeleteCar/${carId}`);
   }
 
-  createPosInvoice(payload: {
-    branchId: number;
-    cashierId: number;
-    items: { productId: number; qty: number }[];
-    occurredAt: string;
-    notes?: string;
-  }) {
-    return this.http.post(`${this.baseUrl}/api/invoices/pos`, payload);
-  }
+  // createPosInvoice(payload: {
+  //   branchId: number;
+  //   cashierId: number;
+  //   items: { productId: number; qty: number }[];
+  //   occurredAt: string;
+  //   notes?: string;
+  // }) {
+  //   return this.http.post(`${this.baseUrl}/api/invoices/pos`, payload);
+  // }
 
   // getProducts() {
   //   return this.http.get(`${this.baseUrl}/api/products/GetAll`);
@@ -439,4 +439,87 @@ export class ApiService {
       `${this.baseUrl}/api/catalog/services/${serviceId}/employees`,
     );
   }
+
+
+
+  createPosInvoice(payload: any) {
+    return this.http.post(
+      `${this.baseUrl}/api/invoices/pos`,
+      payload
+    );
+  }
+
+
+
+
+
+  cashierCheckout(payload: any) {
+    return this.http.post(`${this.baseUrl}/api/cashier/checkout`, payload);
+  }
+
+
+
+
+
+
+  // cashierCheckout(payload: any) {
+  //   return this.http.post(`${this.baseUrl}/api/cashier/checkout`, payload);
+  // }
+
+  // getServiceEmployees(serviceId: number) {
+  //   return this.http.get(`${this.baseUrl}/api/catalog/services/${serviceId}/employees`);
+  // }
+  // addServiceToBookingCashier(bookingId: number, payload: {
+  //   cashierId: number;
+  //   serviceId: number;
+  //   assignedEmployeeId: number;
+  // }) {
+  //   return this.http.post(`${this.baseUrl}/api/bookings-cashier/${bookingId}/services`, payload);
+  // }
+
+  cancelBookingItemCashier(bookingItemId: number, payload: {
+    cashierId: number;
+    reason?: string;
+    usedOverride?: { materialId: number; actualQty: number }[];
+  }) {
+    return this.http.post(`${this.baseUrl}/api/bookings-cashier/booking-items/${bookingItemId}/cancel`, payload);
+  }
+
+  // you already use it elsewhere
+  // getServiceEmployees(serviceId: number) {
+  //   return this.http.get(`${this.baseUrl}/api/catalog/services/${serviceId}/employees`);
+  // }
+
+
+
+
+
+getBookingServiceOptions(bookingId: number) {
+  return this.http.get(`${this.baseUrl}/api/bookings/${bookingId}/services/options`);
+}
+
+// addServiceToBookingCashier(bookingId: number, payload: {
+//   cashierId: number;
+//   serviceId: number;
+//   assignedEmployeeId: number;
+// }) {
+//   return this.http.post(`${this.baseUrl}/api/bookings-cashier/${bookingId}/services`, payload);
+// }
+
+// cancelBookingItemCashier(bookingItemId: number, payload: {
+//   cashierId: number;
+//   reason?: string;
+//   usedOverride?: { materialId: number; actualQty: number }[];
+// }) {
+//   return this.http.post(`${this.baseUrl}/api/bookings-cashier/booking-items/${bookingItemId}/cancel`, payload);
+// }
+
+// getServiceEmployees(serviceId: number) {
+//   return this.http.get(`${this.baseUrl}/api/catalog/services/${serviceId}/employees`);
+// }
+
+
+
+
+
 }
