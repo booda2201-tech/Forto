@@ -49,12 +49,13 @@ type BookingCard = {
 };
 
 type EmployeeDto = {
-  id: number;
+  employeeId: number;
   name: string;
   phoneNumber: string;
   isActive: boolean;
   role: number;
 };
+
 type BookingItemUi = {
   bookingItemId: number;
   serviceId: number;
@@ -62,8 +63,6 @@ type BookingItemUi = {
   status: number;
   assignedEmployeeId?: number | null;
 };
-
-
 
 @Component({
   selector: 'app-reservations',
@@ -78,7 +77,6 @@ export class ReservationsComponent implements OnInit {
   editingBookingServices: any[] = [];
   allAvailableServices: any[] = [];
   editingBookingPlateNumber: string = '';
-
   // ✅ لازم تظبطه لقيمة الكاشير الحقيقي
   cashierId = 5;
   selectedCancelBookingId: number | null = null;
@@ -90,35 +88,26 @@ export class ReservationsComponent implements OnInit {
   selectedBookingId: number | null = null;
   bookingItems: BookingItemUi[] = [];              // existing services in booking
   addSelection = new Set<number>();                // selected serviceIds to add
-
   serviceEmployees: Record<number, any[]> = {};    // serviceId -> employees list
   serviceEmployeeMap: Record<number, number> = {}; // serviceId -> selected employeeId
-
   isSavingEdit = false;
-
   // refresh trigger
   private refresh$ = new BehaviorSubject<void>(undefined);
-
   // date
   private date$ = new BehaviorSubject<string>(this.todayYYYYMMDD());
-
   // current tab
   private currentTab$ = new BehaviorSubject<BookingStatusUi>('waiting');
   currentTab: BookingStatusUi = 'waiting';
-
   // invoice
   selectedInvoice: any;
-
   // ===== Worker modal state =====
   selectedReservationId: number | null = null; // bookingId
   selectedServiceItem: BookingServiceItem | null = null; // selected booking item
   selectedReservationServices: BookingServiceItem[] = []; // services in this booking
   employeesForService: EmployeeDto[] = [];
   isEmployeesLoading = false;
-
   // cancel modal (if you keep it)
   cancelReason?: string = '';
-
   bookings$: Observable<BookingCard[]> = combineLatest([
     this.refresh$,
     this.date$,
@@ -127,7 +116,6 @@ export class ReservationsComponent implements OnInit {
     map((res: any) => this.mapTodayResponseToCards(res?.data)),
     shareReplay(1),
   );
-
   waitingCount$ = this.bookings$.pipe(
     map((list) => list.filter((x) => x.status === 'waiting').length),
   );
@@ -140,13 +128,14 @@ export class ReservationsComponent implements OnInit {
   canceledCount$ = this.bookings$.pipe(
     map((list) => list.filter((x) => x.status === 'canceled').length),
   );
-
   filteredBookings$: Observable<BookingCard[]> = combineLatest([
     this.bookings$,
     this.currentTab$,
   ]).pipe(map(([items, tab]) => items.filter((x) => x.status === tab)));
-
   private modalInstance: any | null = null;
+
+
+
 
   constructor(private api: ApiService) { }
 
@@ -284,29 +273,38 @@ export class ReservationsComponent implements OnInit {
     });
   }
 
-  // دالة لتبديل اختيار الخدمة (إضافة أو حذف)
-  // toggleServiceSelection(service: any) {
-  //   const index = this.editingBookingServices.findIndex(
-  //     (s) => s.serviceId === service.id,
-  //   );
 
-  //   if (index > -1) {
-  //     // العميل تراجع عن هذه الخدمة -> حذف
-  //     this.editingBookingServices.splice(index, 1);
-  //   } else {
-  //     // العميل يريد إضافة هذه الخدمة -> إضافة
-  //     this.editingBookingServices.push({
-  //       serviceId: service.id,
-  //       name: service.name,
-  //       price: service.price,
-  //     });
-  //   }
+  // onActivate(bookingId: number) {
+  //   this.bookings$.pipe(take(1)).subscribe((list) => {
+  //     const booking = list.find((b) => b.id === bookingId);
+  //     if (!booking) return;
+
+  //     this.selectedReservationId = bookingId;
+  //     this.assignments = {}; // تصفير التعيينات القديمة
+  //     this.selectedReservationServices = booking.serviceItem || [];
+
+  //     // اختيار أول خدمة تلقائياً عند فتح المودال لتوفير ضغطة على الكاشير
+  //     if (this.selectedReservationServices.length > 0) {
+  //       this.selectServiceItem(this.selectedReservationServices[0]);
+  //     }
+
+  //     const modalElement = document.getElementById('workerModal');
+  //     this.modalInstance = new (window as any).bootstrap.Modal(modalElement);
+  //     this.modalInstance.show();
+  //   });
   // }
 
-  // للتحقق هل الخدمة مختارة حالياً أم لا لتغيير اللون
-  // isServiceSelected(serviceId: number): boolean {
-  //   return this.editingBookingServices.some((s) => s.serviceId === serviceId);
-  // }
+
+
+
+
+
+
+
+
+
+
+
 
   onActivate(bookingId: number) {
     this.bookings$.pipe(take(1)).subscribe((list) => {
@@ -314,10 +312,13 @@ export class ReservationsComponent implements OnInit {
       if (!booking) return;
 
       this.selectedReservationId = bookingId;
-      this.assignments = {}; // تصفير التعيينات القديمة
+
+      // ✅ لازم يكون عندك scheduledStart في booking (من API today)
+      this.selectedBookingScheduledStart = booking.createdAt || booking.raw?.scheduledStart || null;
+
+      this.assignments = {};
       this.selectedReservationServices = booking.serviceItem || [];
 
-      // اختيار أول خدمة تلقائياً عند فتح المودال لتوفير ضغطة على الكاشير
       if (this.selectedReservationServices.length > 0) {
         this.selectServiceItem(this.selectedReservationServices[0]);
       }
@@ -327,6 +328,7 @@ export class ReservationsComponent implements OnInit {
       this.modalInstance.show();
     });
   }
+
 
   // user clicks on a service badge inside modal
   selectServiceItem(item: BookingServiceItem) {
@@ -343,7 +345,7 @@ export class ReservationsComponent implements OnInit {
       assignments: [
         {
           bookingItemId: this.selectedServiceItem.bookingItemId,
-          employeeId: worker.id,
+          employeeId: worker.employeeId,
         },
       ],
     };
@@ -370,26 +372,54 @@ export class ReservationsComponent implements OnInit {
     });
   }
 
-  selectWorkerAndStore(worker: EmployeeDto) {
+  // selectWorkerAndStore(worker: EmployeeDto) {
+  //   if (!this.selectedServiceItem) return;
+
+  //   // 1. تخزين التعيين محلياً
+  //   this.assignments[this.selectedServiceItem.bookingItemId] = {
+  //     workerId: worker.employeeId,
+  //     workerName: worker.name,
+  //   };
+
+  //   // 2. البحث عن الخدمة التالية التي لم يتم تعيين عامل لها بعد
+  //   const nextService = this.selectedReservationServices.find(
+  //     (s) => !this.assignments[s.bookingItemId],
+  //   );
+
+  //   if (nextService) {
+  //     this.selectServiceItem(nextService); // انتقال تلقائي
+  //   } else {
+  //     this.selectedServiceItem = null; // تم الانتهاء من جميع الخدمات
+  //   }
+  // }
+
+
+
+
+  selectWorkerAndStore(worker: any) {
     if (!this.selectedServiceItem) return;
 
-    // 1. تخزين التعيين محلياً
     this.assignments[this.selectedServiceItem.bookingItemId] = {
-      workerId: worker.id,
+      workerId: worker.employeeId,
       workerName: worker.name,
     };
 
-    // 2. البحث عن الخدمة التالية التي لم يتم تعيين عامل لها بعد
+    // optional auto-jump to next service
     const nextService = this.selectedReservationServices.find(
-      (s) => !this.assignments[s.bookingItemId],
+      (s) => !this.assignments[s.bookingItemId]
     );
 
     if (nextService) {
-      this.selectServiceItem(nextService); // انتقال تلقائي
+      this.selectServiceItem(nextService);
     } else {
-      this.selectedServiceItem = null; // تم الانتهاء من جميع الخدمات
+      this.selectedServiceItem = null;
     }
   }
+
+
+
+
+
 
 
   confirmAllAssignments() {
@@ -421,12 +451,16 @@ export class ReservationsComponent implements OnInit {
       })),
     };
 
+    console.log(assignPayload);
+
     Swal.showLoading();
 
     this.api.assignBooking(bookingId, assignPayload).subscribe({
       next: () => {
         this.api.startBookingCashier(bookingId, { cashierId: this.cashierId }).subscribe({
-          next: () => {
+          next: (res) => {
+            console.log(res);
+
             Swal.fire({
               icon: 'success',
               title: 'تم تفعيل الحجز بنجاح',
@@ -444,10 +478,11 @@ export class ReservationsComponent implements OnInit {
         });
       },
       error: (err) => {
-        console.error(err);
+        console.log(err);
         Swal.fire('خطأ', err?.error?.message || 'فشل تعيين العمال للخدمات', 'error');
       }
     });
+    
   }
 
 
@@ -460,9 +495,7 @@ export class ReservationsComponent implements OnInit {
   }
 
   isWorkerSelectedElsewhere(workerId: number): boolean {
-    return Object.values(this.assignments).some(
-      (assignment) => assignment.workerId === workerId,
-    );
+    return false;
   }
 
   onCancel(customer: any) {
@@ -689,6 +722,8 @@ export class ReservationsComponent implements OnInit {
 
     this.api.getBookingServiceOptions(bookingId).subscribe({
       next: (res: any) => {
+        console.log(res);
+
         this.inBooking = res?.data?.inBooking ?? [];
         this.notInBooking = res?.data?.notInBooking ?? [];
 
@@ -714,125 +749,158 @@ export class ReservationsComponent implements OnInit {
 
 
   toggleServiceSelection(service: any) {
-  const serviceId = service.serviceId ?? service.id;
+    const serviceId = service.serviceId ?? service.id;
 
-  if (this.addSelection.has(serviceId)) {
-    this.addSelection.delete(serviceId);
-    delete this.serviceEmployeeMap[serviceId];
-  } else {
-    this.addSelection.add(serviceId);
-    this.loadEmployeesForService(serviceId);
-  }
-}
-
-isServiceSelected(serviceId: number): boolean {
-  return this.addSelection.has(serviceId);
-}
-
-loadEmployeesForService(serviceId: number) {
-  if (this.serviceEmployees[serviceId]) return;
-
-  this.api.getServiceEmployees(serviceId).subscribe({
-    next: (res: any) => {
-      console.log(res);
-      
-      this.serviceEmployees[serviceId] = res?.data ?? [];
-    },
-    error: (err: any) => {
-      console.error(err);
-      this.serviceEmployees[serviceId] = [];
+    if (this.addSelection.has(serviceId)) {
+      this.addSelection.delete(serviceId);
+      delete this.serviceEmployeeMap[serviceId];
+    } else {
+      this.addSelection.add(serviceId);
+      this.loadEmployeesForService(serviceId);
     }
-  });
-}
+  }
+
+  isServiceSelected(serviceId: number): boolean {
+    return this.addSelection.has(serviceId);
+  }
+
+
+  selectedBookingScheduledStart: string | null = null;
 
 
 
+  loadEmployeesForService(serviceId: number) {
+    const bookingId = this.selectedReservationId;
+    const scheduledStart = this.selectedBookingScheduledStart;
 
-
-cancelExistingItem(item: any) {
-  const bookingItemId = item.bookingItemId;
-
-  if (!confirm(`إلغاء خدمة: ${item.serviceName}?`)) return;
-
-  const payload = { cashierId: this.cashierId, reason: '', usedOverride: [] };
-
-  this.api.cancelBookingItemCashier(bookingItemId, payload).subscribe({
-    next: () => {
-      // remove locally
-      this.inBooking = this.inBooking.filter(x => x.bookingItemId !== bookingItemId);
-      alert('تم إلغاء الخدمة');
-
-      // optional: refresh options list again
-      if (this.selectedBookingId) this.openEditServicesModal(this.selectedBookingId);
-    },
-    error: (err: any) => {
-      console.error(err);
-      alert(err?.error?.message || 'فشل إلغاء الخدمة');
+    if (!bookingId || !scheduledStart) {
+      console.warn('Missing bookingId or scheduledStart', { bookingId, scheduledStart });
+      this.employeesForService = [];
+      return;
     }
-  });
-}
+
+    const cacheKey = `${bookingId}_${serviceId}_${scheduledStart}`;
+
+    // لو cached
+    if ((this.serviceEmployees as any)[cacheKey]) {
+      this.employeesForService = (this.serviceEmployees as any)[cacheKey];
+      this.isEmployeesLoading = false;
+      return;
+    }
 
 
+    this.isEmployeesLoading = true;
 
+    this.api.getServiceEmployees(serviceId, bookingId, scheduledStart).subscribe({
+      next: (res: any) => {
+        console.log(res);
 
+        // ✅ الصح: العمال في availableEmployees
+        const list = res?.data?.availableEmployees ?? [];
 
+        (this.serviceEmployees as any)[cacheKey] = list;
+        this.employeesForService = list;
 
-
-
-
-
-
-
-
-
-
-confirmEditServices() {
-  if (this.selectedBookingId == null) return;
-
-  if (this.addSelection.size === 0) {
-    alert('اختاري خدمة واحدة على الأقل للإضافة');
-    return;
-  }
-
-  const bookingId = this.selectedBookingId;
-
-  // validate employee chosen for each added service
-  const missingEmp = Array.from(this.addSelection).filter(sid => !this.serviceEmployeeMap[sid]);
-  if (missingEmp.length > 0) {
-    alert('اختاري عامل لكل خدمة جديدة قبل الحفظ');
-    return;
-  }
-
-  this.isSavingEdit = true;
-
-  const calls = Array.from(this.addSelection).map(serviceId =>
-    this.api.addServiceToBookingCashier(bookingId, {
-      cashierId: this.cashierId,
-      serviceId,
-      assignedEmployeeId: this.serviceEmployeeMap[serviceId]
-    })
-  );
-
-  import('rxjs').then(({ forkJoin }) => {
-    forkJoin(calls).subscribe({
-      next: () => {
-        this.isSavingEdit = false;
-        alert('تم إضافة الخدمات');
-
-        // close modal
-        const el = document.getElementById('editServicesModal');
-        const modal = (window as any).bootstrap.Modal.getInstance(el);
-        modal?.hide();
-
-        this.refresh();
+        this.isEmployeesLoading = false;
       },
       error: (err: any) => {
         console.error(err);
-        this.isSavingEdit = false;
-        alert(err?.error?.message || 'فشل إضافة الخدمات');
+        (this.serviceEmployees as any)[cacheKey] = [];
+        this.employeesForService = [];
+        this.isEmployeesLoading = false;
       }
     });
-  });
-}
+  }
+
+
+
+
+
+
+  cancelExistingItem(item: any) {
+    const bookingItemId = item.bookingItemId;
+
+    if (!confirm(`إلغاء خدمة: ${item.serviceName}?`)) return;
+
+    const payload = { cashierId: this.cashierId, reason: '', usedOverride: [] };
+
+    this.api.cancelBookingItemCashier(bookingItemId, payload).subscribe({
+      next: () => {
+        // remove locally
+        this.inBooking = this.inBooking.filter(x => x.bookingItemId !== bookingItemId);
+        alert('تم إلغاء الخدمة');
+
+        // optional: refresh options list again
+        if (this.selectedBookingId) this.openEditServicesModal(this.selectedBookingId);
+      },
+      error: (err: any) => {
+        console.error(err);
+        alert(err?.error?.message || 'فشل إلغاء الخدمة');
+      }
+    });
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  confirmEditServices() {
+    if (this.selectedBookingId == null) return;
+
+    if (this.addSelection.size === 0) {
+      alert('اختاري خدمة واحدة على الأقل للإضافة');
+      return;
+    }
+
+    const bookingId = this.selectedBookingId;
+
+    // validate employee chosen for each added service
+    const missingEmp = Array.from(this.addSelection).filter(sid => !this.serviceEmployeeMap[sid]);
+    if (missingEmp.length > 0) {
+      alert('اختاري عامل لكل خدمة جديدة قبل الحفظ');
+      return;
+    }
+
+    this.isSavingEdit = true;
+
+    const calls = Array.from(this.addSelection).map(serviceId =>
+      this.api.addServiceToBookingCashier(bookingId, {
+        cashierId: this.cashierId,
+        serviceId,
+        assignedEmployeeId: this.serviceEmployeeMap[serviceId]
+      })
+    );
+
+    import('rxjs').then(({ forkJoin }) => {
+      forkJoin(calls).subscribe({
+        next: () => {
+          this.isSavingEdit = false;
+          alert('تم إضافة الخدمات');
+
+          // close modal
+          const el = document.getElementById('editServicesModal');
+          const modal = (window as any).bootstrap.Modal.getInstance(el);
+          modal?.hide();
+
+          this.refresh();
+        },
+        error: (err: any) => {
+          console.error(err);
+          this.isSavingEdit = false;
+          alert(err?.error?.message || 'فشل إضافة الخدمات');
+        }
+      });
+    });
+  }
 
 }

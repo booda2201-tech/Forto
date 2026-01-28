@@ -434,11 +434,12 @@ export class ApiService {
   }
 
   // you already have this (used to load employees per service)
-  getServiceEmployees(serviceId: number) {
-    return this.http.get(
-      `${this.baseUrl}/api/catalog/services/${serviceId}/employees`,
-    );
-  }
+getServiceEmployees(serviceId: number, bookingId: number, scheduledStart: string) {
+  return this.http.get(
+    `${this.baseUrl}/api/catalog/services/bookings/${bookingId}/services/${serviceId}/employees`,
+    { params: { scheduledStart } }
+  );
+}
 
 
 
@@ -494,29 +495,29 @@ export class ApiService {
 
 
 
-getBookingServiceOptions(bookingId: number) {
-  return this.http.get(`${this.baseUrl}/api/bookings/${bookingId}/services/options`);
-}
+  getBookingServiceOptions(bookingId: number) {
+    return this.http.get(`${this.baseUrl}/api/bookings/${bookingId}/services/options`);
+  }
 
-// addServiceToBookingCashier(bookingId: number, payload: {
-//   cashierId: number;
-//   serviceId: number;
-//   assignedEmployeeId: number;
-// }) {
-//   return this.http.post(`${this.baseUrl}/api/bookings-cashier/${bookingId}/services`, payload);
-// }
+  // addServiceToBookingCashier(bookingId: number, payload: {
+  //   cashierId: number;
+  //   serviceId: number;
+  //   assignedEmployeeId: number;
+  // }) {
+  //   return this.http.post(`${this.baseUrl}/api/bookings-cashier/${bookingId}/services`, payload);
+  // }
 
-// cancelBookingItemCashier(bookingItemId: number, payload: {
-//   cashierId: number;
-//   reason?: string;
-//   usedOverride?: { materialId: number; actualQty: number }[];
-// }) {
-//   return this.http.post(`${this.baseUrl}/api/bookings-cashier/booking-items/${bookingItemId}/cancel`, payload);
-// }
+  // cancelBookingItemCashier(bookingItemId: number, payload: {
+  //   cashierId: number;
+  //   reason?: string;
+  //   usedOverride?: { materialId: number; actualQty: number }[];
+  // }) {
+  //   return this.http.post(`${this.baseUrl}/api/bookings-cashier/booking-items/${bookingItemId}/cancel`, payload);
+  // }
 
-// getServiceEmployees(serviceId: number) {
-//   return this.http.get(`${this.baseUrl}/api/catalog/services/${serviceId}/employees`);
-// }
+  // getServiceEmployees(serviceId: number) {
+  //   return this.http.get(`${this.baseUrl}/api/catalog/services/${serviceId}/employees`);
+  // }
 
 
 

@@ -83,13 +83,6 @@ export class PaymentPointComponent implements OnInit {
 
     this.loadProducts();
   this.loadServices();
-
-
-    // const today = new Date().toISOString().split('T')[0];
-    // this.customerForm.patchValue({
-    //   appointmentDate: today
-    // });
-
     this.setupFormListeners();
     this.loadAvailableSlots();
   }
@@ -194,24 +187,6 @@ private rebuildServicesForBodyType(bodyType: number): void {
 }
 
 
-  // toggleService(service: ServiceCardVm, event: any) {
-  //   event.target.checked ? this.selectedServices.push(service) : this.selectedServices = this.selectedServices.filter(s => s.id !== service.id);
-  //   this.calculateBookingTotal();
-  //   this.loadAvailableSlots();
-  // }
-
-
-
-
-
-
-
-
-
-
-
-
-
 toggleService(service: ServiceCardVm, event: any) {
   const checked = !!event.target.checked;
 
@@ -253,9 +228,12 @@ calculateTotal() {
 
 
 
+selectedReservationId: number | null = null;
+selectedBookingScheduledStart: string | null = null;
 
-
-
+employeesForService: any[] = [];
+serviceEmployees: Record<string, any[]> = {}; // 👈 لاحظي string key
+isEmployeesLoading = false;
 
 
 
@@ -263,19 +241,44 @@ calculateTotal() {
 
 
 loadEmployeesForService(serviceId: number) {
-  if (this.serviceEmployees[serviceId]) return;
+  const bookingId = this.selectedReservationId;                 // bookingId الحالي
+  const scheduledStart = this.selectedBookingScheduledStart;    // لازم تكون محفوظة عندك
 
-  this.api.getServiceEmployees(serviceId).subscribe({
+  if (!bookingId || !scheduledStart) {
+    console.warn('Missing bookingId or scheduledStart', { bookingId, scheduledStart });
+    this.employeesForService = [];
+    return;
+  }
+
+  const cacheKey = `${bookingId}_${serviceId}_${scheduledStart}`;
+
+  if ((this.serviceEmployees as any)[cacheKey]) {
+    this.employeesForService = (this.serviceEmployees as any)[cacheKey];
+    return;
+  }
+
+  this.isEmployeesLoading = true;
+
+  this.api.getServiceEmployees(serviceId, bookingId, scheduledStart).subscribe({
     next: (res: any) => {
-      this.serviceEmployees[serviceId] = res?.data ?? [];
+      const list = res?.data ?? [];
+      (this.serviceEmployees as any)[cacheKey] = list;
+
+      // ✅ ده اللي الـ UI بيعرضه
+      this.employeesForService = list;
+
+      this.isEmployeesLoading = false;
     },
     error: (err) => {
       console.error(err);
-      this.serviceEmployees[serviceId] = [];
+      (this.serviceEmployees as any)[cacheKey] = [];
+      this.employeesForService = [];
+      this.isEmployeesLoading = false;
       this.toastr.error('فشل تحميل العمال لهذه الخدمة', 'خطأ');
     }
   });
 }
+
 
 
 submitBooking() {
@@ -378,13 +381,6 @@ submitBooking() {
 }
 
 
-
-
-
-
-
-
-
   isServiceSelected(service: ServiceCardVm) { return this.selectedServices.some(s => s.id === service.id); }
 
   calculateBookingTotal() {
@@ -463,7 +459,6 @@ submitBooking() {
     return Math.max(0, total - sub);
   }
 
-
   openInvoiceModal() {
     const el = document.getElementById('invoiceModal');
     const modal = new (window as any).bootstrap.Modal(el);
@@ -483,66 +478,6 @@ submitBooking() {
   printInvoice() {
     window.print();
   }
-
-
-  // private todayYYYYMMDD(): string {
-  //   const d = new Date();
-  //   const pad = (n: number) => String(n).padStart(2, '0');
-  //   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // private nextHourHHMM(): string {
-  //   const d = new Date();
-  //   d.setMinutes(0, 0, 0);
-  //   d.setHours(d.getHours() + 1); // next top of hour
-  //   const pad = (n: number) => String(n).padStart(2, '0');
-  //   return `${pad(d.getHours())}:${pad(d.getMinutes())}`; // "HH:00"
-  // }
-
-  // // combine to ISO without Z
-  // private toLocalIsoNoZ(dateStr: string, timeStr: string): string {
-  //   const [y, m, d] = dateStr.split('-').map(Number);
-  //   const [hh, mm] = timeStr.split(':').map(Number);
-
-  //   const dt = new Date(y, m - 1, d, hh, mm, 0, 0);
-  //   const pad = (n: number) => String(n).padStart(2, '0');
-
-  //   return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}:00`;
-  // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
   private todayYYYYMMDD(): string {
@@ -569,117 +504,7 @@ submitBooking() {
     return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}:00`;
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // serviceId -> employees list
-  serviceEmployees: Record<number, any[]> = {};
-
-  // serviceId -> selected employeeId
   serviceEmployeeMap: Record<number, number> = {};
-
-  // private submitBooking() {
-  //   if (this.customerForm.invalid || (this.selectedServices.length === 0 && this.cart.length === 0)) {
-  //     this.toastr.error('بيانات ناقصة');
-  //     return;
-  //   }
-
-  //   if (!this.selectedSlotHour) {
-  //     this.toastr.warning('اختار وقت من المواعيد المتاحة');
-  //     return;
-  //   }
-
-  //   // ✅ if services are selected, ensure each has employee assigned
-  //   const missingEmp = this.selectedServices.filter(s => !this.serviceEmployeeMap[s.id]);
-  //   if (missingEmp.length > 0) {
-  //     this.toastr.warning('اختار عامل لكل خدمة قبل التأكيد');
-  //     return;
-  //   }
-
-  //   const v = this.customerForm.value;
-
-  //   // scheduledStart = date + selectedSlotHour
-  //   const scheduledStart = this.toLocalIsoNoZ(String(v.appointmentDate), String(this.selectedSlotHour));
-
-  //   const bodyType = Number(v.carCategory);
-  //   const { brand, model, year } = this.parseBrandModelYear(String(v.carType ?? ''));
-
-  //   const payload = {
-  //     branchId: this.branchId,
-  //     cashierId: this.cashierId,
-  //     scheduledStart,
-
-  //     client: {
-  //       phoneNumber: String(v.phone ?? '').trim(),
-  //       fullName: String(v.name ?? '').trim(),
-  //     },
-
-  //     car: {
-  //       plateNumber: String(v.carNumber ?? '').trim(),
-  //       bodyType,
-  //       brand: brand || 'Unknown',
-  //       model: model || '',
-  //       color: '',
-  //       year: year ?? 0,
-  //       isDefault: true
-  //     },
-
-  //     serviceIds: this.selectedServices.map(s => s.id),
-
-  //     serviceAssignments: this.selectedServices.map(s => ({
-  //       serviceId: s.id,
-  //       employeeId: this.serviceEmployeeMap[s.id]
-  //     })),
-
-  //     products: this.cart.map(c => ({
-  //       productId: c.product.id,
-  //       qty: c.qty
-  //     })),
-
-  //     notes: ''
-  //   };
-
-  //   this.api.cashierCheckout(payload).subscribe({
-  //     next: (res: any) => {
-  //       if (res?.success === false) {
-  //         this.toastr.error(res?.message || 'فشل تنفيذ العملية');
-  //         return;
-  //       }
-
-  //       this.toastr.success('تم تنفيذ Checkout بنجاح');
-
-  //       // If server returns invoice data -> show invoice
-  //       this.invoiceData = res?.data;
-  //       this.openInvoiceModal();
-
-  //       // reset
-  //       this.cart = [];
-  //       this.selectedServices = [];
-  //       this.serviceEmployeeMap = {};
-  //       this.customerForm.reset({
-  //         appointmentDate: this.todayYYYYMMDD()
-  //       });
-  //       this.selectedSlotHour = this.nextHourHHMM();
-  //     },
-  //     error: (err) => {
-  //       console.error(err);
-  //       this.toastr.error(err?.error?.message || 'فشل تنفيذ Checkout');
-  //     }
-  //   });
-  // }
 
 
   private parseBrandModelYear(carTypeText: string): { brand: string; model: string; year?: number } {
@@ -698,8 +523,5 @@ submitBooking() {
 
     return { brand, model, year };
   }
-
-
-
 
 }
