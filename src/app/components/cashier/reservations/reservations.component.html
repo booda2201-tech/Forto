@@ -1,12 +1,25 @@
 <div class="contt">
   <div class="reservations-wrapper" dir="rtl">
 
-    <div class="header-section d-flex justify-content-center align-items-center mb-3 mt-3">
-      <div>
-        <h2 class="fw-bold">إدارة الحجوزات</h2>
-        <p class="text-muted">
+    <div class="header-section d-flex justify-content-between align-items-center mb-3 mt-3">
+      <div class="text-end">
+        <h2 class="fw-bold mb-0">إدارة الحجوزات</h2>
+        <p class="text-muted mb-0">
           لديك {{ (filteredBookings$ | async)?.length || 0 }} عملاء في هذا القسم
         </p>
+      </div>
+      
+      <div class="date-selector">
+        <label class="form-label fw-bold mb-2 d-block text-start">
+          <i class="bi bi-calendar-event me-2"></i>اختر التاريخ
+        </label>
+        <input 
+          type="date" 
+          class="form-control form-control-lg"
+          [value]="selectedDate"
+          (change)="onDateChange($event)"
+          style="min-width: 200px;"
+        />
       </div>
     </div>
 
@@ -458,6 +471,126 @@
 
         <button type="button" class="btn btn-outline-secondary fw-bold px-4" data-bs-dismiss="modal">
           إغلاق
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Cancel Service Modal with Materials -->
+<div class="modal fade" id="cancelServiceModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">إلغاء الخدمة وإدخال المواد المستخدمة</h5>
+        <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4 text-end" *ngIf="selectedItemForCancel">
+        
+        <div class="alert alert-info mb-4">
+          <strong>الخدمة المراد إلغاؤها:</strong> {{ selectedItemForCancel.serviceName }}
+        </div>
+
+        <!-- Reason -->
+        <div class="mb-4">
+          <label class="form-label fw-bold mb-2">سبب الإلغاء (اختياري)</label>
+          <textarea 
+            class="form-control" 
+            rows="2" 
+            [(ngModel)]="cancelServiceReason" 
+            placeholder="اكتب سبب الإلغاء هنا...">
+          </textarea>
+        </div>
+
+        <!-- Materials Used -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold mb-0">المواد المستخدمة</h6>
+            <button 
+              type="button" 
+              class="btn btn-sm btn-outline-primary"
+              (click)="addMaterialRow()">
+              <i class="bi bi-plus-circle me-1"></i> إضافة مادة
+            </button>
+          </div>
+
+          <div *ngIf="isLoadingMaterials" class="text-center py-3">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-2">جاري تحميل المواد...</p>
+          </div>
+
+          <div *ngIf="!isLoadingMaterials">
+            <div *ngIf="usedMaterials.length === 0" class="alert alert-warning text-center">
+              لا توجد مواد مضافة. اضغط على "إضافة مادة" لإضافة المواد المستخدمة.
+            </div>
+
+            <div class="table-responsive" *ngIf="usedMaterials.length > 0">
+              <table class="table table-bordered">
+                <thead class="bg-light">
+                  <tr>
+                    <th class="text-end">المادة</th>
+                    <th class="text-center">الكمية المستخدمة</th>
+                    <th class="text-center" style="width: 80px;">إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let material of usedMaterials; let i = index">
+                    <td>
+                      <select 
+                        class="form-select form-select-sm"
+                        [(ngModel)]="material.materialId"
+                        [ngModelOptions]="{ standalone: true }">
+                        <option [value]="0" disabled>اختر المادة</option>
+                        <option *ngFor="let mat of allMaterials" [value]="mat.id">
+                          {{ mat.name }}
+                        </option>
+                      </select>
+                    </td>
+                    <td>
+                      <input 
+                        type="number" 
+                        class="form-control form-control-sm text-center"
+                        [(ngModel)]="material.actualQty"
+                        [ngModelOptions]="{ standalone: true }"
+                        min="0"
+                        step="0.01"
+                        placeholder="0">
+                    </td>
+                    <td class="text-center">
+                      <button 
+                        type="button" 
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="removeMaterialRow(i)">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer border-0 pt-0">
+        <button 
+          type="button" 
+          class="btn btn-outline-secondary fw-bold px-4" 
+          data-bs-dismiss="modal">
+          إلغاء
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-danger fw-bold px-4" 
+          (click)="confirmCancelService()"
+          [disabled]="isLoadingMaterials">
+          تأكيد الإلغاء
         </button>
       </div>
 

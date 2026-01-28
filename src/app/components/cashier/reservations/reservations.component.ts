@@ -63,6 +63,21 @@ type BookingItemUi = {
   assignedEmployeeId?: number | null;
 };
 
+type MaterialDto = {
+  id: number;
+  name: string;
+  unit: number;
+  costPerUnit: number;
+  chargePerUnit: number;
+  isActive: boolean;
+};
+
+type UsedMaterial = {
+  materialId: number;
+  actualQty: number;
+  materialName?: string;
+};
+
 @Component({
   selector: 'app-reservations',
   standalone: true,
@@ -99,6 +114,8 @@ export class ReservationsComponent implements OnInit {
   currentTab: BookingStatusUi = 'waiting';
   // invoice
   selectedInvoice: any;
+  // selected date for display
+  selectedDate: string = this.todayYYYYMMDD();
   // ===== Worker modal state =====
   selectedReservationId: number | null = null; // bookingId
   selectedServiceItem: BookingServiceItem | null = null; // selected booking item
@@ -147,6 +164,14 @@ export class ReservationsComponent implements OnInit {
 
   refresh() {
     this.refresh$.next();
+  }
+
+  onDateChange(event: any) {
+    const dateStr = event.target.value;
+    if (dateStr) {
+      this.selectedDate = dateStr;
+      this.date$.next(dateStr);
+    }
   }
 
   onActivate(bookingId: number) {
@@ -475,6 +500,13 @@ export class ReservationsComponent implements OnInit {
   notInBooking: any[] = [];   // from API
 
   isLoadingOptions = false;
+  
+  // Materials for cancel service
+  allMaterials: MaterialDto[] = [];
+  isLoadingMaterials = false;
+  selectedItemForCancel: any = null;
+  usedMaterials: UsedMaterial[] = [];
+  cancelServiceReason: string = '';
 
   toggleServiceSelection(svc: any) {
     const id = svc.serviceId;
@@ -557,36 +589,110 @@ export class ReservationsComponent implements OnInit {
 
 
   cancelExistingItem(item: any) {
-    const bookingItemId = item.bookingItemId;
-
-    if (!confirm(`إلغاء خدمة: ${item.serviceName}?`)) return;
-
-    const payload = { cashierId: this.cashierId, reason: '', usedOverride: [] };
+    this.selectedItemForCancel = item;
+    this.usedMaterials = [];
+    this.cancelServiceReason = '';
+    
+    // Load materials if not loaded
+    if (this.allMaterials.length === 0) {
+      this.loadMaterials();
+    }
+    
+    // Open modal
+    const modalElement = document.getElementById('cancelServiceModal');
+    const modalInstance = new (window as any).bootstrap.Modal(modalElement);
+    modalInstance.show();
+  }
+  
+  loadMaterials() {
+    this.isLoadingMaterials = true;
+    this.api.getMaterials().subscribe({
+      next: (res: any) => {
+        this.allMaterials = (res?.data ?? []).filter((m: MaterialDto) => m.isActive);
+        this.isLoadingMaterials = false;
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.isLoadingMaterials = false;
+        alert('فشل تحميل المواد');
+      }
+    });
+  }
+  
+  addMaterialRow() {
+    this.usedMaterials.push({
+      materialId: 0,
+      actualQty: 0
+    });
+  }
+  
+  removeMaterialRow(index: number) {
+    this.usedMaterials.splice(index, 1);
+  }
+  
+  getMaterialName(materialId: number): string {
+    const material = this.allMaterials.find(m => m.id === materialId);
+    return material?.name || '';
+  }
+  
+  confirmCancelService() {
+    if (!this.selectedItemForCancel) return;
+    
+    const bookingItemId = this.selectedItemForCancel.bookingItemId;
+    
+    // Filter out materials with no selection or zero quantity
+    const validMaterials = this.usedMaterials.filter(
+      m => m.materialId > 0 && m.actualQty > 0
+    );
+    
+    const payload = {
+      cashierId: this.cashierId,
+      reason: this.cancelReason || '',
+      usedOverride: validMaterials.map(m => ({
+        materialId: m.materialId,
+        actualQty: m.actualQty
+      }))
+    };
 
     this.api.cancelBookingItemCashier(bookingItemId, payload).subscribe({
       next: () => {
         this.inBooking = this.inBooking.filter(x => x.bookingItemId !== bookingItemId);
-        const svcId = item.serviceId;
+        const svcId = this.selectedItemForCancel.serviceId;
         const exists = this.notInBooking.some(x => x.serviceId === svcId);
         if (!exists) {
           this.notInBooking.unshift({
-            serviceId: item.serviceId,
-            serviceName: item.serviceName,
-            unitPrice: item.unitPrice ?? null
+            serviceId: this.selectedItemForCancel.serviceId,
+            serviceName: this.selectedItemForCancel.serviceName,
+            unitPrice: this.selectedItemForCancel.unitPrice ?? null
           });
         }
 
         // ✅ reload options from server to ensure correct lists
         this.reloadEditServicesOptions();
 
-        // ✅ update main bookings UI instantly too (see section below)
+        // ✅ update main bookings UI instantly too
         this.removeServiceFromBookingCardUI(bookingItemId);
 
-        alert('تم إلغاء الخدمة');
+        // Close modal
+        const modalElement = document.getElementById('cancelServiceModal');
+        const modalInstance = (window as any).bootstrap.Modal.getInstance(modalElement);
+        modalInstance?.hide();
+        
+        // Reset
+        this.selectedItemForCancel = null;
+        this.usedMaterials = [];
+        this.cancelServiceReason = '';
+
+        Swal.fire({
+          icon: 'success',
+          title: 'تم إلغاء الخدمة',
+          timer: 1500,
+          showConfirmButton: false,
+        });
       },
       error: (err: any) => {
         console.error(err);
-        alert(err?.error?.message || 'فشل إلغاء الخدمة');
+        Swal.fire('خطأ', err?.error?.message || 'فشل إلغاء الخدمة', 'error');
       }
     });
   }

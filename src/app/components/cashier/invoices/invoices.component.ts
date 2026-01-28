@@ -59,11 +59,38 @@ export class InvoicesComponent {
   private paymentMethod$ = new BehaviorSubject<string>(''); // "1" cash / "2" visa ... (string from select)
 
   private page$ = new BehaviorSubject<number>(1);
-  private pageSize$ = new BehaviorSubject<number>(20);
+  private pageSize$ = new BehaviorSubject<number>(10);
+  
+  // pagination observables
+  currentPage$ = this.page$.asObservable();
+  pageSizeObservable$ = this.pageSize$.asObservable();
 
   // keep last summary
   private lastSummary: { totalCount: number; totalRevenue: number } | null =
     null;
+  
+  // pagination computed values
+  get currentPage(): number {
+    return (this.page$ as any).value || 1;
+  }
+  
+  get pageSize(): number {
+    return (this.pageSize$ as any).value || 20;
+  }
+  
+  get totalPages(): number {
+    if (this.totalInvoicesCount === 0) return 1;
+    return Math.ceil(this.totalInvoicesCount / this.pageSize);
+  }
+  
+  get startIndex(): number {
+    return (this.currentPage - 1) * this.pageSize + 1;
+  }
+  
+  get endIndex(): number {
+    const end = this.currentPage * this.pageSize;
+    return Math.min(end, this.totalInvoicesCount);
+  }
 
   invoices$: Observable<InvoiceUi[]> = combineLatest([
     this.searchTerm$,
@@ -130,6 +157,72 @@ export class InvoicesComponent {
     (document.getElementById('fromInput') as HTMLInputElement).value = '';
     (document.getElementById('toInput') as HTMLInputElement).value = '';
     (document.getElementById('methodInput') as HTMLSelectElement).value = '';
+  }
+  
+  // ---------- Pagination Handlers ----------
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.page$.next(page);
+      // Scroll to top of table
+      const tableElement = document.querySelector('.table-responsive');
+      if (tableElement) {
+        tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }
+  
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.goToPage(this.currentPage + 1);
+    }
+  }
+  
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.goToPage(this.currentPage - 1);
+    }
+  }
+  
+  changePageSize(size: number): void {
+    this.pageSize$.next(size);
+    this.page$.next(1); // Reset to first page
+  }
+  
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const total = this.totalPages;
+    const current = this.currentPage;
+    
+    if (total <= 7) {
+      // Show all pages if 7 or less
+      for (let i = 1; i <= total; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Show first page
+      pages.push(1);
+      
+      if (current > 3) {
+        pages.push(-1); // Ellipsis
+      }
+      
+      // Show pages around current
+      const start = Math.max(2, current - 1);
+      const end = Math.min(total - 1, current + 1);
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      
+      if (current < total - 2) {
+        pages.push(-1); // Ellipsis
+      }
+      
+      // Show last page
+      pages.push(total);
+    }
+    
+    return pages;
   }
 
   // ---------- Mapping ----------

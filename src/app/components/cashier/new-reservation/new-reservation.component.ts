@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { ApiService } from 'src/app/services/api.service';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 type ServiceRateDto = {
   id: number;
@@ -65,6 +66,12 @@ export class NewReservationComponent implements OnInit {
     { id: 99, nameAr: 'أخرى (Other)' },
   ];
 
+  // Client lookup
+  foundClients: any[] = [];
+  isLookingUpClient = false;
+  showCarSelectionModal = false;
+  selectedClient: any = null;
+
   customerForm = new FormGroup({
     name: new FormControl('', [Validators.required]),
     phone: new FormControl('', [Validators.required]),
@@ -119,6 +126,21 @@ export class NewReservationComponent implements OnInit {
     this.customerForm.get('appointmentDate')!.valueChanges.subscribe(() => {
       this.selectedSlotHour = null;
       this.loadAvailableSlots();
+    });
+
+    // 4) When phone number changes -> lookup client (with debounce)
+    this.customerForm.get('phone')!.valueChanges.pipe(
+      debounceTime(300), // Wait 300ms after user stops typing
+      distinctUntilChanged() // Only trigger if value actually changed
+    ).subscribe((phone) => {
+      const phoneStr = String(phone || '').trim();
+      console.log('[Phone Lookup] Phone entered:', phoneStr, 'Length:', phoneStr.length);
+      if (phoneStr.length >= 10) {
+        this.lookupClient(phoneStr);
+      } else {
+        this.foundClients = [];
+        this.isLookingUpClient = false;
+      }
     });
   }
 
@@ -338,6 +360,144 @@ export class NewReservationComponent implements OnInit {
       // إذا لم يكن المدخل رقماً، يتم إلغاء الحدث ومنع الكتابة
       event.preventDefault();
     }
+  }
+
+  // ======================
+  // Client Lookup
+  // ======================
+  lookupClient(phoneNumber: string) {
+    if (!phoneNumber || phoneNumber.length < 10) {
+      this.foundClients = [];
+      return;
+    }
+
+    console.log('[Phone Lookup] Looking up client with phone:', phoneNumber);
+    this.isLookingUpClient = true;
+
+    this.api.lookupClientByPhone(phoneNumber).subscribe({
+      next: (res: any) => {
+        console.log('[Phone Lookup] API Response:', res);
+        this.foundClients = res?.data ?? [];
+        this.isLookingUpClient = false;
+        console.log('[Phone Lookup] Found clients:', this.foundClients.length);
+
+        if (this.foundClients.length === 0) {
+          // No client found, do nothing
+          console.log('[Phone Lookup] No clients found');
+          return;
+        }
+
+        if (this.foundClients.length === 1) {
+          // Single client found
+          const client = this.foundClients[0];
+          console.log('[Phone Lookup] Single client found:', client.fullName);
+          this.handleClientFound(client);
+        } else {
+          // Multiple clients found - show selection modal
+          console.log('[Phone Lookup] Multiple clients found:', this.foundClients.length);
+          this.showCarSelectionModal = true;
+          setTimeout(() => {
+            const modalElement = document.getElementById('carSelectionModal');
+            if (modalElement) {
+              const modalInstance = new (window as any).bootstrap.Modal(modalElement);
+              modalInstance.show();
+            }
+          }, 100);
+        }
+      },
+      error: (err) => {
+        console.error('[Phone Lookup] API Error:', err);
+        this.isLookingUpClient = false;
+        this.foundClients = [];
+      }
+    });
+  }
+
+  handleClientFound(client: any) {
+    console.log('[Phone Lookup] Handling client found:', client);
+    // Fill name and email
+    this.customerForm.patchValue({
+      name: client.fullName || '',
+      email: client.email || ''
+    });
+    console.log('[Phone Lookup] Filled name:', client.fullName, 'email:', client.email);
+
+    // Handle cars
+    const cars = client.cars || [];
+    console.log('[Phone Lookup] Client has', cars.length, 'cars');
+    
+    if (cars.length === 0) {
+      // No cars, do nothing
+      console.log('[Phone Lookup] No cars found for client');
+      return;
+    }
+
+    if (cars.length === 1) {
+      // Single car - fill automatically
+      console.log('[Phone Lookup] Single car found, filling data automatically');
+      this.fillCarData(cars[0]);
+    } else {
+      // Multiple cars - show selection modal
+      console.log('[Phone Lookup] Multiple cars found, showing selection modal');
+      this.selectedClient = client;
+      this.showCarSelectionModal = true;
+      setTimeout(() => {
+        const modalElement = document.getElementById('carSelectionModal');
+        if (modalElement) {
+          const modalInstance = new (window as any).bootstrap.Modal(modalElement);
+          modalInstance.show();
+        }
+      }, 100);
+    }
+  }
+
+  fillCarData(car: any) {
+    console.log('[Phone Lookup] Filling car data:', car);
+    const carType = [car.brand, car.model, car.year].filter(Boolean).join(' ') || '';
+    
+    this.customerForm.patchValue({
+      carType: carType,
+      carNumber: car.plateNumber || '',
+      carCategory: car.bodyType || null
+    });
+    console.log('[Phone Lookup] Filled car data - Type:', carType, 'Number:', car.plateNumber, 'Category:', car.bodyType);
+  }
+
+  selectCar(car: any) {
+    this.fillCarData(car);
+    this.closeCarSelectionModal();
+  }
+
+  closeCarSelectionModal() {
+    this.showCarSelectionModal = false;
+    this.selectedClient = null;
+    // Close Bootstrap modal if open
+    const modalElement = document.getElementById('carSelectionModal');
+    if (modalElement) {
+      const modalInstance = (window as any).bootstrap?.Modal?.getInstance(modalElement);
+      if (modalInstance) {
+        modalInstance.hide();
+      }
+    }
+  }
+
+  getCarsToDisplay(): any[] {
+    if (this.selectedClient) {
+      return this.selectedClient.cars || [];
+    }
+    // If multiple clients, return all cars from all clients
+    return this.foundClients.flatMap(client => 
+      (client.cars || []).map((car: any) => ({
+        ...car,
+        clientName: client.fullName,
+        clientPhone: client.phoneNumber
+      }))
+    );
+  }
+
+  getCarCategoryName(bodyType: number): string {
+    const category = this.carCategories.find(cat => cat.id === bodyType);
+    return category?.nameAr || `فئة ${bodyType}`;
   }
 
 

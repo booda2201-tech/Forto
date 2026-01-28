@@ -620,6 +620,16 @@
     &:focus { border-color: #f39c12; box-shadow: 0 0 5px rgba(243, 156, 18, 0.2); }
 }
 
+.car-card-hover {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: white;
+
+    &:hover {
+        background-color: #f8f9fa !important;
+    }
+}
+
 
 
 
@@ -903,5 +913,15 @@
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
     &:focus { border-color: #f39c12; box-shadow: 0 0 5px rgba(243, 156, 18, 0.2); }
+}
+
+.car-card-hover {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: white;
+
+    &:hover {
+        background-color: #f8f9fa !important;
+    }
 }
 

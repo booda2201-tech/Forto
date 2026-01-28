@@ -13,8 +13,34 @@
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 2rem;
+    gap: 20px;
+    
     h2 { font-weight: 800; color: #1a202c; margin-bottom: 0.5rem; }
     p { color: #718096; }
+    
+    .date-selector {
+      min-width: 200px;
+      
+      .form-control {
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+        
+        &:focus {
+          border-color: #ffa807;
+          box-shadow: 0 0 0 0.2rem rgba(255, 168, 7, 0.25);
+        }
+      }
+    }
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+      
+      .date-selector {
+        width: 100%;
+      }
+    }
   }
 
   .status-tabs {

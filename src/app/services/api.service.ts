@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -40,6 +40,11 @@ export class ApiService {
   getClientById(clientId: number): Observable<any> {
     const url = `${this.baseUrl}/api/clients/GetById/${clientId}`;
     return this.http.get(url);
+  }
+
+  lookupClientByPhone(phoneNumber: string): Observable<any> {
+    const params = new HttpParams().set('phone', phoneNumber);
+    return this.http.get(`${this.baseUrl}/api/clients/lookup`, { params });
   }
 
   getServices() {
@@ -135,7 +140,7 @@ export class ApiService {
 
     if (params.from) query.From = params.from;
     if (params.to) query.To = params.to;
-    if (params.paymentMethod) query.PaymentMethod = params.paymentMethod;
+    if (params.paymentMethod) query.PaymentMethod = Number(params.paymentMethod);
     if (params.q) query.Q = params.q;
     if (params.page != null) query.Page = params.page;
     if (params.pageSize != null) query.PageSize = params.pageSize;

@@ -32,6 +32,58 @@
   border-radius:20px;
 }
 
+.pagination-container {
+  border-radius: 0 0 20px 20px;
+  
+  .pagination {
+    .page-link {
+      color: #6c757d;
+      border-color: #dee2e6;
+      padding: 0.375rem 0.75rem;
+      
+      &:hover {
+        color: #fd7e14;
+        background-color: #fff8f0;
+        border-color: #fd7e14;
+      }
+      
+      &:focus {
+        box-shadow: 0 0 0 0.2rem rgba(253, 126, 20, 0.25);
+      }
+    }
+    
+    .page-item.active .page-link {
+      background-color: #fd7e14;
+      border-color: #fd7e14;
+      color: white;
+    }
+    
+    .page-item.disabled .page-link {
+      color: #6c757d;
+      pointer-events: none;
+      cursor: auto;
+      background-color: #fff;
+      border-color: #dee2e6;
+      opacity: 0.5;
+    }
+    
+    .page-link span {
+      cursor: default;
+      pointer-events: none;
+    }
+  }
+  
+  select.form-select-sm {
+    border-radius: 8px;
+    border-color: #dee2e6;
+    
+    &:focus {
+      border-color: #fd7e14;
+      box-shadow: 0 0 0 0.2rem rgba(253, 126, 20, 0.25);
+    }
+  }
+}
+
 
 
 

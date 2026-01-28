@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { ApiService } from 'src/app/services/api.service';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 // --- Types Definitions ---
 type ProductVm = { id: number; name: string; price: number; isActive: boolean; };
@@ -77,14 +78,10 @@ export class PaymentPointComponent implements OnInit {
 
     const today = this.todayYYYYMMDD();
     this.customerForm.patchValue({ appointmentDate: today });
-    this.selectedSlotHour = this.nextHourHHMM();
-
-    this.loadAvailableSlots();
 
     this.loadProducts();
-  this.loadServices();
+    this.loadServices();
     this.setupFormListeners();
-    this.loadAvailableSlots();
   }
 
   // --- Core Data Loading ---
@@ -111,27 +108,34 @@ export class PaymentPointComponent implements OnInit {
   }
 
   private setupFormListeners() {
-this.customerForm.get('carCategory')!.valueChanges.subscribe((val) => {
-  const bodyType = Number(val);
+    this.customerForm.get('carCategory')!.valueChanges.subscribe((val) => {
+      const bodyType = Number(val);
 
-  this.selectedServices = [];
-  this.totalPrice = 0;
+      this.selectedServices = [];
+      this.totalPrice = 0;
+      this.serviceEmployeeMap = {};
+      this.serviceEmployees = {};
 
-  this.availableSlots = [];
-  this.selectedSlotHour = null;
+      if (!bodyType || Number.isNaN(bodyType)) {
+        this.services = [];
+        return;
+      }
 
-  if (!bodyType || Number.isNaN(bodyType)) {
-    this.services = [];
-    return;
-  }
+      this.rebuildServicesForBodyType(bodyType);
+    });
 
-  this.rebuildServicesForBodyType(bodyType);
-  this.loadAvailableSlots();
-});
-
-    this.customerForm.get('appointmentDate')!.valueChanges.subscribe(() => {
-      this.selectedSlotHour = null;
-      this.loadAvailableSlots();
+    // Client lookup when phone changes
+    this.customerForm.get('phone')!.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe((phone) => {
+      const phoneStr = String(phone || '').trim();
+      if (phoneStr.length >= 10) {
+        this.lookupClient(phoneStr);
+      } else {
+        this.foundClients = [];
+        this.isLookingUpClient = false;
+      }
     });
   }
 
@@ -198,11 +202,10 @@ toggleService(service: ServiceCardVm, event: any) {
   } else {
     this.selectedServices = this.selectedServices.filter(s => s.id !== service.id);
     delete this.serviceEmployeeMap[service.id];
+    delete this.serviceEmployees[service.id];
   }
 
   this.calculateTotal();
-  this.selectedSlotHour = null;
-  this.loadAvailableSlots();
 }
 
 
@@ -232,7 +235,7 @@ selectedReservationId: number | null = null;
 selectedBookingScheduledStart: string | null = null;
 
 employeesForService: any[] = [];
-serviceEmployees: Record<string, any[]> = {}; // 👈 لاحظي string key
+serviceEmployees: Record<number, any[]> = {}; // Key is serviceId (number)
 isEmployeesLoading = false;
 
 
@@ -241,38 +244,24 @@ isEmployeesLoading = false;
 
 
 loadEmployeesForService(serviceId: number) {
-  const bookingId = this.selectedReservationId;                 // bookingId الحالي
-  const scheduledStart = this.selectedBookingScheduledStart;    // لازم تكون محفوظة عندك
-
-  if (!bookingId || !scheduledStart) {
-    console.warn('Missing bookingId or scheduledStart', { bookingId, scheduledStart });
-    this.employeesForService = [];
-    return;
-  }
-
-  const cacheKey = `${bookingId}_${serviceId}_${scheduledStart}`;
-
-  if ((this.serviceEmployees as any)[cacheKey]) {
-    this.employeesForService = (this.serviceEmployees as any)[cacheKey];
-    return;
+  // For new bookings, use getServiceEmployees2 (no bookingId needed)
+  if (this.serviceEmployees[serviceId]) {
+    return; // Already loaded
   }
 
   this.isEmployeesLoading = true;
 
-  this.api.getServiceEmployees(serviceId, bookingId, scheduledStart).subscribe({
+  // Use getServiceEmployees2 for new bookings (no bookingId needed)
+  this.api.getServiceEmployees2(serviceId).subscribe({
     next: (res: any) => {
-      const list = res?.data ?? [];
-      (this.serviceEmployees as any)[cacheKey] = list;
-
-      // ✅ ده اللي الـ UI بيعرضه
-      this.employeesForService = list;
-
+      // API returns data as array directly: { data: [{ id, name, ... }] }
+      const list = Array.isArray(res?.data) ? res.data : [];
+      this.serviceEmployees[serviceId] = list;
       this.isEmployeesLoading = false;
     },
     error: (err) => {
       console.error(err);
-      (this.serviceEmployees as any)[cacheKey] = [];
-      this.employeesForService = [];
+      this.serviceEmployees[serviceId] = [];
       this.isEmployeesLoading = false;
       this.toastr.error('فشل تحميل العمال لهذه الخدمة', 'خطأ');
     }
@@ -292,11 +281,6 @@ submitBooking() {
     return;
   }
 
-  if (!this.selectedSlotHour) {
-    this.toastr.warning('اختر وقت من المواعيد المتاحة', 'تنبيه');
-    return;
-  }
-
   // ✅ if services exist, require employee for each service
   if (this.selectedServices.length > 0) {
     const missing = this.selectedServices.filter(s => !this.serviceEmployeeMap[s.id]);
@@ -308,10 +292,11 @@ submitBooking() {
 
   const v = this.customerForm.value;
 
-  const scheduledStart = this.toLocalIsoNoZ(
-    String(v.appointmentDate),
-    String(this.selectedSlotHour)
-  );
+  // Use current time rounded to the hour (e.g., 9:30 -> 9:00:00)
+  const now = new Date();
+  now.setMinutes(0, 0, 0); // Round to hour
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const scheduledStart = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:00:00`;
 
   const bodyType = Number(v.carCategory);
   const { brand, model, year } = this.parseBrandModelYear(String(v.carType ?? ''));
@@ -351,6 +336,12 @@ submitBooking() {
     notes: ''
   };
 
+  // Save customer data before submitting
+  this.customerFormData = {
+    name: String(v.name ?? '').trim(),
+    phone: String(v.phone ?? '').trim()
+  };
+
   this.api.cashierCheckout(payload).subscribe({
     next: (res: any) => {
       if (res?.success === false) {
@@ -362,16 +353,20 @@ submitBooking() {
 
       // optional: show invoice modal if returned
       this.invoiceData = res?.data;
+      // Ensure customer data is included in invoice data
+      if (this.invoiceData && this.customerFormData) {
+        this.invoiceData.clientName = this.invoiceData.clientName || this.invoiceData.customerName || this.customerFormData.name;
+        this.invoiceData.clientNumber = this.invoiceData.clientNumber || this.invoiceData.phoneNumber || this.invoiceData.phone || this.customerFormData.phone;
+      }
       this.openInvoiceModal?.();
 
       // reset
       this.cart = [];
       this.selectedServices = [];
       this.serviceEmployeeMap = {};
+      this.serviceEmployees = {};
       this.customerForm.reset({ appointmentDate: this.todayYYYYMMDD() });
-      this.selectedSlotHour = this.nextHourHHMM();
-
-      this.loadAvailableSlots();
+      this.customerFormData = null;
     },
     error: (err) => {
       console.error(err);
@@ -410,12 +405,19 @@ submitBooking() {
 
 
   invoiceData: any = null;
+  customerFormData: { name: string; phone: string } | null = null;
 
   private submitOrder() {
     if (this.orderForm.invalid || this.cart.length === 0) {
       this.toastr.error('يرجى إكمال البيانات واختيار المنتجات');
       return;
     }
+
+    // Save customer data before submitting
+    this.customerFormData = {
+      name: String(this.orderForm.value.fullName ?? '').trim(),
+      phone: String(this.orderForm.value.phoneNumber ?? '').trim()
+    };
 
     const payload = {
       branchId: this.branchId,
@@ -438,12 +440,18 @@ submitBooking() {
 
         // ✅ use server invoice data
         this.invoiceData = res?.data;
+        // Ensure customer data is included in invoice data
+        if (this.invoiceData && this.customerFormData) {
+          this.invoiceData.clientName = this.invoiceData.clientName || this.invoiceData.customerName || this.customerFormData.name;
+          this.invoiceData.clientNumber = this.invoiceData.clientNumber || this.invoiceData.phoneNumber || this.invoiceData.phone || this.customerFormData.phone;
+        }
 
         this.openInvoiceModal();
 
         // reset AFTER opening modal
         this.cart = [];
         this.orderForm.reset();
+        this.customerFormData = null;
       },
       error: (err) => {
         console.error(err);
@@ -495,13 +503,16 @@ submitBooking() {
   }
 
   private toLocalIsoNoZ(dateStr: string, hourStr: string): string {
+    // Use current time but round to the hour (00 minutes)
+    const now = new Date();
     const [y, m, d] = dateStr.split('-').map(Number);
-    const [hh, mm] = hourStr.split(':').map(Number);
+    const [hh] = hourStr.split(':').map(Number);
 
-    const dt = new Date(y, m - 1, d, hh, mm, 0, 0);
+    // Create date with selected date and hour, but set minutes to 00
+    const dt = new Date(y, m - 1, d, hh, 0, 0, 0);
     const pad = (n: number) => String(n).padStart(2, '0');
 
-    return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}:00`;
+    return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:00:00`;
   }
 
   serviceEmployeeMap: Record<number, number> = {};
@@ -522,6 +533,126 @@ submitBooking() {
     const model = parts.slice(1).join(' ');
 
     return { brand, model, year };
+  }
+
+  // ======================
+  // Client Lookup
+  // ======================
+  foundClients: any[] = [];
+  isLookingUpClient = false;
+  showCarSelectionModal = false;
+  selectedClient: any = null;
+
+  lookupClient(phoneNumber: string) {
+    if (!phoneNumber || phoneNumber.length < 10) {
+      this.foundClients = [];
+      return;
+    }
+
+    this.isLookingUpClient = true;
+
+    this.api.lookupClientByPhone(phoneNumber).subscribe({
+      next: (res: any) => {
+        this.foundClients = res?.data ?? [];
+        this.isLookingUpClient = false;
+
+        if (this.foundClients.length === 0) {
+          return;
+        }
+
+        if (this.foundClients.length === 1) {
+          const client = this.foundClients[0];
+          this.handleClientFound(client);
+        } else {
+          this.showCarSelectionModal = true;
+          setTimeout(() => {
+            const modalElement = document.getElementById('carSelectionModal');
+            if (modalElement) {
+              const modalInstance = new (window as any).bootstrap.Modal(modalElement);
+              modalInstance.show();
+            }
+          }, 100);
+        }
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLookingUpClient = false;
+        this.foundClients = [];
+      }
+    });
+  }
+
+  handleClientFound(client: any) {
+    // Fill name
+    this.customerForm.patchValue({
+      name: client.fullName || ''
+    });
+
+    // Handle cars
+    const cars = client.cars || [];
+    
+    if (cars.length === 0) {
+      return;
+    }
+
+    if (cars.length === 1) {
+      this.fillCarData(cars[0]);
+    } else {
+      this.selectedClient = client;
+      this.showCarSelectionModal = true;
+      setTimeout(() => {
+        const modalElement = document.getElementById('carSelectionModal');
+        if (modalElement) {
+          const modalInstance = new (window as any).bootstrap.Modal(modalElement);
+          modalInstance.show();
+        }
+      }, 100);
+    }
+  }
+
+  fillCarData(car: any) {
+    const carType = [car.brand, car.model, car.year].filter(Boolean).join(' ') || '';
+    
+    this.customerForm.patchValue({
+      carType: carType,
+      carNumber: car.plateNumber || '',
+      carCategory: car.bodyType || null
+    });
+  }
+
+  selectCar(car: any) {
+    this.fillCarData(car);
+    this.closeCarSelectionModal();
+  }
+
+  closeCarSelectionModal() {
+    this.showCarSelectionModal = false;
+    this.selectedClient = null;
+    const modalElement = document.getElementById('carSelectionModal');
+    if (modalElement) {
+      const modalInstance = (window as any).bootstrap?.Modal?.getInstance(modalElement);
+      if (modalInstance) {
+        modalInstance.hide();
+      }
+    }
+  }
+
+  getCarsToDisplay(): any[] {
+    if (this.selectedClient) {
+      return this.selectedClient.cars || [];
+    }
+    return this.foundClients.flatMap(client => 
+      (client.cars || []).map((car: any) => ({
+        ...car,
+        clientName: client.fullName,
+        clientPhone: client.phoneNumber
+      }))
+    );
+  }
+
+  getCarCategoryName(bodyType: number): string {
+    const category = this.carCategories.find(cat => cat.id === bodyType);
+    return category?.nameAr || `فئة ${bodyType}`;
   }
 
 }
