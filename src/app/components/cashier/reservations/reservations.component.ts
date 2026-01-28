@@ -311,7 +311,7 @@ export class ReservationsComponent implements OnInit {
 
 
   get isPendingBooking(): boolean {
-    return this.selectedReservationStatus === 'pending';
+    return this.selectedReservationStatus === 'waiting' || this.selectedReservationStatus === 'pending';
   }
 
 
@@ -627,7 +627,7 @@ export class ReservationsComponent implements OnInit {
     const bookingId = this.selectedBookingId;
 
     const missingEmp = Array.from(this.addSelection).filter(sid => !this.serviceEmployeeMap[sid]);
-    if (missingEmp.length > 0) {
+    if (missingEmp.length > 0 && !this.isPendingBooking) {
       alert('اختاري عامل لكل خدمة جديدة قبل الحفظ');
       return;
     }
@@ -638,7 +638,7 @@ export class ReservationsComponent implements OnInit {
       this.api.addServiceToBookingCashier(bookingId, {
         cashierId: this.cashierId,
         serviceId,
-        assignedEmployeeId: this.serviceEmployeeMap[serviceId]
+        assignedEmployeeId: this.isPendingBooking ? null : this.serviceEmployeeMap[serviceId]
       })
     );
 

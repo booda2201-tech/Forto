@@ -383,7 +383,7 @@ export class ApiService {
     payload: {
       cashierId: number;
       serviceId: number;
-      assignedEmployeeId: number;
+      assignedEmployeeId: number | null;
     },
   ) {
     return this.http.post(

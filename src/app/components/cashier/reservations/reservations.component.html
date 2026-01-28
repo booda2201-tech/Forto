@@ -411,31 +411,26 @@
                   </div>
                 </div>
 
-                <!-- <ng-container *ngIf="customer.status !== 'pending'"> -->
+                <ng-container *ngIf="!isPendingBooking">
+                  <div class="mt-2" *ngIf="isServiceSelected(svc.serviceId)">
 
-                <div class="mt-2" *ngIf="isServiceSelected(svc.serviceId)">
+                    <select class="form-select form-select-sm" (click)="$event.stopPropagation()"
+                      [(ngModel)]="serviceEmployeeMap[svc.serviceId]" [ngModelOptions]="{ standalone: true }">
+                      <option [ngValue]="null" disabled>اختر العامل</option>
 
-                  <select class="form-select form-select-sm" (click)="$event.stopPropagation()"
-                    [(ngModel)]="serviceEmployeeMap[svc.serviceId]" [ngModelOptions]="{ standalone: true }">
-                    <option [ngValue]="null" disabled>اختر العامل</option>
+                      <option *ngFor="let emp of getEmployeesForServiceInEditModal(svc.serviceId)"
+                        [ngValue]="emp.employeeId">
+                        {{ emp.name }}
+                      </option>
 
-                    <!-- <option *ngFor="let emp of getEmployeesForServiceInEditModal(svc.serviceId)"
-                      [ngValue]="emp.employeeId">
-                      {{ emp.name }}
-                    </option> -->
-                    <option *ngFor="let emp of getEmployeesForServiceInEditModal(svc.serviceId)"
-                      [ngValue]="emp.employeeId">
-                      {{ emp.name }}
-                    </option>
+                    </select>
 
-                  </select>
-
-                  <small class="text-muted d-block mt-1"
-                    *ngIf="getEmployeesForServiceInEditModal(svc.serviceId).length === 0">
-                    لا يوجد عمال متاحين لهذه الخدمة
-                  </small>
-                </div>
-                <!-- </ng-container> -->
+                    <small class="text-muted d-block mt-1"
+                      *ngIf="getEmployeesForServiceInEditModal(svc.serviceId).length === 0">
+                      لا يوجد عمال متاحين لهذه الخدمة
+                    </small>
+                  </div>
+                </ng-container>
 
               </div>
             </div>
