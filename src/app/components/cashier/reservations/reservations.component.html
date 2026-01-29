@@ -123,8 +123,8 @@
             </span>
           </div>
         </div>
- 
-        
+
+
         <div class="card-actions mt-0 d-flex gap-2 w-100">
           <button class="btn btn-sm btn-outline-danger rounded-3"
             *ngIf="customer.status !== 'canceled' && customer.status !== 'completed'" (click)="onCancel(customer)">
@@ -132,8 +132,8 @@
           </button>
 
           <button class="btn btn-outline-secondary rounded-15 px-3"
-            *ngIf="customer.status !== 'completed' && customer.status !== 'canceled'" (click)="onEditBooking(customer)"
-            title="تعديل الخدمات">
+            *ngIf="customer.status !== 'completed' && customer.status !== 'canceled'"
+            (click)="openEditServicesModal(customer)" title="تعديل الخدمات">
             <i class="bi bi-pencil-square"></i>
           </button>
 
@@ -148,7 +148,6 @@
             تفعيل الحجز <i class="bi bi-check2-circle ms-1"></i>
           </button>
         </div>
-
 
       </div>
     </div>
@@ -375,6 +374,7 @@
           <div class="row g-2 mb-4" *ngIf="inBooking.length > 0">
             <div class="col-md-6" *ngFor="let bi of inBooking">
               <div class="p-3 border rounded-3 bg-light d-flex justify-content-between align-items-center">
+
                 <div>
                   <div class="fw-bold">{{ bi.serviceName }}</div>
                   <div class="text-muted small">Item #{{ bi.bookingItemId }}</div>
@@ -411,15 +411,31 @@
                   </div>
                 </div>
 
+                <!-- <ng-container *ngIf="customer.status !== 'pending'"> -->
+
                 <div class="mt-2" *ngIf="isServiceSelected(svc.serviceId)">
-                  <select class="form-select form-select-sm" [(ngModel)]="serviceEmployeeMap[svc.serviceId]"
-                    [ngModelOptions]="{ standalone: true }">
+
+                  <select class="form-select form-select-sm" (click)="$event.stopPropagation()"
+                    [(ngModel)]="serviceEmployeeMap[svc.serviceId]" [ngModelOptions]="{ standalone: true }">
                     <option [ngValue]="null" disabled>اختر العامل</option>
-                    <option *ngFor="let emp of (serviceEmployees[svc.serviceId] || [])" [ngValue]="emp.id">
+
+                    <!-- <option *ngFor="let emp of getEmployeesForServiceInEditModal(svc.serviceId)"
+                      [ngValue]="emp.employeeId">
+                      {{ emp.name }}
+                    </option> -->
+                    <option *ngFor="let emp of getEmployeesForServiceInEditModal(svc.serviceId)"
+                      [ngValue]="emp.employeeId">
                       {{ emp.name }}
                     </option>
+
                   </select>
+
+                  <small class="text-muted d-block mt-1"
+                    *ngIf="getEmployeesForServiceInEditModal(svc.serviceId).length === 0">
+                    لا يوجد عمال متاحين لهذه الخدمة
+                  </small>
                 </div>
+                <!-- </ng-container> -->
 
               </div>
             </div>
@@ -430,10 +446,20 @@
 
 
       <div class="modal-footer border-0 pt-0">
+        <!-- <button type="button" class="btn btn-success fw-bold px-4" (click)="confirmEditServices()"
+          [disabled]="isSavingEdit">
+          {{ isSavingEdit ? 'جاري الحفظ...' : 'حفظ التعديلات' }}
+        </button> -->
+
+
+
         <button type="button" class="btn btn-success fw-bold px-4" (click)="confirmEditServices()"
           [disabled]="isSavingEdit">
           {{ isSavingEdit ? 'جاري الحفظ...' : 'حفظ التعديلات' }}
         </button>
+
+
+
 
         <button type="button" class="btn btn-outline-secondary fw-bold px-4" data-bs-dismiss="modal">
           إغلاق

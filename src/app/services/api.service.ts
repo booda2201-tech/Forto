@@ -116,36 +116,9 @@ export class ApiService {
     );
   }
 
-  // today bookings (already used)
-
-  // getAllClients() {
-  //   return this.http.get(`${this.baseUrl}/api/clients/GetAll`);
-  // }
-
-  // addCarToClient(clientId: number, payload: any) {
-  //   return this.http.post(
-  //     `${this.baseUrl}/api/clients/${clientId}/addCars`,
-  //     payload
-  //   );
-  // }
-
   deleteCar(carId: number) {
     return this.http.delete(`${this.baseUrl}/api/clients/DeleteCar/${carId}`);
   }
-
-  // createPosInvoice(payload: {
-  //   branchId: number;
-  //   cashierId: number;
-  //   items: { productId: number; qty: number }[];
-  //   occurredAt: string;
-  //   notes?: string;
-  // }) {
-  //   return this.http.post(`${this.baseUrl}/api/invoices/pos`, payload);
-  // }
-
-  // getProducts() {
-  //   return this.http.get(`${this.baseUrl}/api/products/GetAll`);
-  // }
 
   getInvoicesList(params: {
     branchId: number;

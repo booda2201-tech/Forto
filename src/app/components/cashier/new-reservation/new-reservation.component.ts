@@ -100,19 +100,19 @@ export class NewReservationComponent implements OnInit {
     });
 
     // 2) When car category changes -> rebuild services, clear selections & slots
-this.customerForm.get('carCategory')!.valueChanges.subscribe(() => {
-  this.selectedServices = [];
-  this.totalPrice = 0;
+    this.customerForm.get('carCategory')!.valueChanges.subscribe(() => {
+      this.selectedServices = [];
+      this.totalPrice = 0;
 
-  this.availableSlots = [];
-  this.selectedSlotHour = null;
+      this.availableSlots = [];
+      this.selectedSlotHour = null;
 
-  // ✅ ensure value is settled
-  queueMicrotask(() => {
-    this.rebuildServicesForBodyType();
-    this.loadAvailableSlots();
-  });
-});
+      // ✅ ensure value is settled
+      queueMicrotask(() => {
+        this.rebuildServicesForBodyType();
+        this.loadAvailableSlots();
+      });
+    });
 
 
     // 3) When date changes -> reload slots (if services selected)
@@ -267,16 +267,16 @@ this.customerForm.get('carCategory')!.valueChanges.subscribe(() => {
     };
 
 
-        this.api.quickCreateBooking(payload).subscribe({
-          next: (res: any) => {
-            if (res?.success === false) {
-              this.toastr.error(res?.message || 'فشل إنشاء الحجز', 'خطأ');
-              return;
-            }
-            this.toastr.success('تم إنشاء الحجز بنجاح!', 'عملية ناجحة');
+    this.api.quickCreateBooking(payload).subscribe({
+      next: (res: any) => {
+        if (res?.success === false) {
+          this.toastr.error(res?.message || 'فشل إنشاء الحجز', 'خطأ');
+          return;
+        }
+        this.toastr.success('تم إنشاء الحجز بنجاح!', 'عملية ناجحة');
 
-            this.router.navigate(['/cashier/reservations']);
-          },
+        this.router.navigate(['/cashier/reservations']);
+      },
       error: (err) => {
         console.log("2 : ", payload);
 
@@ -329,16 +329,16 @@ this.customerForm.get('carCategory')!.valueChanges.subscribe(() => {
     return { brand, model, year };
   }
 
-// أضف هذه الدالة داخل الكلاس
-onlyNumbers(event: any) {
-  const pattern = /[0-9]/; // يسمح فقط بالأرقام من 0 إلى 9
-  const inputChar = String.fromCharCode(event.charCode);
+  // أضف هذه الدالة داخل الكلاس
+  onlyNumbers(event: any) {
+    const pattern = /[0-9]/; // يسمح فقط بالأرقام من 0 إلى 9
+    const inputChar = String.fromCharCode(event.charCode);
 
-  if (!pattern.test(inputChar)) {
-    // إذا لم يكن المدخل رقماً، يتم إلغاء الحدث ومنع الكتابة
-    event.preventDefault();
+    if (!pattern.test(inputChar)) {
+      // إذا لم يكن المدخل رقماً، يتم إلغاء الحدث ومنع الكتابة
+      event.preventDefault();
+    }
   }
-}
 
 
 
