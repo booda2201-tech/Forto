@@ -6,6 +6,7 @@ import {
   combineLatest,
   map,
   Observable,
+  shareReplay,
   switchMap,
   take,
   tap,
@@ -21,13 +22,16 @@ type InvoiceLineUi = {
   total: number;
 };
 
+/** status: 1 = Unpaid, 2 = Paid, 3 = Cancelled */
 type InvoiceUi = {
-  id: number; // invoiceId
+  id: string; // invoiceNumber للعرض (مثل for-2026-110)
+  invoiceId: number; // للـ API (payInvoiceCash)
   customerName: string;
   phone: string;
-  paymentMethod: number; // 1 = cash
+  paymentMethod: number; // 1 = cash, 2 = visa
+  status: 1 | 2 | 3; // 1 غير مدفوعة، 2 مدفوعة، 3 ملغاة
   date: string; // YYYY-MM-DD
-  createdAt: string; // full date string
+  createdAt: string;
 
   subTotal: number;
   discount: number;
@@ -48,15 +52,23 @@ export class InvoicesComponent {
   selectedInvoice: InvoiceUi | null = null;
 
   branchId = 1;
+  cashierId = 5; // للدفع من صفحة الفواتير
 
   totalInvoicesCount = 0;
   totalDailyAmount = 0;
 
-  // filters
+  // filters (قيم معروضة في الـ UI ومربوطة بـ ngModel)
+  filterSearch = '';
+  filterFrom = '';
+  filterTo = '';
+  filterMethod = '';
+  filterStatus = '';
+
   private searchTerm$ = new BehaviorSubject<string>('');
-  private from$ = new BehaviorSubject<string>(''); // YYYY-MM-DD
-  private to$ = new BehaviorSubject<string>(''); // YYYY-MM-DD
-  private paymentMethod$ = new BehaviorSubject<string>(''); // "1" cash / "2" visa ... (string from select)
+  private from$ = new BehaviorSubject<string>('');
+  private to$ = new BehaviorSubject<string>('');
+  private paymentMethod$ = new BehaviorSubject<string>('');
+  private statusFilter$ = new BehaviorSubject<string>(''); // "" | "unpaid" | "paid" | "cancelled"
 
   private page$ = new BehaviorSubject<number>(1);
   private pageSize$ = new BehaviorSubject<number>(10);
@@ -97,15 +109,18 @@ export class InvoicesComponent {
     this.from$,
     this.to$,
     this.paymentMethod$,
+    this.statusFilter$,
     this.page$,
     this.pageSize$,
   ]).pipe(
-    switchMap(([term, from, to, method, page, pageSize]) => {
+    switchMap(([term, from, to, method, statusVal, page, pageSize]) => {
+      const status = statusVal === '' ? undefined : statusVal;
       return this.api.getInvoicesList({
         branchId: this.branchId,
         from: from || undefined,
         to: to || undefined,
         paymentMethod: method || undefined,
+        status,
         q: term || undefined,
         page,
         pageSize,
@@ -121,42 +136,49 @@ export class InvoicesComponent {
         this.lastSummary?.totalRevenue ??
         list.reduce((acc, inv) => acc + (inv.total || 0), 0);
     }),
+    shareReplay(1),
   );
 
   constructor(private api: ApiService) {}
 
-  // ---------- UI Handlers ----------
-  onSearch(event: any): void {
-    this.searchTerm$.next((event.target.value || '').trim());
+  // ---------- UI Handlers (تحديث الـ Subject وإرجاع الصفحة لـ 1) ----------
+  onSearch(val: string): void {
+    this.searchTerm$.next((val || '').trim());
     this.page$.next(1);
   }
 
-  onFromChange(event: any): void {
-    this.from$.next((event.target.value || '').trim());
+  onFromChange(val: string): void {
+    this.from$.next((val || '').trim());
     this.page$.next(1);
   }
 
-  onToChange(event: any): void {
-    this.to$.next((event.target.value || '').trim());
+  onToChange(val: string): void {
+    this.to$.next((val || '').trim());
     this.page$.next(1);
   }
 
-  onMethodChange(event: any): void {
-    this.paymentMethod$.next((event.target.value || '').trim());
+  onMethodChange(val: string): void {
+    this.paymentMethod$.next((val || '').trim());
+    this.page$.next(1);
+  }
+
+  onStatusFilterChange(val: string): void {
+    this.statusFilter$.next((val || '').trim());
     this.page$.next(1);
   }
 
   resetFilters(): void {
+    this.filterSearch = '';
+    this.filterFrom = '';
+    this.filterTo = '';
+    this.filterMethod = '';
+    this.filterStatus = '';
     this.searchTerm$.next('');
     this.from$.next('');
     this.to$.next('');
     this.paymentMethod$.next('');
+    this.statusFilter$.next('');
     this.page$.next(1);
-
-    (document.getElementById('searchInput') as HTMLInputElement).value = '';
-    (document.getElementById('fromInput') as HTMLInputElement).value = '';
-    (document.getElementById('toInput') as HTMLInputElement).value = '';
-    (document.getElementById('methodInput') as HTMLSelectElement).value = '';
   }
   
   // ---------- Pagination Handlers ----------
@@ -244,11 +266,17 @@ export class InvoicesComponent {
       const dateStr = String(x.date ?? '');
       const onlyDate = dateStr ? dateStr.slice(0, 10) : '';
 
+      // status: 1 = Unpaid, 2 = Paid, 3 = Cancelled
+      const rawStatus = Number(x.status ?? 1);
+      const status: 1 | 2 | 3 = (rawStatus === 1 || rawStatus === 2 || rawStatus === 3) ? rawStatus : 1;
+
       return {
-        id: x.invoiceNumber ?? "",
+        id: String(x.invoiceNumber ?? ''),
+        invoiceId: Number(x.invoiceId ?? 0),
         date: onlyDate,
         createdAt: dateStr,
         paymentMethod: Number(x.paymentMethod ?? 0),
+        status,
 
         subTotal: Number(x.subTotal ?? 0),
         discount: Number(x.discount ?? 0),
@@ -272,6 +300,32 @@ export class InvoicesComponent {
     return method === 1 ? 'bi bi-cash' : 'bi bi-credit-card';
   }
 
+  /** 1 = Unpaid, 2 = Paid, 3 = Cancelled */
+  statusLabel(status: 1 | 2 | 3): string {
+    return status === 1 ? 'غير مدفوعة' : status === 2 ? 'مدفوعة' : 'ملغاة';
+  }
+
+  // ---------- دفع فاتورة (status = 1 غير مدفوعة) ----------
+  payingInvoiceId: number | null = null;
+
+  payInvoice(invoice: InvoiceUi): void {
+    if (invoice.status !== 1) return; // غير مدفوعة فقط
+    const id = invoice.invoiceId;
+    if (!id) return;
+    this.payingInvoiceId = id;
+    this.api.payInvoiceCash(id, this.cashierId).subscribe({
+      next: () => {
+        this.payingInvoiceId = null;
+        this.page$.next(this.currentPage); // إعادة تحميل الصفحة الحالية
+      },
+      error: (err) => {
+        this.payingInvoiceId = null;
+        console.error(err);
+        alert(err?.error?.message || 'فشل تنفيذ الدفع');
+      },
+    });
+  }
+
   // ---------- Excel ----------
   exportToExcel(invoice: InvoiceUi): void {
     const dataToExport = [
@@ -283,6 +337,7 @@ export class InvoicesComponent {
           .map((l) => `${l.description} x${l.qty}`)
           .join(' | '),
         'طريقة الدفع': this.paymentLabel(invoice.paymentMethod),
+        'حالة الدفع': this.statusLabel(invoice.status),
         الإجمالي: invoice.total.toFixed(2),
         التاريخ: invoice.date,
       },
@@ -326,6 +381,7 @@ export class InvoicesComponent {
         'اسم العميل': inv.customerName || 'Walk-in',
         الهاتف: inv.phone || '-',
         'طريقة الدفع': inv.paymentMethod === 1 ? 'كاش' : 'فيزا',
+        'حالة الدفع': this.statusLabel(inv.status),
         البنود:
           inv.itemsText ||
           inv.lines?.map((l) => l.description).join(' | ') ||

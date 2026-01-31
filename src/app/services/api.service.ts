@@ -6,14 +6,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-  // private baseUrl = 'https://api.fortolaundry.com';
-  private baseUrl = 'https://localhost:7179';
+  private baseUrl = 'https://api.fortolaundry.com';
+  // private baseUrl = 'https://localhost:7179';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getAllServices(categoryId: number = 4): Observable<any> {
     return this.http.get(
-      `${this.baseUrl}/api/catalog/services/GetAll?categoryId=${categoryId}`,
+      `${this.baseUrl}/api/catalog/services/GetAll?categoryId=${categoryId}`
     );
   }
 
@@ -33,7 +33,7 @@ export class ApiService {
   addCarToClient(clientId: number, payload: any) {
     return this.http.post(
       `${this.baseUrl}/api/clients/${clientId}/addCars`,
-      payload,
+      payload
     );
   }
 
@@ -54,7 +54,7 @@ export class ApiService {
   getAvailableSlots(branchId: number, date: string, serviceIds: number[]) {
     const serviceIdsParam = serviceIds.join(',');
     return this.http.get(
-      `${this.baseUrl}/api/bookings/available-slots?branchId=${branchId}&date=${date}&serviceIds=${serviceIdsParam}`,
+      `${this.baseUrl}/api/bookings/available-slots?branchId=${branchId}&date=${date}&serviceIds=${serviceIdsParam}`
     );
   }
 
@@ -68,14 +68,14 @@ export class ApiService {
 
   getBookingsToday(branchId: number, date: string) {
     return this.http.get(
-      `${this.baseUrl}/api/bookings/today?branchId=${branchId}&date=${date}`,
+      `${this.baseUrl}/api/bookings/today?branchId=${branchId}&date=${date}`
     );
   }
 
   // employees for a specific service
   getServiceEmployees2(serviceId: number) {
     return this.http.get(
-      `${this.baseUrl}/api/catalog/services/${serviceId}/employees`,
+      `${this.baseUrl}/api/catalog/services/${serviceId}/employees`
     );
   }
 
@@ -85,11 +85,11 @@ export class ApiService {
     payload: {
       cashierId: number;
       assignments: { bookingItemId: number; employeeId: number }[];
-    },
+    }
   ) {
     return this.http.put(
       `${this.baseUrl}/api/bookings/${bookingId}/assign`,
-      payload,
+      payload
     );
   }
 
@@ -99,11 +99,11 @@ export class ApiService {
       cashierId: number;
       reason?: string;
       usedOverride?: { materialId: number; actualQty: number }[];
-    },
+    }
   ) {
     return this.http.post(
       `${this.baseUrl}/api/bookings/${bookingId}/complete`,
-      payload,
+      payload
     );
   }
 
@@ -113,11 +113,11 @@ export class ApiService {
       cashierId: number;
       reason?: string;
       usedOverride: { materialId: number; actualQty: number }[];
-    },
+    }
   ) {
     return this.http.post(
       `${this.baseUrl}/api/bookings/${bookingId}/cancel`,
-      payload,
+      payload
     );
   }
 
@@ -130,23 +130,24 @@ export class ApiService {
     from?: string;
     to?: string;
     paymentMethod?: string;
+    /** "unpaid" | "paid" | "cancelled" */
+    status?: string;
     q?: string;
     page?: number;
     pageSize?: number;
   }) {
-    const query: any = {
-      BranchId: params.branchId,
-    };
-
-    if (params.from) query.From = params.from;
-    if (params.to) query.To = params.to;
-    if (params.paymentMethod) query.PaymentMethod = Number(params.paymentMethod);
-    if (params.q) query.Q = params.q;
-    if (params.page != null) query.Page = params.page;
-    if (params.pageSize != null) query.PageSize = params.pageSize;
+    let httpParams = new HttpParams().set('BranchId', String(params.branchId));
+    if (params.from) httpParams = httpParams.set('From', params.from);
+    if (params.to) httpParams = httpParams.set('To', params.to);
+    if (params.paymentMethod)
+      httpParams = httpParams.set('PaymentMethod', String(params.paymentMethod));
+    if (params.status) httpParams = httpParams.set('status', params.status);
+    if (params.q) httpParams = httpParams.set('Q', params.q);
+    if (params.page != null) httpParams = httpParams.set('Page', String(params.page));
+    if (params.pageSize != null) httpParams = httpParams.set('PageSize', String(params.pageSize));
 
     return this.http.get(`${this.baseUrl}/api/invoices/list`, {
-      params: query,
+      params: httpParams,
     });
   }
 
@@ -171,7 +172,7 @@ export class ApiService {
       salePrice: number;
       costPerUnit: number;
       isActive: boolean;
-    },
+    }
   ) {
     return this.http.put(`${this.baseUrl}/api/products/Update/${id}`, payload);
   }
@@ -193,7 +194,7 @@ export class ApiService {
   }) {
     return this.http.post(
       `${this.baseUrl}/api/employees/admin/employees/create-user`,
-      payload,
+      payload
     );
   }
 
@@ -205,7 +206,7 @@ export class ApiService {
       age: number;
       isActive: boolean;
       role: number; // 1 worker, 2 cashier
-    },
+    }
   ) {
     return this.http.put(`${this.baseUrl}/api/employees/Update/${id}`, payload);
   }
@@ -234,7 +235,11 @@ export class ApiService {
     });
   }
 
-  getDashboardEmployees(params: { branchId: number; from: string; to: string }) {
+  getDashboardEmployees(params: {
+    branchId: number;
+    from: string;
+    to: string;
+  }) {
     return this.http.get(`${this.baseUrl}/api/dashboard/employees`, {
       params: {
         branchId: String(params.branchId),
@@ -278,7 +283,7 @@ export class ApiService {
       costPerUnit: number;
       chargePerUnit: number;
       isActive: boolean;
-    },
+    }
   ) {
     return this.http.put(`${this.baseUrl}/api/materials/Update/${id}`, payload);
   }
@@ -304,13 +309,13 @@ export class ApiService {
   }) {
     return this.http.post(
       `${this.baseUrl}/api/catalog/services/Create`,
-      payload,
+      payload
     );
   }
 
   deleteCatalogService(id: number) {
     return this.http.delete(
-      `${this.baseUrl}/api/catalog/services/Delete/${id}`,
+      `${this.baseUrl}/api/catalog/services/Delete/${id}`
     );
   }
 
@@ -318,11 +323,11 @@ export class ApiService {
     serviceId: number,
     payload: {
       rates: { bodyType: number; price: number; durationMinutes: number }[];
-    },
+    }
   ) {
     return this.http.put(
       `${this.baseUrl}/api/catalog/services/UpsertRates/${serviceId}/rates`,
-      payload,
+      payload
     );
   }
 
@@ -331,7 +336,7 @@ export class ApiService {
       `${this.baseUrl}/api/employees/${employeeId}/services`,
       {
         serviceIds,
-      },
+      }
     );
   }
 
@@ -350,21 +355,21 @@ export class ApiService {
       `${this.baseUrl}/api/employees/${employeeId}/tasks/GetEmployeeTasks`,
       {
         params: { date },
-      },
+      }
     );
   }
 
   startBookingItem(itemId: number, payload: { employeeId: number }) {
     return this.http.put(
       `${this.baseUrl}/api/booking-items/${itemId}/start`,
-      payload,
+      payload
     );
   }
 
   completeBookingItem(itemId: number, payload: { employeeId: number }) {
     return this.http.put(
       `${this.baseUrl}/api/booking-items/${itemId}/complete`,
-      payload,
+      payload
     );
   }
 
@@ -373,11 +378,11 @@ export class ApiService {
     payload: {
       employeeId: number;
       materials: { materialId: number; actualQty: number }[];
-    },
+    }
   ) {
     return this.http.put(
       `${this.baseUrl}/api/booking-items/${bookingItemId}/materials/requests`,
-      payload,
+      payload
     );
   }
 
@@ -390,29 +395,29 @@ export class ApiService {
   approveMaterialRequest(
     bookingItemId: number,
     requestId: number,
-    payload: { cashierId: number; note: string },
+    payload: { cashierId: number; note: string }
   ) {
     return this.http.post(
       `${this.baseUrl}/api/booking-items/${bookingItemId}/materials/requests/${requestId}/approve`,
-      payload,
+      payload
     );
   }
 
   rejectMaterialRequest(
     bookingItemId: number,
     requestId: number,
-    payload: { cashierId: number; note: string },
+    payload: { cashierId: number; note: string }
   ) {
     return this.http.post(
       `${this.baseUrl}/api/booking-items/${bookingItemId}/materials/requests/${requestId}/reject`,
-      payload,
+      payload
     );
   }
 
   updateBookingServices(payload: any) {
     return this.http.post(
       `${this.baseUrl}/api/bookings/update-services`,
-      payload,
+      payload
     );
   }
 
@@ -422,57 +427,47 @@ export class ApiService {
       cashierId: number;
       serviceId: number;
       assignedEmployeeId: number | null;
-    },
+    }
   ) {
     return this.http.post(
       `${this.baseUrl}/api/bookings-cashier/${bookingId}/services`,
-      payload,
+      payload
     );
   }
 
   startBookingCashier(bookingId: number, payload: { cashierId: number }) {
     return this.http.post(
       `${this.baseUrl}/api/bookings-cashier/${bookingId}/start`,
-      payload,
+      payload
     );
   }
 
   completeBookingCashier(bookingId: number, payload: { cashierId: number }) {
     return this.http.post(
       `${this.baseUrl}/api/bookings-cashier/${bookingId}/complete`,
-      payload,
-    );
-  }
-
-  // you already have this (used to load employees per service)
-getServiceEmployees(serviceId: number, bookingId: number, scheduledStart: string) {
-  return this.http.get(
-    `${this.baseUrl}/api/catalog/services/bookings/${bookingId}/services/${serviceId}/employees`,
-    { params: { scheduledStart } }
-  );
-}
-
-
-
-  createPosInvoice(payload: any) {
-    return this.http.post(
-      `${this.baseUrl}/api/invoices/pos`,
       payload
     );
   }
 
+  // you already have this (used to load employees per service)
+  getServiceEmployees(
+    serviceId: number,
+    bookingId: number,
+    scheduledStart: string
+  ) {
+    return this.http.get(
+      `${this.baseUrl}/api/catalog/services/bookings/${bookingId}/services/${serviceId}/employees`,
+      { params: { scheduledStart } }
+    );
+  }
 
-
-
+  createPosInvoice(payload: any) {
+    return this.http.post(`${this.baseUrl}/api/invoices/pos`, payload);
+  }
 
   cashierCheckout(payload: any) {
     return this.http.post(`${this.baseUrl}/api/cashier/checkout`, payload);
   }
-
-
-
-
-
 
   // cashierCheckout(payload: any) {
   //   return this.http.post(`${this.baseUrl}/api/cashier/checkout`, payload);
@@ -489,12 +484,18 @@ getServiceEmployees(serviceId: number, bookingId: number, scheduledStart: string
   //   return this.http.post(`${this.baseUrl}/api/bookings-cashier/${bookingId}/services`, payload);
   // }
 
-  cancelBookingItemCashier(bookingItemId: number, payload: {
-    cashierId: number;
-    reason?: string;
-    usedOverride?: { materialId: number; actualQty: number }[];
-  }) {
-    return this.http.post(`${this.baseUrl}/api/bookings-cashier/booking-items/${bookingItemId}/cancel`, payload);
+  cancelBookingItemCashier(
+    bookingItemId: number,
+    payload: {
+      cashierId: number;
+      reason?: string;
+      usedOverride?: { materialId: number; actualQty: number }[];
+    }
+  ) {
+    return this.http.post(
+      `${this.baseUrl}/api/bookings-cashier/booking-items/${bookingItemId}/cancel`,
+      payload
+    );
   }
 
   // you already use it elsewhere
@@ -502,12 +503,10 @@ getServiceEmployees(serviceId: number, bookingId: number, scheduledStart: string
   //   return this.http.get(`${this.baseUrl}/api/catalog/services/${serviceId}/employees`);
   // }
 
-
-
-
-
   getBookingServiceOptions(bookingId: number) {
-    return this.http.get(`${this.baseUrl}/api/bookings/${bookingId}/services/options`);
+    return this.http.get(
+      `${this.baseUrl}/api/bookings/${bookingId}/services/options`
+    );
   }
 
   // addServiceToBookingCashier(bookingId: number, payload: {
@@ -529,9 +528,4 @@ getServiceEmployees(serviceId: number, bookingId: number, scheduledStart: string
   // getServiceEmployees(serviceId: number) {
   //   return this.http.get(`${this.baseUrl}/api/catalog/services/${serviceId}/employees`);
   // }
-
-
-
-
-
 }

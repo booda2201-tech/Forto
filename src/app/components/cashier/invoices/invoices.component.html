@@ -24,26 +24,53 @@
         <div class="col-lg-4 col-md-6">
           <input
             type="text"
-            id="searchInput"
             class="form-control custom-input"
             placeholder="رقم الفاتورة، اسم العميل، التليفون..."
-            (input)="onSearch($event)"
+            [(ngModel)]="filterSearch"
+            (ngModelChange)="onSearch($event)"
           />
         </div>
 
         <div class="col-lg-2 col-md-6">
-          <input type="date" id="fromInput" class="form-control custom-input" (change)="onFromChange($event)" />
+          <input
+            type="date"
+            class="form-control custom-input"
+            [(ngModel)]="filterFrom"
+            (ngModelChange)="onFromChange($event)"
+          />
         </div>
 
         <div class="col-lg-2 col-md-6">
-          <input type="date" id="toInput" class="form-control custom-input" (change)="onToChange($event)" />
+          <input
+            type="date"
+            class="form-control custom-input"
+            [(ngModel)]="filterTo"
+            (ngModelChange)="onToChange($event)"
+          />
         </div>
 
         <div class="col-lg-2 col-md-6">
-          <select id="methodInput" class="form-select custom-input" (change)="onMethodChange($event)">
+          <select
+            class="form-select custom-input"
+            [(ngModel)]="filterMethod"
+            (ngModelChange)="onMethodChange($event)"
+          >
             <option value="">كل طرق الدفع</option>
             <option value="1">كاش</option>
             <option value="2">فيزا / ماستر كارد</option>
+          </select>
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <select
+            class="form-select custom-input"
+            [(ngModel)]="filterStatus"
+            (ngModelChange)="onStatusFilterChange($event)"
+          >
+            <option value="">كل الفواتير</option>
+            <option value="unpaid">غير مدفوعة</option>
+            <option value="paid">مدفوعة</option>
+            <option value="cancelled">ملغاة</option>
           </select>
         </div>
 
@@ -67,6 +94,7 @@
               <th class="d-none d-md-table-cell">البنود</th>
               <th>المبلغ</th>
               <th>طريقة الدفع</th>
+              <th>حالة الدفع</th>
               <th class="d-none d-lg-table-cell">التاريخ</th>
               <th>إجراءات</th>
             </tr>
@@ -101,16 +129,30 @@
                 </span>
               </td>
 
+              <td>
+                <span *ngIf="invoice.status === 1" class="badge bg-warning text-dark">غير مدفوعة</span>
+                <span *ngIf="invoice.status === 2" class="badge bg-success">مدفوعة</span>
+                <span *ngIf="invoice.status === 3" class="badge bg-secondary">ملغاة</span>
+              </td>
+
               <td class="small text-muted d-none d-lg-table-cell">
                 {{ invoice.date }}
               </td>
 
               <td>
-                <div class="d-flex justify-content-center gap-2">
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                  <button
+                    *ngIf="invoice.status === 1"
+                    class="btn btn-sm btn-success rounded-3"
+                    (click)="payInvoice(invoice)"
+                    [disabled]="payingInvoiceId !== null"
+                  >
+                    <span *ngIf="payingInvoiceId !== invoice.invoiceId"><i class="bi bi-cash-coin"></i> دفع</span>
+                    <span *ngIf="payingInvoiceId === invoice.invoiceId">جاري...</span>
+                  </button>
                   <button class="btn btn-sm btn-outline-success rounded-3" (click)="exportToExcel(invoice)">
                     <i class="bi bi-file-earmark-excel"></i>
                   </button>
-
                   <button
                     class="btn btn-sm btn-orange text-white rounded-3 shadow-sm"
                     (click)="openInvoice(invoice)"
@@ -124,7 +166,7 @@
             </tr>
 
             <tr *ngIf="((invoices$ | async)?.length || 0) === 0">
-              <td colspan="7" class="py-5 text-muted">
+              <td colspan="8" class="py-5 text-muted">
                 <i class="bi bi-inbox h1 d-block mb-2"></i>
                 لا توجد فواتير مطابقة للبحث
               </td>
@@ -209,6 +251,7 @@
           <div><strong>العميل:</strong> {{ selectedInvoice?.customerName || 'Walk-in' }}</div>
           <div><strong>الهاتف:</strong> {{ selectedInvoice?.phone || '-' }}</div>
           <div><strong>التاريخ:</strong> {{ selectedInvoice?.date }}</div>
+          <div><strong>حالة الدفع:</strong> {{ selectedInvoice ? statusLabel(selectedInvoice.status) : '' }}</div>
         </div>
 
         <!-- Lines table (REAL prices + qty) -->

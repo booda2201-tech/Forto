@@ -918,9 +918,7 @@
 .car-card-hover {
     cursor: pointer;
     transition: all 0.2s ease;
-    background-color: white;
-
-    &:hover {
+    background-color: white;    &:hover {
         background-color: #f8f9fa !important;
     }
 }
