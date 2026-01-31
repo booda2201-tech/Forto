@@ -160,6 +160,13 @@
             (click)="onActivate(customer.id)">
             تفعيل الحجز <i class="bi bi-check2-circle ms-1"></i>
           </button>
+
+          <button *ngIf="currentTab === 'completed'"
+            class="btn btn-success flex-grow-1 text-white fw-bold rounded-15 shadow-sm"
+            (click)="openInvoiceAndPay(customer)"
+            title="تأكيد الدفع وطباعة الفاتورة">
+            <i class="bi bi-receipt me-1"></i> فاتورة / دفع وطباعة
+          </button>
         </div>
 
       </div>
@@ -546,8 +553,8 @@
                         [(ngModel)]="material.materialId"
                         [ngModelOptions]="{ standalone: true }">
                         <option [value]="0" disabled>اختر المادة</option>
-                        <option *ngFor="let mat of allMaterials" [value]="mat.id">
-                          {{ mat.name }}
+                        <option *ngFor="let mat of allMaterials" [value]="$any(mat).materialId ?? $any(mat).id">
+                          {{ $any(mat).materialName ?? $any(mat).name }}
                         </option>
                       </select>
                     </td>

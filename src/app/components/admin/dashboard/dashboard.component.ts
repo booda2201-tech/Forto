@@ -37,29 +37,25 @@ export class DashboardComponent implements OnInit {
   isLoading = false;
   errorMsg = '';
 
-  // keep your placeholders until you get endpoints
-  staffPerformance = [
-    { name: 'أحمد محمد', completedCount: 8, isBusy: true },
-    { name: 'أدهم الشرقاوي', completedCount: 5, isBusy: false },
-    { name: 'محمود كهربا', completedCount: 10, isBusy: true },
-    { name: 'تامر حسني', completedCount: 3, isBusy: false },
-    { name: 'سيد رجب', completedCount: 7, isBusy: true },
-    { name: 'إبراهيم حسن', completedCount: 0, isBusy: false }
-  ];
+  // من API: /api/dashboard/employees
+  dashboardEmployees: { id: number; name: string; count: number; percent: number }[] = [];
+  totalDoneItemsEmployees = 0;
 
-  topServices = [
-    { name: 'غسيل خارجي نانو', count: 45, color: '#ff9800' },
-    { name: 'تلميع صالون كامل', count: 20, color: '#2196f3' },
-    { name: 'غسيل محرك بخار', count: 12, color: '#4caf50' }
-  ];
+  // من API: /api/dashboard/services
+  dashboardServices: { id: number; name: string; count: number; percent: number }[] = [];
+  totalDoneItemsServices = 0;
+
+  // ألوان للخدمات في الـ progress
+  serviceColors = ['#ff9800', '#2196f3', '#4caf50', '#9c27b0', '#00bcd4', '#ff5722'];
 
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
-    // default: today → today
-    const today = this.formatDateYYYYMMDD(new Date());
-    this.fromDate = today;
-    this.toDate = today;
+    // default: أول يوم في الشهر الحالي → اليوم
+    const now = new Date();
+    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    this.fromDate = this.formatDateYYYYMMDD(firstOfMonth);
+    this.toDate = this.formatDateYYYYMMDD(now);
 
     this.loadSummary();
   }
@@ -70,11 +66,13 @@ export class DashboardComponent implements OnInit {
     this.isLoading = true;
     this.errorMsg = '';
 
-    this.api.getDashboardSummary({
+    const params = {
       branchId: this.branchId,
       from: this.fromDate,
       to: this.toDate
-    }).subscribe({
+    };
+
+    this.api.getDashboardSummary(params).subscribe({
       next: (res: any) => {
         this.summary = res?.data ?? null;
         this.isLoading = false;
@@ -84,6 +82,30 @@ export class DashboardComponent implements OnInit {
         this.isLoading = false;
         this.summary = null;
         this.errorMsg = err?.error?.message || 'فشل تحميل بيانات الداشبورد';
+      }
+    });
+
+    this.api.getDashboardServices(params).subscribe({
+      next: (res: any) => {
+        const data = res?.data;
+        this.dashboardServices = data?.items ?? [];
+        this.totalDoneItemsServices = data?.totalDoneItems ?? 0;
+      },
+      error: () => {
+        this.dashboardServices = [];
+        this.totalDoneItemsServices = 0;
+      }
+    });
+
+    this.api.getDashboardEmployees(params).subscribe({
+      next: (res: any) => {
+        const data = res?.data;
+        this.dashboardEmployees = data?.items ?? [];
+        this.totalDoneItemsEmployees = data?.totalDoneItems ?? 0;
+      },
+      error: () => {
+        this.dashboardEmployees = [];
+        this.totalDoneItemsEmployees = 0;
       }
     });
   }
@@ -109,10 +131,13 @@ export class DashboardComponent implements OnInit {
     return Number(this.summary?.materialsConsumeCost ?? 0);
   }
 
+  getServiceColor(index: number): string {
+    return this.serviceColors[index % this.serviceColors.length];
+  }
+
   // helper
   private formatDateYYYYMMDD(d: Date): string {
     const pad = (n: number) => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
-  
 }

@@ -150,27 +150,30 @@
       </div>
     </div>
 
-    <!-- The rest stays as placeholders -->
+    <!-- أداء العمال والخدمات من API -->
     <div class="main-content-grid">
       <div class="forto-card">
-        <h3 class="section-title">أداء العمال (اليوم)</h3>
+        <h3 class="section-title">أداء العمال</h3>
+        <p class="text-muted small mb-2" *ngIf="totalDoneItemsEmployees > 0">
+          إجمالي الخدمات المنفذة: {{ totalDoneItemsEmployees }}
+        </p>
         <div class="table-wrapper">
           <table class="pos-table">
             <thead>
               <tr>
                 <th>العامل</th>
-                <th class="text-center">السيارات</th>
-                <th class="text-left">الحالة</th>
+                <th class="text-center">العدد</th>
+                <th class="text-center">النسبة %</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let staff of staffPerformance">
-                <td><strong>{{ staff.name }}</strong></td>
-                <td class="text-center">{{ staff.completedCount }}</td>
-                <td class="text-left">
-                  <span class="status-dot" [ngClass]="staff.isBusy ? 'busy' : 'available'"></span>
-                  {{ staff.isBusy ? 'مشغول' : 'متاح' }}
-                </td>
+              <tr *ngFor="let emp of dashboardEmployees">
+                <td><strong>{{ emp.name }}</strong></td>
+                <td class="text-center">{{ emp.count }}</td>
+                <td class="text-center">{{ emp.percent | number:'1.1-1' }}%</td>
+              </tr>
+              <tr *ngIf="dashboardEmployees.length === 0 && !isLoading">
+                <td colspan="3" class="text-center text-muted py-3">لا توجد بيانات للفترة المحددة</td>
               </tr>
             </tbody>
           </table>
@@ -179,15 +182,26 @@
 
       <div class="forto-card">
         <h3 class="section-title">الخدمات الأكثر طلباً</h3>
+        <p class="text-muted small mb-2" *ngIf="totalDoneItemsServices > 0">
+          إجمالي الخدمات المنفذة: {{ totalDoneItemsServices }}
+        </p>
         <div class="chart-area py-3">
-          <div *ngFor="let service of topServices" class="mb-3">
+          <div *ngFor="let service of dashboardServices; let i = index" class="mb-3">
             <div class="d-flex justify-content-between mb-1">
               <small>{{ service.name }}</small>
-              <small class="fw-bold">{{ service.count }}</small>
+              <small class="fw-bold">{{ service.count }} ({{ service.percent | number:'1.1-1' }}%)</small>
             </div>
-            <div class="progress" style="height: 8px;">
-              <div class="progress-bar" [style.width.%]="service.count * 2" [style.background-color]="service.color"></div>
+            <div class="progress" style="height: 10px; border-radius: 5px;">
+              <div
+                class="progress-bar"
+                [style.width.%]="service.percent"
+                [style.background-color]="getServiceColor(i)"
+                role="progressbar"
+              ></div>
             </div>
+          </div>
+          <div *ngIf="dashboardServices.length === 0 && !isLoading" class="text-center text-muted py-3">
+            لا توجد بيانات للفترة المحددة
           </div>
         </div>
       </div>

@@ -6,8 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-  private baseUrl = 'https://api.fortolaundry.com';
-  // private baseUrl = 'https://localhost:7179';
+  // private baseUrl = 'https://api.fortolaundry.com';
+  private baseUrl = 'https://localhost:7179';
 
   constructor(private http: HttpClient) { }
 
@@ -224,8 +224,41 @@ export class ApiService {
     });
   }
 
+  getDashboardServices(params: { branchId: number; from: string; to: string }) {
+    return this.http.get(`${this.baseUrl}/api/dashboard/services`, {
+      params: {
+        branchId: String(params.branchId),
+        from: params.from,
+        to: params.to,
+      },
+    });
+  }
+
+  getDashboardEmployees(params: { branchId: number; from: string; to: string }) {
+    return this.http.get(`${this.baseUrl}/api/dashboard/employees`, {
+      params: {
+        branchId: String(params.branchId),
+        from: params.from,
+        to: params.to,
+      },
+    });
+  }
+
   getMaterials() {
     return this.http.get(`${this.baseUrl}/api/materials/GetAll`);
+  }
+
+  getServiceRecipes(serviceId: number, bodyType: number) {
+    return this.http.get(
+      `${this.baseUrl}/api/catalog/services/${serviceId}/recipes/${bodyType}`
+    );
+  }
+
+  payInvoiceCash(invoiceId: number, cashierId: number) {
+    return this.http.post(
+      `${this.baseUrl}/api/invoices/${invoiceId}/pay-cash`,
+      { cashierId }
+    );
   }
 
   createMaterial(payload: {

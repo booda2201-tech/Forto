@@ -38,11 +38,13 @@ type BookingCard = {
   status: 'waiting' | 'active' | 'completed' | 'canceled';
   statusText?: string;
 
-  cars: { carModel?: string; plateNumber?: string }[];
+  cars: { carModel?: string; plateNumber?: string; bodyType?: number }[];
   serviceItem: BookingServiceItem[];
+  bodyType?: number; // فئة السيارة من الـ API
 
-  worker?: string | null; // ✅ add this
-  role?: string | null; // ✅ add this
+  worker?: string | null;
+  role?: string | null;
+  invoiceId?: number | null;
 
   raw?: any;
 };
@@ -76,6 +78,13 @@ type UsedMaterial = {
   materialId: number;
   actualQty: number;
   materialName?: string;
+};
+
+type RecipeMaterialDto = {
+  materialId: number;
+  materialName: string;
+  unit: string;
+  defaultQty: number;
 };
 
 @Component({
@@ -405,6 +414,52 @@ export class ReservationsComponent implements OnInit {
     window.onafterprint = () => document.body.classList.remove('printing-mode');
   }
 
+  /** من الحجوزات المكتملة: تأكيد الدفع ثم عرض الفاتورة للطباعة */
+  openInvoiceAndPay(booking: BookingCard) {
+    const invoiceId = booking.invoiceId ?? (booking.raw as any)?.invoiceId ?? (booking.raw as any)?.invoice?.id;
+    if (!invoiceId) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'لا توجد فاتورة',
+        text: 'هذا الحجز لا يحتوي على رقم فاتورة. تأكد من أن الـ API يرجع invoiceId للحجوزات المكتملة.'
+      });
+      return;
+    }
+    Swal.fire({ title: 'جاري تأكيد الدفع...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+    this.api.payInvoiceCash(invoiceId, this.cashierId).subscribe({
+      next: (res: any) => {
+        const invoiceFromApi = res?.data;
+        this.selectedInvoice = invoiceFromApi ? {
+          id: invoiceFromApi.invoiceId ?? invoiceFromApi.id ?? invoiceId,
+          customerName: invoiceFromApi.customerName ?? booking.customerName,
+          phone: invoiceFromApi.phone ?? booking.phone,
+          cars: invoiceFromApi.cars ?? booking.cars,
+          appointmentDate: invoiceFromApi.date ?? booking.appointmentDate,
+          serviceItem: invoiceFromApi.lines?.map((l: any) => ({ name: l.description, price: l.unitPrice ?? l.total ?? 0 })) ?? booking.serviceItem
+        } : {
+          id: invoiceId,
+          customerName: booking.customerName,
+          phone: booking.phone,
+          cars: booking.cars,
+          appointmentDate: booking.appointmentDate,
+          serviceItem: booking.serviceItem ?? []
+        };
+        Swal.close();
+        const modalEl = document.getElementById('invoiceModal');
+        const modal = new (window as any).bootstrap.Modal(modalEl);
+        modal.show();
+      },
+      error: (err: any) => {
+        console.error(err);
+        Swal.fire({
+          icon: 'error',
+          title: 'فشل تأكيد الدفع',
+          text: err?.error?.message ?? 'تعذر تأكيد دفع الفاتورة.'
+        });
+      }
+    });
+  }
+
   // ===== Mapping =====
   private mapTodayResponseToCards(data: any): BookingCard[] {
     if (!data) return [];
@@ -424,6 +479,7 @@ export class ReservationsComponent implements OnInit {
         }),
       );
 
+      const bodyType = Number(b.bodyType ?? b.car?.bodyType ?? b.carBodyType ?? b.vehicleType ?? 1);
       return {
         id: b.bookingId,
         customerName: b.clientName,
@@ -434,8 +490,10 @@ export class ReservationsComponent implements OnInit {
         createdAt: scheduled,
         status,
         statusText: this.getStatusDisplayName(status),
-        cars: [{ plateNumber: b.plateNumber, carModel: b.carModel || '' }],
+        cars: [{ plateNumber: b.plateNumber, carModel: b.carModel || '', bodyType }],
         serviceItem,
+        bodyType,
+        invoiceId: b.invoiceId ?? b.invoice?.id ?? null,
         raw: b,
       };
     };
@@ -502,11 +560,12 @@ export class ReservationsComponent implements OnInit {
   isLoadingOptions = false;
   
   // Materials for cancel service
-  allMaterials: MaterialDto[] = [];
+  allMaterials: (MaterialDto | RecipeMaterialDto)[] = [];
   isLoadingMaterials = false;
   selectedItemForCancel: any = null;
   usedMaterials: UsedMaterial[] = [];
   cancelServiceReason: string = '';
+  bookingBodyType: number = 1; // من الحجز عند فتح modal التعديل
 
   toggleServiceSelection(svc: any) {
     const id = svc.serviceId;
@@ -593,30 +652,90 @@ export class ReservationsComponent implements OnInit {
     this.usedMaterials = [];
     this.cancelServiceReason = '';
     
-    // Load materials if not loaded
-    if (this.allMaterials.length === 0) {
-      this.loadMaterials();
+    // لو الحجز في قائمة الانتظار: إلغاء مباشر بدون modal المواد
+    if (this.selectedReservationStatus === 'waiting') {
+      const bookingItemId = item.bookingItemId;
+      const payload = {
+        cashierId: this.cashierId,
+        reason: this.cancelServiceReason || '',
+        usedOverride: [] as { materialId: number; actualQty: number }[]
+      };
+      this.api.cancelBookingItemCashier(bookingItemId, payload).subscribe({
+        next: () => {
+          this.inBooking = this.inBooking.filter(x => x.bookingItemId !== bookingItemId);
+          const svcId = item.serviceId;
+          const exists = this.notInBooking.some(x => x.serviceId === svcId);
+          if (!exists) {
+            this.notInBooking.unshift({
+              serviceId: item.serviceId,
+              serviceName: item.serviceName,
+              unitPrice: item.unitPrice ?? null
+            });
+          }
+          this.reloadEditServicesOptions();
+          this.removeServiceFromBookingCardUI(bookingItemId);
+          this.selectedItemForCancel = null;
+          Swal.fire({ icon: 'success', title: 'تم إلغاء الخدمة', timer: 1500, showConfirmButton: false });
+        },
+        error: (err: any) => {
+          console.error(err);
+          Swal.fire('خطأ', err?.error?.message || 'فشل إلغاء الخدمة', 'error');
+        }
+      });
+      return;
     }
     
-    // Open modal
+    // لو الحجز نشط: فتح modal وتحميل مواد الخدمة فقط
+    this.loadServiceMaterials(item.serviceId, this.bookingBodyType);
+    
     const modalElement = document.getElementById('cancelServiceModal');
     const modalInstance = new (window as any).bootstrap.Modal(modalElement);
     modalInstance.show();
   }
   
-  loadMaterials() {
+  /** قيم bodyType للمحاولة بالترتيب (لو الحجز مافيهاش bodyType أو الوصفة فاضية) */
+  private readonly bodyTypesToTry = [2, 1, 3, 4, 5, 6, 7, 99];
+
+  loadServiceMaterials(serviceId: number, bodyType: number) {
     this.isLoadingMaterials = true;
-    this.api.getMaterials().subscribe({
-      next: (res: any) => {
-        this.allMaterials = (res?.data ?? []).filter((m: MaterialDto) => m.isActive);
+    this.allMaterials = [];
+    const orderedTypes = [bodyType, ...this.bodyTypesToTry.filter(bt => bt !== bodyType)];
+    let attempt = 0;
+
+    const tryNext = () => {
+      if (attempt >= orderedTypes.length) {
         this.isLoadingMaterials = false;
-      },
-      error: (err: any) => {
-        console.error(err);
-        this.isLoadingMaterials = false;
-        alert('فشل تحميل المواد');
+        this.allMaterials = [];
+        this.usedMaterials = [];
+        Swal.fire({
+          icon: 'info',
+          title: 'لا توجد وصفة',
+          text: 'لم يتم العثور على مواد لهذه الخدمة. تأكد من وجود recipe للخدمة في الكتالوج.'
+        });
+        return;
       }
-    });
+      const bt = orderedTypes[attempt++];
+      this.api.getServiceRecipes(serviceId, bt).subscribe({
+        next: (res: any) => {
+          const materials = res?.data?.materials ?? [];
+          if (materials.length > 0) {
+            this.allMaterials = materials;
+            this.isLoadingMaterials = false;
+            if (this.usedMaterials.length === 0) {
+              this.usedMaterials = materials.map((m: RecipeMaterialDto) => ({
+                materialId: m.materialId,
+                actualQty: m.defaultQty ?? 0
+              }));
+            }
+            return;
+          }
+          tryNext();
+        },
+        error: () => tryNext()
+      });
+    };
+
+    tryNext();
   }
   
   addMaterialRow() {
@@ -631,8 +750,8 @@ export class ReservationsComponent implements OnInit {
   }
   
   getMaterialName(materialId: number): string {
-    const material = this.allMaterials.find(m => m.id === materialId);
-    return material?.name || '';
+    const material = this.allMaterials.find(m => (m as any).materialId === materialId || (m as any).id === materialId);
+    return (material as any)?.materialName || (material as any)?.name || '';
   }
   
   confirmCancelService() {
@@ -647,7 +766,7 @@ export class ReservationsComponent implements OnInit {
     
     const payload = {
       cashierId: this.cashierId,
-      reason: this.cancelReason || '',
+      reason: this.cancelServiceReason || '',
       usedOverride: validMaterials.map(m => ({
         materialId: m.materialId,
         actualQty: m.actualQty
@@ -782,10 +901,16 @@ export class ReservationsComponent implements OnInit {
 
 
   openEditServicesModal(booking: any) {
-    this.selectedReservationStatus = booking.status; // أو booking.raw?.status
-    // ✅ دي أهم 3 سطور
+    this.selectedReservationStatus = booking.status;
     this.selectedBookingId = booking.id;
     this.selectedReservationId = booking.id;
+    this.bookingBodyType = Number(
+      booking.bodyType ??
+      booking.raw?.bodyType ??
+      booking.raw?.car?.bodyType ??
+      booking.cars?.[0]?.bodyType ??
+      1
+    );
 
     this.selectedBookingScheduledStart =
       booking.raw?.scheduledStart ??
