@@ -13,6 +13,7 @@ import {
 } from 'rxjs';
 import { ApiService } from 'src/app/services/api.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
 import * as XLSX from 'xlsx';
 
 type InvoiceLineUi = {
@@ -142,7 +143,11 @@ export class InvoicesComponent {
     shareReplay(1),
   );
 
-  constructor(private api: ApiService, private auth: AuthService) {}
+  constructor(
+    private api: ApiService,
+    private auth: AuthService,
+    private printInvoice: PrintInvoiceService
+  ) {}
 
   // ---------- UI Handlers (تحديث الـ Subject وإرجاع الصفحة لـ 1) ----------
   onSearch(val: string): void {
@@ -371,7 +376,7 @@ export class InvoicesComponent {
   }
 
   downloadInvoice(): void {
-    setTimeout(() => window.print(), 300);
+    setTimeout(() => this.printInvoice.print(), 100);
   }
 
   exportFilteredToExcel(): void {

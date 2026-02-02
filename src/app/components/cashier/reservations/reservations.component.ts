@@ -17,6 +17,7 @@ import {
 import { catchError } from 'rxjs/operators';
 import { ApiService } from 'src/app/services/api.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
 import Swal from 'sweetalert2';
 import { FormsModule } from '@angular/forms';
 import { NgbAccordionModule } from "@ng-bootstrap/ng-bootstrap";
@@ -172,7 +173,11 @@ export class ReservationsComponent implements OnInit {
 
 
 
-  constructor(private api: ApiService, private auth: AuthService) { }
+  constructor(
+    private api: ApiService,
+    private auth: AuthService,
+    private printInvoice: PrintInvoiceService
+  ) { }
 
   ngOnInit(): void {
     this.loadPaidStatusWhenCompletedShown();
@@ -453,9 +458,7 @@ export class ReservationsComponent implements OnInit {
   }
 
   downloadInvoice() {
-    document.body.classList.add('printing-mode');
-    window.print();
-    window.onafterprint = () => document.body.classList.remove('printing-mode');
+    this.printInvoice.print();
   }
 
   private mapInvoiceToSelected(inv: any, booking: BookingCard, id: number) {

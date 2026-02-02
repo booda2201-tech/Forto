@@ -330,11 +330,10 @@
   }
 
   #printableInvoice {
-    position: fixed !important;
+    position: absolute !important;
     top: 0 !important;
     left: 0 !important;
     width: 100% !important;
-    height: 100vh !important;
     background-color: white !important;
     padding: 1.5cm !important;
     z-index: 999999 !important;

@@ -86,7 +86,7 @@
                 <form (submit)="$event.preventDefault(); createService();">
                   <div class="mb-3">
                     <label class="form-label fw-bold text-dark small">
-                      نوع الخدمة <span class="text-danger">*</span>
+                     الفئات<span class="text-danger">*</span>
                     </label>
 
                     <div class="input-group custom-input-group">
@@ -95,7 +95,7 @@
                       </span>
 
                       <select class="form-select border-1 text-end rounded-2" [(ngModel)]="newService.categoryId" name="categoryId" required>
-                        <option [ngValue]="null" disabled>اختر النوع...</option>
+                        <option [ngValue]="null" disabled>اختر الفئه...</option>
                         <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
                       </select>
                     </div>

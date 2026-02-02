@@ -50,3 +50,29 @@ body{
 .text-orange{
   color: #ffa500;
 }
+
+/* طباعة الفواتير - إظهار محتوى الفاتورة فقط */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  #printableInvoice,
+  #printableInvoice * {
+    visibility: visible !important;
+  }
+  #printableInvoice {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 1.5cm !important;
+    background: white !important;
+    color: black !important;
+    z-index: 999999 !important;
+  }
+  .no-print,
+  .modal-backdrop {
+    display: none !important;
+  }
+}

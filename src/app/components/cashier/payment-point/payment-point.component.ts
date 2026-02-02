@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { ApiService } from 'src/app/services/api.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 // --- Types Definitions ---
@@ -78,7 +79,13 @@ export class PaymentPointComponent implements OnInit {
     appointmentDate: new FormControl('', [Validators.required]),
   });
 
-  constructor(private api: ApiService, private router: Router, private toastr: ToastrService, private auth: AuthService) { }
+  constructor(
+    private api: ApiService,
+    private router: Router,
+    private toastr: ToastrService,
+    private auth: AuthService,
+    private printInvoiceSvc: PrintInvoiceService
+  ) { }
 
   ngOnInit(): void {
 
@@ -505,7 +512,7 @@ submitBooking() {
 
 
   downloadInvoice() {
-    window.print();
+    this.printInvoiceSvc.print();
   }
 
   onlyNumbers(event: any) {
@@ -514,7 +521,7 @@ submitBooking() {
 
 
   printInvoice() {
-    window.print();
+    this.printInvoiceSvc.print();
   }
 
 
