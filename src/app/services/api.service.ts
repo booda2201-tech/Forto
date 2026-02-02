@@ -185,6 +185,15 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/api/employees/GetAll`);
   }
 
+  createEmployee(payload: {
+    name: string;
+    age: number;
+    phoneNumber: string;
+    role: number; // 1 Worker, 2 Cashier, 3 Supervisor, 4 Admin
+  }) {
+    return this.http.post(`${this.baseUrl}/api/employees/Create`, payload);
+  }
+
   createEmployeeUser(payload: {
     name: string;
     age: number;
@@ -321,6 +330,10 @@ export class ApiService {
       `${this.baseUrl}/api/employees/${employeeId}/schedule/Upsert`,
       payload
     );
+  }
+
+  getInvoiceByBooking(bookingId: number) {
+    return this.http.get(`${this.baseUrl}/api/invoices/by-booking/${bookingId}`);
   }
 
   payInvoiceCash(invoiceId: number, cashierId: number) {

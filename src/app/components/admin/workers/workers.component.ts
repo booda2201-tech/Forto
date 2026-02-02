@@ -56,13 +56,12 @@ export class WorkersComponent implements OnInit {
     monthlySalary: 0,
   };
 
-  // create form model (create-user)
+  // create form model (Create API: name, age, phoneNumber, role)
   newWorker = {
     name: '',
     phoneNumber: '',
     age: 0,
     monthlySalary: 0, // UI-only
-    password: '',
     role: 1,
   };
 
@@ -98,50 +97,38 @@ export class WorkersComponent implements OnInit {
     });
   }
 
-  // ---------- CREATE (POST create-user) ----------
+  // ---------- CREATE (POST api/employees/Create) ----------
   saveWorker() {
     const name = (this.newWorker.name || '').trim();
     const phone = (this.newWorker.phoneNumber || '').trim();
     const age = Number(this.newWorker.age ?? 0);
-    const password = String(this.newWorker.password || '').trim();
+    const role = Number(this.newWorker.role ?? 1);
 
-    // 👇 هنا التحويل المهم
-    const role = this.newWorker.role === 2 ? 'Cashier' : 'Worker';
-
-    if (!name || !phone || !password) {
-      alert('يرجى ملء الحقول الأساسية (الاسم، الهاتف، كلمة المرور)');
+    if (!name || !phone) {
+      alert('يرجى ملء الحقول الأساسية (الاسم، الهاتف)');
       return;
     }
 
-    const payload = {
-      name,
-      age,
-      phoneNumber: phone,
-      password,
-      role, // 👈 string دلوقتي
-    };
+    if (age < 16 || age > 80) {
+      alert('العمر يجب أن يكون بين 16 و 80');
+      return;
+    }
 
-    this.api.createEmployeeUser(payload).subscribe({
-      next: (res) => {
-        console.log(res);
-        console.log(payload);
+    const payload = { name, age, phoneNumber: phone, role };
 
+    this.api.createEmployee(payload).subscribe({
+      next: () => {
         alert('تم إضافة العامل بنجاح');
         this.loadWorkers();
-
-        // reset
         this.newWorker = {
           name: '',
           phoneNumber: '',
           age: 0,
           monthlySalary: 0,
-          password: '',
           role: 1,
         };
       },
       error: (err) => {
-        console.log(payload);
-
         console.error(err);
         alert(err?.error?.message || 'فشل إضافة العامل');
       },

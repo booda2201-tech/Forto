@@ -3,13 +3,18 @@ import { CommonModule } from '@angular/common';
 import {
   BehaviorSubject,
   combineLatest,
+  filter,
+  forkJoin,
   map,
   Observable,
+  of,
   shareReplay,
   skip,
   switchMap,
   take,
+  tap,
 } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { ApiService } from 'src/app/services/api.service';
 import Swal from 'sweetalert2';
 import { FormsModule } from '@angular/forms';
@@ -58,13 +63,13 @@ type EmployeeDto = {
   role: number;
 };
 
-type BookingItemUi = {
+type BookingItemUi = {    
   bookingItemId: number;
   serviceId: number;
   serviceName: string;
   status: number;
   assignedEmployeeId?: number | null;
-};
+}; 
 
 type MaterialDto = {
   id: number;
@@ -124,6 +129,7 @@ export class ReservationsComponent implements OnInit {
   currentTab: BookingStatusUi = 'waiting';
   // invoice
   selectedInvoice: any;
+  paidBookingIds: number[] = []; // IDs حجوزات مدفوعة (نحدّثها عند عرض تبويب المكتملة)
   // selected date for display
   selectedDate: string = this.todayYYYYMMDD();
   // ===== Worker modal state =====
@@ -165,7 +171,35 @@ export class ReservationsComponent implements OnInit {
 
   constructor(private api: ApiService) { }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.loadPaidStatusWhenCompletedShown();
+  }
+
+  /** عند عرض الحجوزات المكتملة نجيب حالة الدفع لكل حجز من البداية */
+  private loadPaidStatusWhenCompletedShown(): void {
+    combineLatest([this.filteredBookings$, this.currentTab$]).pipe(
+      filter(([list, tab]) => tab === 'completed' && (list?.length ?? 0) > 0),
+      switchMap(([list]) => {
+        const ids = list.map((b) => b.id);
+        const calls = ids.map((id) =>
+          this.api.getInvoiceByBooking(id).pipe(
+            map((res: any) => {
+              const inv = res?.data ?? res;
+              const paid = inv?.status === 2 || String(inv?.status ?? '').toLowerCase() === 'paid';
+              return { id, paid };
+            }),
+            catchError(() => of({ id, paid: false }))
+          )
+        );
+        return forkJoin(calls).pipe(
+          map((results) => results.filter((r) => r.paid).map((r) => r.id))
+        );
+      }),
+      tap((paidIds) => {
+        this.paidBookingIds = paidIds;
+      })
+    ).subscribe();
+  }
 
   setTab(tab: BookingStatusUi) {
     this.currentTab = tab;
@@ -421,50 +455,138 @@ export class ReservationsComponent implements OnInit {
     window.onafterprint = () => document.body.classList.remove('printing-mode');
   }
 
-  /** من الحجوزات المكتملة: تأكيد الدفع ثم عرض الفاتورة للطباعة */
-  openInvoiceAndPay(booking: BookingCard) {
+  private mapInvoiceToSelected(inv: any, booking: BookingCard, id: number) {
+    return {
+      id: inv?.id ?? id,
+      customerName: inv?.clientName ?? inv?.customerName ?? booking.customerName,
+      phone: inv?.clientNumber ?? inv?.phone ?? booking.phone,
+      cars: inv?.cars ?? booking.cars,
+      appointmentDate: inv?.date ?? booking.appointmentDate,
+      serviceItem: ((inv?.lines ?? inv?.serviceItem ?? booking.serviceItem) ?? []).map((l: any) => ({
+        name: l.description ?? l.name ?? (l as any).serviceName ?? '',
+        price: Number(l.unitPrice ?? l.total ?? l.price ?? (l as any).unitPrice ?? 0),
+      })),
+    };
+  }
+
+  private showInvoiceModal() {
+    const modalEl = document.getElementById('invoiceModal');
+    const modal = new (window as any).bootstrap.Modal(modalEl);
+    modal.show();
+  }
+
+  /** زر عرض الفاتورة فقط (بدون دفع) */
+  openViewInvoice(booking: BookingCard) {
     const invoiceId = booking.invoiceId ?? (booking.raw as any)?.invoiceId ?? (booking.raw as any)?.invoice?.id;
-    if (!invoiceId) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'لا توجد فاتورة',
-        text: 'هذا الحجز لا يحتوي على رقم فاتورة. تأكد من أن الـ API يرجع invoiceId للحجوزات المكتملة.'
+
+    const showInvoice = (inv: any, id: number) => {
+      this.selectedInvoice = this.mapInvoiceToSelected(inv, booking, id);
+      if (inv?.status === 2 || String(inv?.status).toLowerCase() === 'paid') {
+        if (!this.paidBookingIds.includes(booking.id)) {
+          this.paidBookingIds = [...this.paidBookingIds, booking.id];
+        }
+      }
+      this.showInvoiceModal();
+    };
+
+    if (invoiceId) {
+      this.api.getInvoiceByBooking(booking.id).subscribe({
+        next: (res: any) => {
+          const inv = res?.data ?? res;
+          showInvoice(inv, inv?.id ?? invoiceId);
+        },
+        error: () => {
+          this.selectedInvoice = this.mapInvoiceToSelected(null, booking, invoiceId);
+          this.showInvoiceModal();
+        },
       });
       return;
     }
-    Swal.fire({ title: 'جاري تأكيد الدفع...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-    this.api.payInvoiceCash(invoiceId, this.cashierId).subscribe({
+
+    this.api.getInvoiceByBooking(booking.id).subscribe({
       next: (res: any) => {
-        const invoiceFromApi = res?.data;
-        this.selectedInvoice = invoiceFromApi ? {
-          id: invoiceFromApi.invoiceId ?? invoiceFromApi.id ?? invoiceId,
-          customerName: invoiceFromApi.customerName ?? booking.customerName,
-          phone: invoiceFromApi.phone ?? booking.phone,
-          cars: invoiceFromApi.cars ?? booking.cars,
-          appointmentDate: invoiceFromApi.date ?? booking.appointmentDate,
-          serviceItem: invoiceFromApi.lines?.map((l: any) => ({ name: l.description, price: l.unitPrice ?? l.total ?? 0 })) ?? booking.serviceItem
-        } : {
-          id: invoiceId,
-          customerName: booking.customerName,
-          phone: booking.phone,
-          cars: booking.cars,
-          appointmentDate: booking.appointmentDate,
-          serviceItem: booking.serviceItem ?? []
-        };
-        Swal.close();
-        const modalEl = document.getElementById('invoiceModal');
-        const modal = new (window as any).bootstrap.Modal(modalEl);
-        modal.show();
+        const inv = res?.data ?? res;
+        const id = inv?.id ?? inv?.invoiceId;
+        if (id || inv) {
+          showInvoice(inv ?? {}, id ?? 0);
+        } else {
+          Swal.fire({
+            icon: 'warning',
+            title: 'لا توجد فاتورة',
+            text: 'هذا الحجز لا يحتوي على فاتورة بعد.',
+          });
+        }
       },
-      error: (err: any) => {
-        console.error(err);
+      error: () => {
         Swal.fire({
-          icon: 'error',
-          title: 'فشل تأكيد الدفع',
-          text: err?.error?.message ?? 'تعذر تأكيد دفع الفاتورة.'
+          icon: 'warning',
+          title: 'لا توجد فاتورة',
+          text: 'لم يتم العثور على فاتورة لهذا الحجز.',
         });
-      }
+      },
     });
+  }
+
+  /** زر الدفع (أو يظهر مدفوع إذا كانت مدفوعة) */
+  openPayInvoice(booking: BookingCard) {
+    this.api.getInvoiceByBooking(booking.id).subscribe({
+      next: (res: any) => {
+        const inv = res?.data ?? res;
+        const id = inv?.id ?? inv?.invoiceId;
+        const isPaid = inv?.status === 2 || String(inv?.status).toLowerCase() === 'paid';
+
+        if (isPaid) {
+          if (!this.paidBookingIds.includes(booking.id)) {
+            this.paidBookingIds = [...this.paidBookingIds, booking.id];
+          }
+          this.selectedInvoice = this.mapInvoiceToSelected(inv, booking, id ?? 0);
+          this.showInvoiceModal();
+          Swal.fire({ icon: 'info', title: 'مدفوعة', text: 'هذه الفاتورة مدفوعة مسبقاً.', timer: 2000, showConfirmButton: false });
+          return;
+        }
+
+        if (!id) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'لا توجد فاتورة',
+            text: 'هذا الحجز لا يحتوي على فاتورة بعد.',
+          });
+          return;
+        }
+
+        Swal.fire({ title: 'جاري تأكيد الدفع...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        this.api.payInvoiceCash(id, this.cashierId).subscribe({
+          next: (payRes: any) => {
+            const invoiceFromApi = payRes?.data;
+            this.selectedInvoice = this.mapInvoiceToSelected(invoiceFromApi ?? inv, booking, id);
+            if (!this.paidBookingIds.includes(booking.id)) {
+              this.paidBookingIds = [...this.paidBookingIds, booking.id];
+            }
+            Swal.close();
+            this.showInvoiceModal();
+          },
+          error: (err: any) => {
+            console.error(err);
+            Swal.fire({
+              icon: 'error',
+              title: 'فشل تأكيد الدفع',
+              text: err?.error?.message ?? 'تعذر تأكيد دفع الفاتورة.',
+            });
+          },
+        });
+      },
+      error: () => {
+        Swal.fire({
+          icon: 'warning',
+          title: 'لا توجد فاتورة',
+          text: 'لم يتم العثور على فاتورة لهذا الحجز.',
+        });
+      },
+    });
+  }
+
+  isInvoicePaid(bookingId: number): boolean {
+    return this.paidBookingIds.includes(bookingId);
   }
 
   // ===== Mapping =====
