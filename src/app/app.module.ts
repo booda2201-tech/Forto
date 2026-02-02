@@ -35,6 +35,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { PaymentPointComponent } from './components/cashier/payment-point/payment-point.component';
 import { DashboardComponent } from './components/admin/dashboard/dashboard.component';
 import { MaterialsComponent } from './components/admin/materials/materials.component';
+import { ShiftsComponent } from './components/admin/shifts/shifts.component';
 
 @NgModule({
   declarations: [
@@ -55,6 +56,7 @@ import { MaterialsComponent } from './components/admin/materials/materials.compo
     PaymentPointComponent,
     DashboardComponent,
     MaterialsComponent,
+    ShiftsComponent,
   ],
   imports: [
     BrowserModule,

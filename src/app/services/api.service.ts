@@ -259,6 +259,70 @@ export class ApiService {
     );
   }
 
+  upsertServiceRecipe(
+    serviceId: number,
+    bodyType: number,
+    payload: { materials: { materialId: number; defaultQty: number }[] }
+  ) {
+    return this.http.put(
+      `${this.baseUrl}/api/catalog/services/${serviceId}/recipes/${bodyType}`,
+      payload
+    );
+  }
+
+  // Shifts
+  getShiftsAll() {
+    return this.http.get(`${this.baseUrl}/api/shifts/GetAll`);
+  }
+
+  getShiftById(id: number) {
+    return this.http.get(`${this.baseUrl}/api/shifts/GetById/${id}`);
+  }
+
+  createShift(payload: {
+    name: string;
+    startTime: string; // "09:00"
+    endTime: string;
+  }) {
+    return this.http.post(`${this.baseUrl}/api/shifts/Create`, payload);
+  }
+
+  updateShift(
+    id: number,
+    payload: { name: string; startTime: string; endTime: string }
+  ) {
+    return this.http.put(`${this.baseUrl}/api/shifts/Update/${id}`, payload);
+  }
+
+  deleteShift(id: number) {
+    return this.http.delete(`${this.baseUrl}/api/shifts/Delete/${id}`);
+  }
+
+  // Employee Schedule (الشيفت لكل موظف)
+  getEmployeeSchedule(employeeId: number) {
+    return this.http.get(
+      `${this.baseUrl}/api/employees/${employeeId}/schedule/Get`
+    );
+  }
+
+  upsertEmployeeSchedule(
+    employeeId: number,
+    payload: {
+      days: {
+        dayOfWeek: number;
+        isOff: boolean;
+        shiftId: number | null;
+        startTime?: string;
+        endTime?: string;
+      }[];
+    }
+  ) {
+    return this.http.put(
+      `${this.baseUrl}/api/employees/${employeeId}/schedule/Upsert`,
+      payload
+    );
+  }
+
   payInvoiceCash(invoiceId: number, cashierId: number) {
     return this.http.post(
       `${this.baseUrl}/api/invoices/${invoiceId}/pay-cash`,
@@ -425,12 +489,12 @@ export class ApiService {
     bookingId: number,
     payload: {
       cashierId: number;
-      serviceId: number;
+      serviceIds: number[];
       assignedEmployeeId: number | null;
     }
   ) {
     return this.http.post(
-      `${this.baseUrl}/api/bookings-cashier/${bookingId}/services`,
+      `${this.baseUrl}/api/bookings-cashier/${bookingId}/services/bulk`,
       payload
     );
   }

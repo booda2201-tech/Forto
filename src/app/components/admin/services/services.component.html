@@ -55,10 +55,13 @@
                   </div>
 
                   <div class="d-flex gap-2 align-items-center">
+                    <button class="btn btn-action btn-recipe" (click)="openRecipeModal(item); $event.stopPropagation()"
+                      title="الوصفة - المواد والكميات">
+                      <i class="bi bi-cup-hot"></i>
+                    </button>
                     <button class="btn btn-action btn-delete" (click)="deleteService(item.id); $event.stopPropagation()">
                       <i class="bi bi-trash"></i>
                     </button>
-
                     <button class="btn btn-action btn-edit" (click)="openRatesModal(item); $event.stopPropagation()">
                       <i class="bi bi-pencil-square"></i>
                     </button>
@@ -197,6 +200,87 @@
         <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-bold rounded-3"
                 data-bs-dismiss="modal">
           إلغاء
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recipe Modal - وصفة الخدمة (المواد والكميات لكل نوع سيارة) -->
+<div class="modal fade" id="recipeModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">وصفة الخدمة - المواد والكميات</h5>
+        <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4 text-end" *ngIf="selectedRecipeService">
+        <div class="mb-3">
+          <div class="fw-bold">{{ selectedRecipeService.name }}</div>
+          <div class="text-muted small">النوع: {{ categoryName(selectedRecipeService.categoryId) }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">نوع السيارة (Body Type)</label>
+          <select class="form-select" [(ngModel)]="selectedRecipeBodyType" (ngModelChange)="loadRecipeForBodyType()">
+            <option *ngFor="let bt of bodyTypes" [ngValue]="bt.id">{{ bt.label }}</option>
+          </select>
+        </div>
+
+        <div *ngIf="isLoadingRecipe" class="text-muted small">جاري التحميل...</div>
+
+        <div *ngIf="!isLoadingRecipe" class="recipe-materials">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">المواد المطلوبة</h6>
+            <button type="button" class="btn btn-sm btn-outline-orange text-white" (click)="addRecipeRow()">
+              <i class="bi bi-plus"></i> إضافة مادة
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead>
+                <tr class="text-muted small">
+                  <th class="text-end">المادة</th>
+                  <th class="text-center">الكمية</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of recipeRows; let i = index">
+                  <td class="text-end">
+                    <select class="form-select form-select-sm" [(ngModel)]="row.materialId" [ngModelOptions]="{standalone: true}">
+                      <option [ngValue]="0">اختر المادة...</option>
+                      <option *ngFor="let m of allMaterials" [ngValue]="m.id">{{ m.name }}</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input type="number" class="form-control form-control-sm" [(ngModel)]="row.defaultQty"
+                      [ngModelOptions]="{standalone: true}" min="0" step="0.01" placeholder="الكمية">
+                  </td>
+                  <td>
+                    <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeRecipeRow(i)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="recipeRows.length === 0">
+                  <td colspan="3" class="text-muted text-center py-3">لا توجد مواد. اضغط "إضافة مادة"</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-orange px-4 py-2 fw-bold rounded-3"
+          (click)="saveRecipe()" [disabled]="isSavingRecipe">
+          {{ isSavingRecipe ? 'جارٍ الحفظ...' : 'حفظ الوصفة' }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-bold rounded-3" data-bs-dismiss="modal">
+          إغلاق
         </button>
       </div>
     </div>

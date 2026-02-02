@@ -1,0 +1,111 @@
+<div class="contt">
+  <div class="container-fluid mt-4" dir="rtl">
+    <div class="row g-4">
+
+      <!-- LIST -->
+      <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="fw-bold m-0">
+            <i class="bi bi-clock-history me-2 text-orange"></i> الشيفتات
+          </h3>
+          <span class="badge bg-light text-dark fs-6">{{ shifts.length }} شيفت</span>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6" *ngFor="let s of shifts">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                <div class="text-end">
+                  <h6 class="fw-bold mb-1">{{ s.name }}</h6>
+                  <span class="text-muted small">
+                    {{ s.startTime }} – {{ s.endTime }}
+                  </span>
+                </div>
+                <div class="d-flex gap-2">
+                  <button
+                    class="btn btn-sm btn-outline-orange"
+                    (click)="openEditModal(s)"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editShiftModal">
+                    تعديل
+                  </button>
+                  <button
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="deleteShift(s.id)">
+                    حذف
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="shifts.length === 0" class="col-12 text-muted text-center py-5">
+            لا توجد شيفتات. أضف شيفت جديد من النموذج.
+          </div>
+        </div>
+      </div>
+
+      <!-- ADD FORM -->
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 20px;">
+          <div class="card-header bg-orange text-white py-3 border-0 rounded-top-4">
+            <h5 class="mb-0 text-center fw-bold">إضافة شيفت جديد</h5>
+          </div>
+          <div class="card-body p-4 text-end">
+            <div class="mb-3">
+              <label class="form-label small fw-bold">اسم الشيفت *</label>
+              <input type="text" class="form-control" [(ngModel)]="selectedShift.name"
+                placeholder="مثل: شيفت الصباح">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">وقت البداية</label>
+              <input type="time" class="form-control" [(ngModel)]="selectedShift.startTime">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">وقت النهاية</label>
+              <input type="time" class="form-control" [(ngModel)]="selectedShift.endTime">
+            </div>
+            <button
+              class="btn btn-orange w-100 py-2 fw-bold"
+              (click)="createShift()"
+              [disabled]="isSaving || !selectedShift.name?.trim()">
+              {{ isSaving ? 'جارٍ الحفظ...' : 'إضافة الشيفت' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Edit Shift Modal -->
+<div class="modal fade" id="editShiftModal" tabindex="-1" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold">تعديل الشيفت</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4 text-end" *ngIf="editingId">
+        <div class="mb-3">
+          <label class="form-label fw-bold">اسم الشيفت *</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedShift.name">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">وقت البداية</label>
+          <input type="time" class="form-control" [(ngModel)]="selectedShift.startTime">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">وقت النهاية</label>
+          <input type="time" class="form-control" [(ngModel)]="selectedShift.endTime">
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-orange px-4" (click)="updateShift()" [disabled]="isSaving">
+          {{ isSaving ? 'جارٍ...' : 'حفظ' }}
+        </button>
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -20,6 +20,7 @@ import { WorkersComponent } from './components/admin/workers/workers.component';
 import { PaymentPointComponent } from './components/cashier/payment-point/payment-point.component';
 import { DashboardComponent } from './components/admin/dashboard/dashboard.component';
 import { MaterialsComponent } from './components/admin/materials/materials.component';
+import { ShiftsComponent } from './components/admin/shifts/shifts.component';
 
 
 
@@ -36,6 +37,7 @@ const routes: Routes = [
       { path: 'requests', component: RequestsComponent, data: { title: 'الطلبات' } },
       { path: 'services', component: ServicesComponent, data: { title: 'الخدمات' } },
       { path: 'materials', component: MaterialsComponent, data: { title: 'المواد' } },
+      { path: 'shifts', component: ShiftsComponent, data: { title: 'الشيفتات' } },
       { path: 'dashboard', component: DashboardComponent, data: { title: 'لوحة التحكم' } },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
     ],

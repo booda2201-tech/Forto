@@ -57,6 +57,14 @@ export class ServicesComponent implements OnInit {
   selectedService: ServiceCardVm | null = null;
   ratesForm!: FormGroup;
 
+  // Recipe modal
+  selectedRecipeService: ServiceCardVm | null = null;
+  selectedRecipeBodyType = 1;
+  recipeRows: { materialId: number; defaultQty: number }[] = [];
+  allMaterials: { id: number; name: string }[] = [];
+  isLoadingRecipe = false;
+  isSavingRecipe = false;
+
   // BodyTypes list (adjust labels as you like)
   bodyTypes = [
     { id: 1, label: 'Sedan' },
@@ -76,6 +84,18 @@ export class ServicesComponent implements OnInit {
   ngOnInit(): void {
     this.initRatesForm();
     this.loadCategories();
+    this.loadMaterials();
+  }
+
+  private loadMaterials(): void {
+    this.api.getMaterials().subscribe({
+      next: (res: any) => {
+        const data = res?.data ?? [];
+        this.allMaterials = data
+          .filter((m: any) => m.isActive !== false)
+          .map((m: any) => ({ id: m.id, name: m.name ?? '' }));
+      },
+    });
   }
 
   private initRatesForm(): void {
@@ -298,5 +318,94 @@ export class ServicesComponent implements OnInit {
         this.isSaving = false;
       },
     });
+  }
+
+  // ---------------------------
+  // Recipe modal
+  // ---------------------------
+  openRecipeModal(card: ServiceCardVm): void {
+    this.selectedRecipeService = card;
+    this.selectedRecipeBodyType = this.bodyTypes[0]?.id ?? 1;
+    this.recipeRows = [];
+    this.loadRecipeForBodyType();
+
+    const el = document.getElementById('recipeModal');
+    const modal = new (window as any).bootstrap.Modal(el);
+    modal.show();
+  }
+
+  loadRecipeForBodyType(): void {
+    if (!this.selectedRecipeService) return;
+
+    this.isLoadingRecipe = true;
+    this.api
+      .getServiceRecipes(this.selectedRecipeService.id, this.selectedRecipeBodyType)
+      .subscribe({
+        next: (res: any) => {
+          const data = res?.data ?? res;
+          const materials = data?.materials ?? [];
+          this.recipeRows = materials.map((m: any) => ({
+            materialId: Number(m.materialId ?? m.material_id ?? 0),
+            defaultQty: Number(m.defaultQty ?? m.default_qty ?? 0),
+          }));
+          if (this.recipeRows.length === 0) {
+            this.recipeRows = [{ materialId: 0, defaultQty: 0 }];
+          }
+          this.isLoadingRecipe = false;
+        },
+        error: () => {
+          this.recipeRows = [{ materialId: 0, defaultQty: 0 }];
+          this.isLoadingRecipe = false;
+        },
+      });
+  }
+
+  addRecipeRow(): void {
+    this.recipeRows.push({ materialId: 0, defaultQty: 0 });
+  }
+
+  removeRecipeRow(index: number): void {
+    this.recipeRows.splice(index, 1);
+  }
+
+  saveRecipe(): void {
+    if (!this.selectedRecipeService) return;
+
+    const validRows = this.recipeRows.filter(
+      (r) => r.materialId > 0 && r.defaultQty > 0
+    );
+    if (validRows.length === 0) {
+      alert('أضف مادة واحدة على الأقل مع كمية');
+      return;
+    }
+
+    this.isSavingRecipe = true;
+    const payload = {
+      materials: validRows.map((r) => ({
+        materialId: r.materialId,
+        defaultQty: r.defaultQty,
+      })),
+    };
+
+    this.api
+      .upsertServiceRecipe(
+        this.selectedRecipeService.id,
+        this.selectedRecipeBodyType,
+        payload
+      )
+      .subscribe({
+        next: () => {
+          this.isSavingRecipe = false;
+          alert('تم حفظ الوصفة بنجاح');
+          const el = document.getElementById('recipeModal');
+          const modal = (window as any).bootstrap.Modal.getInstance(el);
+          modal?.hide();
+        },
+        error: (err) => {
+          console.error(err);
+          this.isSavingRecipe = false;
+          alert(err?.error?.message || 'فشل حفظ الوصفة');
+        },
+      });
   }
 }

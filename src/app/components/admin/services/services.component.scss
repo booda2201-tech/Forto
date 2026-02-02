@@ -166,12 +166,26 @@ h3{
   color: #fff;
 }
 
+.btn-recipe {
+  background-color: #0d6efd;
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 18px;
+}
+
 .btn-delete{
   background-color: #000000;
   color: #fff;
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 18px;
+}
+
+.btn-outline-orange {
+  border-color: #ff9a27;
+  color: #ff9a27;
+  &:hover { background-color: #ff9a27; color: #fff; }
 }
 
 .bbtn{

@@ -6,6 +6,7 @@ import {
   map,
   Observable,
   shareReplay,
+  skip,
   switchMap,
   take,
 } from 'rxjs';
@@ -114,8 +115,8 @@ export class ReservationsComponent implements OnInit {
   serviceEmployees: Record<number, any[]> = {};    // serviceId -> employees list
   serviceEmployeeMap: Record<number, number> = {}; // serviceId -> selected employeeId
   isSavingEdit = false;
-  // refresh trigger
-  private refresh$ = new BehaviorSubject<void>(undefined);
+  // refresh trigger (رقم متزايد عشان كل refresh يطلق طلب جديد)
+  private refresh$ = new BehaviorSubject<number>(0);
   // date
   private date$ = new BehaviorSubject<string>(this.todayYYYYMMDD());
   // current tab
@@ -172,7 +173,13 @@ export class ReservationsComponent implements OnInit {
   }
 
   refresh() {
-    this.refresh$.next();
+    this.refresh$.next(this.refresh$.value + 1);
+  }
+
+  /** يعمل refresh وينتظر لحد ما البيانات الجديدة تتحمل عشان السعر يتحدث */
+  refreshAndWait(): Observable<BookingCard[]> {
+    this.refresh();
+    return this.bookings$.pipe(skip(1), take(1));
   }
 
   onDateChange(event: any) {
@@ -676,6 +683,7 @@ export class ReservationsComponent implements OnInit {
           this.removeServiceFromBookingCardUI(bookingItemId);
           this.selectedItemForCancel = null;
           Swal.fire({ icon: 'success', title: 'تم إلغاء الخدمة', timer: 1500, showConfirmButton: false });
+          this.refresh();
         },
         error: (err: any) => {
           console.error(err);
@@ -789,24 +797,41 @@ export class ReservationsComponent implements OnInit {
         // ✅ reload options from server to ensure correct lists
         this.reloadEditServicesOptions();
 
-        // ✅ update main bookings UI instantly too
+        // ✅ reload options and update UI
+        this.reloadEditServicesOptions();
         this.removeServiceFromBookingCardUI(bookingItemId);
 
-        // Close modal
-        const modalElement = document.getElementById('cancelServiceModal');
-        const modalInstance = (window as any).bootstrap.Modal.getInstance(modalElement);
-        modalInstance?.hide();
-        
-        // Reset
-        this.selectedItemForCancel = null;
-        this.usedMaterials = [];
-        this.cancelServiceReason = '';
-
-        Swal.fire({
-          icon: 'success',
-          title: 'تم إلغاء الخدمة',
-          timer: 1500,
-          showConfirmButton: false,
+        // تحديث القائمة والسعر من السيرفر — ننتظر لحد ما التحديث يخلص عشان السعر يظهر صح
+        this.refreshAndWait().subscribe({
+          next: () => {
+            const modalElement = document.getElementById('cancelServiceModal');
+            const modalInstance = (window as any).bootstrap.Modal.getInstance(modalElement);
+            modalInstance?.hide();
+            this.selectedItemForCancel = null;
+            this.usedMaterials = [];
+            this.cancelServiceReason = '';
+            Swal.fire({
+              icon: 'success',
+              title: 'تم إلغاء الخدمة',
+              timer: 1500,
+              showConfirmButton: false,
+            });
+          },
+          error: () => {
+            // حتى لو الـ refresh فشل نغلق المودال
+            const modalElement = document.getElementById('cancelServiceModal');
+            const modalInstance = (window as any).bootstrap.Modal.getInstance(modalElement);
+            modalInstance?.hide();
+            this.selectedItemForCancel = null;
+            this.usedMaterials = [];
+            this.cancelServiceReason = '';
+            Swal.fire({
+              icon: 'success',
+              title: 'تم إلغاء الخدمة',
+              timer: 1500,
+              showConfirmButton: false,
+            });
+          }
         });
       },
       error: (err: any) => {
@@ -859,24 +884,19 @@ export class ReservationsComponent implements OnInit {
 
     this.isSavingEdit = true;
 
-    const calls = Array.from(this.addSelection).map(serviceId =>
-      this.api.addServiceToBookingCashier(bookingId, {
-        cashierId: this.cashierId,
-        serviceId,
-        assignedEmployeeId: this.isPendingBooking ? null : this.serviceEmployeeMap[serviceId]
-      })
-    );
+    const serviceIds = Array.from(this.addSelection);
+    // الباك‌إند يقبل موظف واحد لكل الخدمات؛ لو الخدمات مختلفة الموظفين نستخدم أول واحد
+    const assignedEmployeeId = this.isPendingBooking
+      ? null
+      : serviceIds.length > 0
+        ? this.serviceEmployeeMap[serviceIds[0]]
+        : null;
 
-    import('rxjs').then(({ forkJoin }) => {
-      console.log('calling addServiceToBookingCashier with:', {
-        bookingId,
-        calls: Array.from(this.addSelection).map(serviceId => ({
-          serviceId,
-          assignedEmployeeId: this.serviceEmployeeMap[serviceId]
-        }))
-      });
-
-      forkJoin(calls).subscribe({
+    this.api.addServiceToBookingCashier(bookingId, {
+      cashierId: this.cashierId,
+      serviceIds,
+      assignedEmployeeId
+    }).subscribe({
         next: () => {
           this.isSavingEdit = false;
           alert('تم إضافة الخدمات');
@@ -893,7 +913,6 @@ export class ReservationsComponent implements OnInit {
           this.isSavingEdit = false;
           alert(err?.error?.message || 'فشل إضافة الخدمات');
         }
-      });
     });
   }
 

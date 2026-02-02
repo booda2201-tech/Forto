@@ -1,0 +1,28 @@
+.contt {
+  background: linear-gradient(to left, #f8f9fa);
+  padding: 20px;
+}
+
+.text-orange {
+  color: #ff9a27 !important;
+}
+
+.btn-orange {
+  background-color: #ff9a27;
+  color: #fff;
+  border: none;
+  &:hover {
+    background-color: #e6891f;
+    color: #fff;
+  }
+}
+
+.btn-outline-orange {
+  border-color: #ff9a27;
+  color: #ff9a27;
+  &:hover {
+    background-color: #ff9a27;
+    color: #fff;
+    border-color: #ff9a27;
+  }
+}

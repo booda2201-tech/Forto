@@ -65,6 +65,14 @@
                     </button>
 
                     <button
+                      class="btn btn-outline-info"
+                      (click)="openScheduleModal(worker)"
+                      title="جدول الشيفت"
+                    >
+                      <i class="bi bi-clock-history"></i>
+                    </button>
+
+                    <button
                       class="btn btn-action-delete"
                       (click)="deleteWorker(worker.id)"
                     >
@@ -319,6 +327,82 @@
           class="btn btn-outline-secondary px-4 py-2 fw-bold rounded-3"
           data-bs-dismiss="modal"
         >
+          إلغاء
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule / Shift Modal -->
+<div class="modal fade" id="scheduleModal" tabindex="-1" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">جدول الشيفت - {{ scheduleEmployeeName }}</h5>
+        <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4 text-end">
+        <div *ngIf="isLoadingSchedule" class="text-muted">جاري التحميل...</div>
+        <div *ngIf="!isLoadingSchedule" class="table-responsive">
+          <p class="text-muted small mb-3">إما تختار شيفت محدد أو تكتب وقت البداية والنهاية يدوياً</p>
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr class="text-muted small">
+                <th class="text-end">اليوم</th>
+                <th class="text-center">إجازة</th>
+                <th class="text-center">النوع</th>
+                <th class="text-end">الشيفت / وقت مخصص</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let d of scheduleDays; let i = index">
+                <td class="text-end fw-bold">{{ d.dayName }}</td>
+                <td class="text-center">
+                  <input type="checkbox" class="form-check-input" [(ngModel)]="d.isOff" [ngModelOptions]="{standalone: true}"
+                    (ngModelChange)="onScheduleDayOffChange(d)">
+                </td>
+                <td class="text-center">
+                  <div class="d-flex gap-3 justify-content-center" *ngIf="!d.isOff">
+                    <label class="form-check-label small cursor-pointer">
+                      <input type="radio" class="form-check-input" [name]="'type' + i"
+                        [checked]="d.useShift" (change)="d.useShift=true; onScheduleUseShiftChange(d)">
+                      شيفت
+                    </label>
+                    <label class="form-check-label small cursor-pointer">
+                      <input type="radio" class="form-check-input" [name]="'type' + i"
+                        [checked]="!d.useShift" (change)="d.useShift=false; onScheduleUseShiftChange(d)">
+                      وقت مخصص
+                    </label>
+                  </div>
+                  <span *ngIf="d.isOff" class="text-muted">-</span>
+                </td>
+                <td>
+                  <ng-container *ngIf="!d.isOff">
+                    <select *ngIf="d.useShift" class="form-select form-select-sm" [(ngModel)]="d.shiftId" [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="onShiftSelected(d)">
+                      <option [ngValue]="null">اختر الشيفت...</option>
+                      <option *ngFor="let sh of allShifts" [ngValue]="sh.id">{{ sh.name }} ({{ sh.startTime }}-{{ sh.endTime }})</option>
+                    </select>
+                    <div *ngIf="!d.useShift" class="d-flex gap-2 align-items-center">
+                      <input type="time" class="form-control form-control-sm" [(ngModel)]="d.startTime" [ngModelOptions]="{standalone: true}" placeholder="البداية">
+                      <span class="small">إلى</span>
+                      <input type="time" class="form-control form-control-sm" [(ngModel)]="d.endTime" [ngModelOptions]="{standalone: true}" placeholder="النهاية">
+                    </div>
+                  </ng-container>
+                  <span *ngIf="d.isOff" class="text-muted">-</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-orange px-4 py-2 fw-bold rounded-3"
+          (click)="saveSchedule()" [disabled]="isSavingSchedule">
+          {{ isSavingSchedule ? 'جارٍ الحفظ...' : 'حفظ الجدول' }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-bold rounded-3" data-bs-dismiss="modal">
           إلغاء
         </button>
       </div>

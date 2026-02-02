@@ -27,6 +27,24 @@ export class WorkersComponent implements OnInit {
   isLoadingServices = false;
   isSavingServices = false;
 
+  // ===== Schedule / Shift state =====
+  scheduleEmployeeId: number | null = null;
+  scheduleEmployeeName = '';
+  scheduleDays: {
+    dayOfWeek: number;
+    dayName: string;
+    isOff: boolean;
+    useShift: boolean; // إما شيفت محدد أو وقت مخصص
+    shiftId: number | null;
+    startTime: string;
+    endTime: string;
+  }[] = [];
+  allShifts: { id: number; name: string; startTime: string; endTime: string }[] = [];
+  isLoadingSchedule = false;
+  isSavingSchedule = false;
+
+  dayNames = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+
   // edit modal model
   selectedWorker: EmployeeUi = {
     id: 0,
@@ -266,11 +284,155 @@ export class WorkersComponent implements OnInit {
       modal?.hide();
     },
     error: (err: any) => {
-      console.error(err);
-      this.isSavingServices = false;
-      alert(err?.error?.message || 'فشل حفظ خدمات العامل');
+        console.error(err);
+        this.isSavingServices = false;
+        alert(err?.error?.message || 'فشل حفظ خدمات العامل');
     }
   });
 }
 
+  // ---------- Schedule / Shift ----------
+  openScheduleModal(worker: EmployeeUi) {
+    this.scheduleEmployeeId = worker.id;
+    this.scheduleEmployeeName = worker.name;
+    this.scheduleDays = this.dayNames.map((name, i) => ({
+      dayOfWeek: i,
+      dayName: name,
+      isOff: true,
+      useShift: true,
+      shiftId: null as number | null,
+      startTime: '09:00',
+      endTime: '17:00',
+    }));
+
+    this.api.getShiftsAll().subscribe({
+      next: (res: any) => {
+        const data = res?.data ?? res ?? [];
+        this.allShifts = (Array.isArray(data) ? data : []).map((s: any) => ({
+          id: s.id,
+          name: s.name ?? '',
+          startTime: this.formatTimeForDisplay(s.startTime),
+          endTime: this.formatTimeForDisplay(s.endTime),
+        }));
+        this.loadEmployeeSchedule();
+      },
+    });
+
+    const el = document.getElementById('scheduleModal');
+    const modal = new (window as any).bootstrap.Modal(el);
+    modal.show();
+  }
+
+
+  private formatTimeForDisplay(t: any): string {
+    if (!t) return '09:00';
+    if (typeof t === 'string') {
+      const m = t.match(/^(\d{1,2}):(\d{2})/);
+      return m ? `${m[1].padStart(2, '0')}:${m[2]}` : '09:00';
+    }
+    if (t.hours != null && t.minutes != null) {
+      return `${String(t.hours).padStart(2, '0')}:${String(t.minutes).padStart(2, '0')}`;
+    }
+    return '09:00';
+  }
+
+  private loadEmployeeSchedule() {
+    if (!this.scheduleEmployeeId) return;
+
+    this.isLoadingSchedule = true;
+    this.api.getEmployeeSchedule(this.scheduleEmployeeId).subscribe({
+      next: (res: any) => {
+        const data = res?.data ?? res;
+        const days = data?.days ?? [];
+        this.scheduleDays = this.dayNames.map((name, i) => {
+          const found = days.find((d: any) => d.dayOfWeek === i);
+          const hasShift = found?.shiftId != null && found?.shiftId > 0;
+          const shift = hasShift ? this.allShifts.find(s => s.id === found.shiftId) : null;
+          return {
+            dayOfWeek: i,
+            dayName: name,
+            isOff: found?.isOff ?? true,
+            useShift: hasShift,
+            shiftId: found?.shiftId ?? null,
+            startTime: shift?.startTime ?? this.formatTimeForDisplay(found?.startTime) ?? '09:00',
+            endTime: shift?.endTime ?? this.formatTimeForDisplay(found?.endTime) ?? '17:00',
+          };
+        });
+        this.isLoadingSchedule = false;
+      },
+      error: () => {
+        this.isLoadingSchedule = false;
+      },
+    });
+  }
+
+  onScheduleDayOffChange(d: { isOff: boolean; shiftId: number | null }) {
+    if (d.isOff) d.shiftId = null;
+  }
+
+  onScheduleUseShiftChange(d: { useShift: boolean; shiftId: number | null; startTime: string; endTime: string }) {
+    if (!d.useShift) {
+      d.shiftId = null;
+      d.startTime = d.startTime || '09:00';
+      d.endTime = d.endTime || '17:00';
+    }
+  }
+
+  onShiftSelected(d: { shiftId: number | null; startTime: string; endTime: string }) {
+    if (d.shiftId) {
+      const sh = this.allShifts.find(s => s.id === d.shiftId);
+      if (sh) {
+        d.startTime = sh.startTime;
+        d.endTime = sh.endTime;
+      }
+    }
+  }
+
+  saveSchedule() {
+    if (!this.scheduleEmployeeId) return;
+
+    const invalid = this.scheduleDays.find(
+      (d) =>
+        !d.isOff &&
+        ((d.useShift && !d.shiftId) || (!d.useShift && (!d.startTime || !d.endTime)))
+    );
+    if (invalid) {
+      alert(`اليوم ${invalid.dayName}: اختر شيفت أو أدخل وقت البداية والنهاية`);
+      return;
+    }
+
+    this.isSavingSchedule = true;
+    const payload = {
+      days: this.scheduleDays.map((d) => {
+        if (d.isOff) {
+          return { dayOfWeek: d.dayOfWeek, isOff: true, shiftId: null, startTime: undefined, endTime: undefined };
+        }
+        if (d.useShift && d.shiftId) {
+          return { dayOfWeek: d.dayOfWeek, isOff: false, shiftId: d.shiftId, startTime: undefined, endTime: undefined };
+        }
+        return {
+          dayOfWeek: d.dayOfWeek,
+          isOff: false,
+          shiftId: null,
+          startTime: d.startTime || '09:00',
+          endTime: d.endTime || '17:00',
+        };
+      }),
+    };
+
+    this.api.upsertEmployeeSchedule(this.scheduleEmployeeId, payload).subscribe({
+      next: () => {
+        this.isSavingSchedule = false;
+        alert('تم حفظ جدول الشيفت بنجاح');
+        const el = document.getElementById('scheduleModal');
+        const modal = (window as any).bootstrap.Modal.getInstance(el);
+        modal?.hide();
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.isSavingSchedule = false;
+        alert(err?.error?.message || 'فشل حفظ جدول الشيفت');
+      },
+    });
+  }
 }
