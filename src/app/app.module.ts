@@ -31,7 +31,8 @@ import { MessagesComponent } from './components/cashier/messages/messages.compon
 import { NotificationService } from './services/notification.service';
 import { ProductsComponent } from './components/admin/products/products.component';
 import { WorkersComponent } from './components/admin/workers/workers.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { PaymentPointComponent } from './components/cashier/payment-point/payment-point.component';
 import { DashboardComponent } from './components/admin/dashboard/dashboard.component';
 import { MaterialsComponent } from './components/admin/materials/materials.component';
@@ -71,6 +72,7 @@ import { ShiftsComponent } from './components/admin/shifts/shifts.component';
   ],
   providers: [
     NotificationService,
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     provideAnimations(),
     provideToastr({
       timeOut: 3000,

@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { ApiService } from 'src/app/services/api.service';
+import { AuthService } from 'src/app/services/auth.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 // --- Types Definitions ---
@@ -19,7 +20,9 @@ export class PaymentPointComponent implements OnInit {
   // Config
   activeTab: 'new-order' | 'quick-booking' = 'new-order';
   branchId = 1;
-  cashierId = 5;
+  get cashierId(): number {
+    return this.auth.getEmployeeId() ?? 5;
+  }
   isSubmitting = false;
 
   // Products & Cart Logic
@@ -72,7 +75,7 @@ export class PaymentPointComponent implements OnInit {
     appointmentDate: new FormControl('', [Validators.required]),
   });
 
-  constructor(private api: ApiService, private router: Router, private toastr: ToastrService) { }
+  constructor(private api: ApiService, private router: Router, private toastr: ToastrService, private auth: AuthService) { }
 
   ngOnInit(): void {
 

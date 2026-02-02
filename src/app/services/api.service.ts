@@ -11,6 +11,16 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
+  signin(payload: { phoneNumber: string; password: string }) {
+    return this.http.post<{
+      token: string;
+      role: string;
+      phoneNumber: string;
+      fullName: string;
+      employeeId: number;
+    }>(`${this.baseUrl}/api/auth/signin`, payload);
+  }
+
   getAllServices(categoryId: number = 4): Observable<any> {
     return this.http.get(
       `${this.baseUrl}/api/catalog/services/GetAll?categoryId=${categoryId}`

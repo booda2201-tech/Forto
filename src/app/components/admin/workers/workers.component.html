@@ -133,7 +133,6 @@
                 <label class="form-label small fw-bold">
                   <i class="bi bi-diagram-3-fill text-orange mx-1"></i> الدور *
                 </label>
-
                 <select
                   class="form-select pos-input"
                   [(ngModel)]="newWorker.role"
@@ -142,6 +141,19 @@
                     {{ r.label }}
                   </option>
                 </select>
+              </div>
+
+              <div class="mb-3 text-end" *ngIf="newWorker.role === 2">
+                <label class="form-label small fw-bold">
+                  <i class="bi bi-lock-fill text-orange mx-1"></i> كلمة المرور *
+                  <span class="text-muted small">(للكاشير فقط)</span>
+                </label>
+                <input
+                  type="password"
+                  class="form-control pos-input"
+                  placeholder="********"
+                  [(ngModel)]="newWorker.password"
+                />
               </div>
 
               <button

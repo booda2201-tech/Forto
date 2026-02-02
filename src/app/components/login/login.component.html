@@ -6,16 +6,16 @@
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="text-center">
 
       <div class="mb-3">
-        <label class="form-label text-white fw-normal d-flex justify-content-start">البريد الالكتروني أو رقم الهاتف</label>
+        <label class="form-label text-white fw-normal d-flex justify-content-start">رقم الهاتف</label>
         <input
           type="text"
-          formControlName="userData"
+          formControlName="phoneNumber"
           class="form-control"
-          placeholder="forto@email.com">
+          placeholder="01xxxxxxxx">
       </div>
 
       <div class="mb-1">
-        <label class="form-label text-white fw-normal d-flex justify-content-start">كلمه السر</label>
+        <label class="form-label text-white fw-normal d-flex justify-content-start">كلمة السر</label>
         <input
           type="password"
           formControlName="password"
@@ -23,11 +23,15 @@
           placeholder="********">
       </div>
 
+      <div *ngIf="errorMessage" class="alert alert-danger text-start small py-2">
+        {{ errorMessage }}
+      </div>
+
       <button
         type="submit"
-        [disabled]="loginForm.invalid"
+        [disabled]="loginForm.invalid || isSubmitting"
         class="btn main-btn m-auto mt-4">
-        <span class="fw-normal">تسجيل الدخول</span>
+        <span class="fw-normal">{{ isSubmitting ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول' }}</span>
       </button>
 
     </form>

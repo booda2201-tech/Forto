@@ -6,17 +6,29 @@ import { AuthService } from '../services/auth.service';
   providedIn: 'root'
 })
 export class RoleGuard implements CanActivate {
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private auth: AuthService, private router: Router) {}
 
-canActivate(route: ActivatedRouteSnapshot): boolean {
-  const expectedRole = route.data['expectedRole'];
-  const currentRole = localStorage.getItem('userRole');
+  canActivate(route: ActivatedRouteSnapshot): boolean {
+    const expectedRole = String(route.data['expectedRole'] || '').toLowerCase();
+    const currentRole = (this.auth.getRole() || '').toLowerCase();
 
-  if (currentRole !== expectedRole) {
-    this.router.navigate(['/login']);
-    return false;
+    if (!currentRole) {
+      this.router.navigate(['/login']);
+      return false;
+    }
+
+    if (currentRole !== expectedRole) {
+      if (currentRole === 'admin') {
+        this.router.navigate(['/admin/services']);
+      } else if (currentRole === 'cashier') {
+        this.router.navigate(['/cashier/reservations']);
+      } else if (currentRole === 'worker') {
+        this.router.navigate(['/worker-page']);
+      } else {
+        this.router.navigate(['/login']);
+      }
+      return false;
+    }
+    return true;
   }
-  return true;
-}
-
 }

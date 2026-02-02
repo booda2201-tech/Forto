@@ -22,11 +22,14 @@ export class NavbarComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  getRoleDisplayName(role: string | null): string {
+  getDisplayName(): string {
+    const name = this.authService.getFullName();
+    if (name) return name;
+    const role = this.authService.getRole();
     if (!role) return 'زائر';
-    if (role === 'admin') return 'أحمد';
-    if (role === 'cashier') return 'محمد';
-    if (role === 'worker') return 'على';
+    if (role === 'admin') return 'المدير';
+    if (role === 'cashier') return 'كاشير';
+    if (role === 'worker') return 'عامل';
     return 'زائر';
   }
 

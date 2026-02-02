@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -10,33 +9,43 @@ import { Router } from '@angular/router';
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
-  constructor(private authService: AuthService, private router: Router) {}
+  isSubmitting = false;
+  errorMessage = '';
+
+  constructor(private authService: AuthService) {}
+
   ngOnInit() {
     this.loginForm = new FormGroup({
-      userData: new FormControl('', [Validators.required, Validators.minLength(3)]),
-      password: new FormControl('', [Validators.required, Validators.minLength(6)])
+      phoneNumber: new FormControl('', [Validators.required, Validators.minLength(10)]),
+      password: new FormControl('', [Validators.required, Validators.minLength(1)])
     });
   }
 
+  onSubmit() {
+    if (this.loginForm.invalid || this.isSubmitting) return;
 
-onSubmit() {
-  if (this.loginForm.valid) {
-    const email = this.loginForm.value.userData || '';
-    let roleName: string;
+    const phoneNumber = (this.loginForm.value.phoneNumber || '').trim();
+    const password = (this.loginForm.value.password || '').trim();
 
-    if (email.includes('admin')) {
-      roleName = 'admin';
-    } else if (email.includes('cashier')) {
-      roleName = 'cashier';
-    } else {
-      roleName = 'worker';
-    }
+    this.isSubmitting = true;
+    this.errorMessage = '';
 
-    this.authService.login(roleName);
-  }
-}
-  isButtonDisabled(): boolean {
-    return this.loginForm.invalid;
+    this.authService.login(phoneNumber, password).subscribe({
+      next: (res: any) => {
+        const data = res?.data ?? res;
+        this.authService.setUser({
+          token: data.token ?? '',
+          role: data.role ?? 'worker',
+          fullName: data.fullName ?? '',
+          employeeId: Number(data.employeeId ?? 0)
+        });
+        this.isSubmitting = false;
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.errorMessage = err?.error?.message ?? 'رقم الهاتف أو كلمة المرور غير صحيحة';
+      }
+    });
   }
 }
 

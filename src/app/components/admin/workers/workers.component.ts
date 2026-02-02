@@ -56,13 +56,14 @@ export class WorkersComponent implements OnInit {
     monthlySalary: 0,
   };
 
-  // create form model (Create API: name, age, phoneNumber, role)
+  // create form: Worker = Create API, Cashier = create-user API (يتطلب password)
   newWorker = {
     name: '',
     phoneNumber: '',
     age: 0,
     monthlySalary: 0, // UI-only
     role: 1,
+    password: '', // مطلوب للكاشير فقط
   };
 
   roles = [
@@ -97,12 +98,15 @@ export class WorkersComponent implements OnInit {
     });
   }
 
-  // ---------- CREATE (POST api/employees/Create) ----------
+  // ---------- CREATE ----------
+  // Worker → POST api/employees/Create (name, age, phoneNumber, role)
+  // Cashier → POST api/employees/admin/employees/create-user (name, age, phoneNumber, password, role)
   saveWorker() {
     const name = (this.newWorker.name || '').trim();
     const phone = (this.newWorker.phoneNumber || '').trim();
     const age = Number(this.newWorker.age ?? 0);
     const role = Number(this.newWorker.role ?? 1);
+    const password = (this.newWorker.password || '').trim();
 
     if (!name || !phone) {
       alert('يرجى ملء الحقول الأساسية (الاسم، الهاتف)');
@@ -114,25 +118,50 @@ export class WorkersComponent implements OnInit {
       return;
     }
 
-    const payload = { name, age, phoneNumber: phone, role };
+    if (role === 2 && !password) {
+      alert('كلمة المرور مطلوبة للكاشير');
+      return;
+    }
 
-    this.api.createEmployee(payload).subscribe({
-      next: () => {
-        alert('تم إضافة العامل بنجاح');
-        this.loadWorkers();
-        this.newWorker = {
-          name: '',
-          phoneNumber: '',
-          age: 0,
-          monthlySalary: 0,
-          role: 1,
-        };
-      },
-      error: (err) => {
-        console.error(err);
-        alert(err?.error?.message || 'فشل إضافة العامل');
-      },
-    });
+    const resetForm = () => {
+      this.newWorker = {
+        name: '',
+        phoneNumber: '',
+        age: 0,
+        monthlySalary: 0,
+        role: 1,
+        password: '',
+      };
+    };
+
+    if (role === 2) {
+      // Cashier: create-user
+      const roleStr = 'Cashier';
+      this.api.createEmployeeUser({ name, age, phoneNumber: phone, password, role: roleStr }).subscribe({
+        next: () => {
+          alert('تم إضافة الكاشير بنجاح');
+          this.loadWorkers();
+          resetForm();
+        },
+        error: (err) => {
+          console.error(err);
+          alert(err?.error?.message || 'فشل إضافة الكاشير');
+        },
+      });
+    } else {
+      // Worker: Create
+      this.api.createEmployee({ name, age, phoneNumber: phone, role }).subscribe({
+        next: () => {
+          alert('تم إضافة العامل بنجاح');
+          this.loadWorkers();
+          resetForm();
+        },
+        error: (err) => {
+          console.error(err);
+          alert(err?.error?.message || 'فشل إضافة العامل');
+        },
+      });
+    }
   }
 
   // ---------- DELETE ----------

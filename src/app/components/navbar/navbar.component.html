@@ -61,7 +61,7 @@
     <ul class="nav-links" [class.active]="isMenuOpen" *ngIf="{ role: userRole$ | async } as data">
 
       <li class="welcome-msg" style="color: #4a4a4a; padding: 0 15px; font-weight: bold;">
-          مرحباً، {{ getRoleDisplayName(data.role) }}
+          مرحباً، {{ getDisplayName() }}
       </li>
 
       <ng-container *ngIf="data.role === 'admin'">

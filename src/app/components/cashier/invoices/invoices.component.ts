@@ -12,6 +12,7 @@ import {
   tap,
 } from 'rxjs';
 import { ApiService } from 'src/app/services/api.service';
+import { AuthService } from 'src/app/services/auth.service';
 import * as XLSX from 'xlsx';
 
 type InvoiceLineUi = {
@@ -52,7 +53,9 @@ export class InvoicesComponent {
   selectedInvoice: InvoiceUi | null = null;
 
   branchId = 1;
-  cashierId = 5; // للدفع من صفحة الفواتير
+  get cashierId(): number {
+    return this.auth.getEmployeeId() ?? 5;
+  }
 
   totalInvoicesCount = 0;
   totalDailyAmount = 0;
@@ -139,7 +142,7 @@ export class InvoicesComponent {
     shareReplay(1),
   );
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private auth: AuthService) {}
 
   // ---------- UI Handlers (تحديث الـ Subject وإرجاع الصفحة لـ 1) ----------
   onSearch(val: string): void {

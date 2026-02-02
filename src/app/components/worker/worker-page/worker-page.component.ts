@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from 'src/app/services/api.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-worker-page',
@@ -7,7 +8,9 @@ import { ApiService } from 'src/app/services/api.service';
   styleUrls: ['./worker-page.component.scss'],
 })
 export class WorkerPageComponent implements OnInit {
-  employeeId = 1; // العامل الحالي
+  get employeeId(): number {
+    return this.auth.getEmployeeId() ?? 1;
+  }
   selectedDate = this.today();
 
   availableTasks: any[] = []; // ✅ متاح
@@ -19,7 +22,7 @@ export class WorkerPageComponent implements OnInit {
 
   selectedTask: any = null;
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private auth: AuthService) {}
 
   ngOnInit(): void {
     this.loadTasks();

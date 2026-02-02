@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from 'src/app/services/api.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 type PendingMaterialRequest = {
   requestId: number;
@@ -26,14 +27,16 @@ type PendingMaterialRequest = {
 export class MessagesComponent implements OnInit {
 
   branchId = 1;
-  cashierId = 5; // ✅ حطي cashierId الحقيقي
+  get cashierId(): number {
+    return this.auth.getEmployeeId() ?? 5;
+  }
   selectedDate = this.todayYYYYMMDD();
 
   isLoading = false;
 
   pendingRequests: PendingMaterialRequest[] = [];
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private auth: AuthService) {}
 
   ngOnInit(): void {
     this.loadRequests();

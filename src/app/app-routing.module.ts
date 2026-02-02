@@ -30,7 +30,8 @@ const routes: Routes = [
   {
     path: 'admin',
     component: HomeComponent,
-    data: { title: 'لوحة الأدمن' },
+    canActivate: [RoleGuard],
+    data: { title: 'لوحة الأدمن', expectedRole: 'admin' },
     children: [
       { path: 'products', component: ProductsComponent, data: { title: 'المنتجات' } },
       { path: 'workers', component: WorkersComponent, data: { title: 'العمال' } },
@@ -45,7 +46,8 @@ const routes: Routes = [
   {
     path: 'cashier',
     component: CashierPageComponent,
-    data: { title: 'الكاشير' },
+    canActivate: [RoleGuard],
+    data: { title: 'الكاشير', expectedRole: 'cashier' },
     children: [
       { path: 'order-info', component: OrderInformationComponent, data: { title: 'معلومات الطلب' } },
       { path: 'pay-point', component: PaymentPointComponent, data: { title: 'نقطة الدفع' } },
@@ -59,7 +61,8 @@ const routes: Routes = [
     ],
   },
 
-  // { path: 'worker-page', component: WorkerPageComponent },
+  { path: 'worker-page', component: WorkerPageComponent, canActivate: [RoleGuard], data: { title: 'مهام العامل', expectedRole: 'worker' } },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
 ];
 
 @NgModule({

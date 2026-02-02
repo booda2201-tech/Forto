@@ -16,6 +16,7 @@ import {
 } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ApiService } from 'src/app/services/api.service';
+import { AuthService } from 'src/app/services/auth.service';
 import Swal from 'sweetalert2';
 import { FormsModule } from '@angular/forms';
 import { NgbAccordionModule } from "@ng-bootstrap/ng-bootstrap";
@@ -107,7 +108,9 @@ export class ReservationsComponent implements OnInit {
   allAvailableServices: any[] = [];
   editingBookingPlateNumber: string = '';
   // ✅ لازم تظبطه لقيمة الكاشير الحقيقي
-  cashierId = 5;
+  get cashierId(): number {
+    return this.auth.getEmployeeId() ?? 5;
+  }
   selectedCancelBookingId: number | null = null;
   usedOverride: { materialId: number; actualQty: number }[] = [];
   assignments: {
@@ -169,7 +172,7 @@ export class ReservationsComponent implements OnInit {
 
 
 
-  constructor(private api: ApiService) { }
+  constructor(private api: ApiService, private auth: AuthService) { }
 
   ngOnInit(): void {
     this.loadPaidStatusWhenCompletedShown();
