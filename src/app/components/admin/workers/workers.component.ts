@@ -67,8 +67,9 @@ export class WorkersComponent implements OnInit {
   };
 
   roles = [
-    { id: 1, label: 'Worker' },
-    { id: 2, label: 'Cashier' },
+    { id: 1, label: 'عامل (Worker)' },
+    { id: 2, label: 'كاشير (Cashier)' },
+    { id: 3, label: 'مشرف (Supervisor)' },
   ];
 
   constructor(private api: ApiService) {}
@@ -135,7 +136,7 @@ export class WorkersComponent implements OnInit {
     };
 
     if (role === 2) {
-      // Cashier: create-user
+      // Cashier: create-user (يتطلب password)
       const roleStr = 'Cashier';
       this.api.createEmployeeUser({ name, age, phoneNumber: phone, password, role: roleStr }).subscribe({
         next: () => {
@@ -149,10 +150,10 @@ export class WorkersComponent implements OnInit {
         },
       });
     } else {
-      // Worker: Create
+      // Worker أو Supervisor: Create API
       this.api.createEmployee({ name, age, phoneNumber: phone, role }).subscribe({
         next: () => {
-          alert('تم إضافة العامل بنجاح');
+          alert(role === 3 ? 'تم إضافة المشرف بنجاح' : 'تم إضافة العامل بنجاح');
           this.loadWorkers();
           resetForm();
         },

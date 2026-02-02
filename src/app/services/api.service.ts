@@ -195,6 +195,10 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/api/employees/GetAll`);
   }
 
+  getSupervisors() {
+    return this.http.get(`${this.baseUrl}/api/employees/supervisors`);
+  }
+
   createEmployee(payload: {
     name: string;
     age: number;

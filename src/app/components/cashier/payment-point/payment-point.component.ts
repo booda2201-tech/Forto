@@ -23,6 +23,9 @@ export class PaymentPointComponent implements OnInit {
   get cashierId(): number {
     return this.auth.getEmployeeId() ?? 5;
   }
+  supervisors: { id: number; name: string }[] = [];
+  selectedSupervisorId: number | null = null;
+  showSupervisorError = false; // يظهر عند محاولة التأكيد بدون اختيار المشرف
   isSubmitting = false;
 
   // Products & Cart Logic
@@ -84,7 +87,21 @@ export class PaymentPointComponent implements OnInit {
 
     this.loadProducts();
     this.loadServices();
+    this.loadSupervisors();
     this.setupFormListeners();
+  }
+
+  private loadSupervisors() {
+    this.api.getSupervisors().subscribe({
+      next: (res: any) => {
+        const data = res?.data ?? res ?? [];
+        this.supervisors = (Array.isArray(data) ? data : []).map((s: any) => ({
+          id: s.id,
+          name: s.name ?? ''
+        }));
+      },
+      error: () => this.supervisors = []
+    });
   }
 
   // --- Core Data Loading ---
@@ -293,6 +310,13 @@ submitBooking() {
     }
   }
 
+  if (!this.selectedSupervisorId) {
+    this.showSupervisorError = true;
+    this.toastr.warning('يجب اختيار المشرف قبل التأكيد', 'تنبيه');
+    return;
+  }
+
+  this.showSupervisorError = false;
   const v = this.customerForm.value;
 
   // Use current time rounded to the hour (e.g., 9:30 -> 9:00:00)
@@ -304,7 +328,7 @@ submitBooking() {
   const bodyType = Number(v.carCategory);
   const { brand, model, year } = this.parseBrandModelYear(String(v.carType ?? ''));
 
-  const payload = {
+  const payload: any = {
     branchId: this.branchId,
     cashierId: this.cashierId,
     scheduledStart,
@@ -338,6 +362,7 @@ submitBooking() {
 
     notes: ''
   };
+  payload.supervisorId = this.selectedSupervisorId;
 
   // Save customer data before submitting
   this.customerFormData = {
@@ -368,6 +393,8 @@ submitBooking() {
       this.selectedServices = [];
       this.serviceEmployeeMap = {};
       this.serviceEmployees = {};
+      this.selectedSupervisorId = null;
+      this.showSupervisorError = false;
       this.customerForm.reset({ appointmentDate: this.todayYYYYMMDD() });
       this.customerFormData = null;
     },
