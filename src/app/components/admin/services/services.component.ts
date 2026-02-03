@@ -65,6 +65,15 @@ export class ServicesComponent implements OnInit {
   isLoadingRecipe = false;
   isSavingRecipe = false;
 
+  // Gift modal (هدايا الخدمة)
+  selectedGiftService: ServiceCardVm | null = null;
+  giftOptions: { productId: number; productName: string; sku?: string; availableQty?: number }[] = [];
+  allProducts: { id: number; name: string; sku?: string }[] = [];
+  giftProductToAdd = 0;
+  isLoadingGifts = false;
+  isSavingGift = false;
+  branchId = 1;
+
   // BodyTypes list (adjust labels as you like)
   bodyTypes = [
     { id: 1, label: 'Sedan' },
@@ -85,6 +94,20 @@ export class ServicesComponent implements OnInit {
     this.initRatesForm();
     this.loadCategories();
     this.loadMaterials();
+    this.loadProducts();
+  }
+
+  private loadProducts(): void {
+    this.api.getProducts().subscribe({
+      next: (res: any) => {
+        const data = res?.data ?? [];
+        this.allProducts = (Array.isArray(data) ? data : []).map((p: any) => ({
+          id: p.id,
+          name: p.name ?? '',
+          sku: p.sku
+        }));
+      },
+    });
   }
 
   private loadMaterials(): void {
@@ -407,5 +430,83 @@ export class ServicesComponent implements OnInit {
           alert(err?.error?.message || 'فشل حفظ الوصفة');
         },
       });
+  }
+
+  // ---------------------------
+  // Gift modal (هدايا الخدمة)
+  // ---------------------------
+  openGiftModal(card: ServiceCardVm): void {
+    this.selectedGiftService = card;
+    this.giftOptions = [];
+    this.giftProductToAdd = 0;
+    this.loadGiftOptions();
+
+    const el = document.getElementById('giftModal');
+    const modal = new (window as any).bootstrap.Modal(el);
+    modal.show();
+  }
+
+  loadGiftOptions(): void {
+    if (!this.selectedGiftService) return;
+
+    this.isLoadingGifts = true;
+    this.api.getGiftOptions([this.selectedGiftService.id], this.branchId).subscribe({
+      next: (res: any) => {
+        const data = res?.data ?? res;
+        const opts = data?.options ?? [];
+        this.giftOptions = (Array.isArray(opts) ? opts : []).map((o: any) => ({
+          productId: o.productId ?? o.product_id ?? 0,
+          productName: o.productName ?? o.name ?? '',
+          sku: o.sku,
+          availableQty: o.availableQty
+        }));
+        this.isLoadingGifts = false;
+      },
+      error: () => {
+        this.giftOptions = [];
+        this.isLoadingGifts = false;
+      },
+    });
+  }
+
+  addGiftProduct(): void {
+    if (!this.selectedGiftService || !this.giftProductToAdd) return;
+    if (this.giftOptions.some((g) => g.productId === this.giftProductToAdd)) {
+      alert('المنتج مضاف مسبقاً');
+      return;
+    }
+
+    this.isSavingGift = true;
+    this.api.addGiftOptions(this.selectedGiftService.id, [this.giftProductToAdd]).subscribe({
+      next: () => {
+        this.isSavingGift = false;
+        this.giftProductToAdd = 0;
+        this.loadGiftOptions();
+      },
+      error: (err) => {
+        this.isSavingGift = false;
+        alert(err?.error?.message || 'فشل إضافة الهدية');
+      },
+    });
+  }
+
+  isProductInGiftOptions(productId: number): boolean {
+    return this.giftOptions.some((g) => g.productId === productId);
+  }
+
+  removeGiftProduct(productId: number): void {
+    if (!this.selectedGiftService) return;
+
+    this.isSavingGift = true;
+    this.api.removeGiftOptions(this.selectedGiftService.id, [productId]).subscribe({
+      next: () => {
+        this.isSavingGift = false;
+        this.loadGiftOptions();
+      },
+      error: (err) => {
+        this.isSavingGift = false;
+        alert(err?.error?.message || 'فشل حذف الهدية');
+      },
+    });
   }
 }

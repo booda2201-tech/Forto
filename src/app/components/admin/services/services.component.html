@@ -55,9 +55,14 @@
                   </div>
 
                   <div class="d-flex gap-2 align-items-center">
+                    <button class="btn btn-action btn-recipe" (click)="openGiftModal(item); $event.stopPropagation()"
+                      title="الهدايا - إضافة/حذف هدايا للخدمة">
+                      <i class="bi bi-gift"></i>
+                    </button>
                     <button class="btn btn-action btn-recipe" (click)="openRecipeModal(item); $event.stopPropagation()"
                       title="الوصفة - المواد والكميات">
-                      <i class="bi bi-cup-hot"></i>
+                      <!-- <i class="bi bi-cup-hot"></i> -->
+                       <i class="fa-solid fa-recycle"></i>
                     </button>
                     <button class="btn btn-action btn-delete" (click)="deleteService(item.id); $event.stopPropagation()">
                       <i class="bi bi-trash"></i>
@@ -282,6 +287,56 @@
         <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-bold rounded-3" data-bs-dismiss="modal">
           إغلاق
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Gift Modal - هدايا الخدمة -->
+<div class="modal fade" id="giftModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold"><i class="bi bi-gift me-2"></i> هدايا الخدمة</h5>
+        <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4 text-end" *ngIf="selectedGiftService">
+        <div class="mb-3">
+          <div class="fw-bold">{{ selectedGiftService.name }}</div>
+          <div class="text-muted small">إضافة أو حذف منتجات كهدايا لهذه الخدمة</div>
+        </div>
+
+        <div *ngIf="isLoadingGifts" class="text-muted small">جاري التحميل...</div>
+
+        <div *ngIf="!isLoadingGifts">
+          <div class="d-flex gap-2 align-items-center mb-3">
+            <select class="form-select" [(ngModel)]="giftProductToAdd">
+              <option [ngValue]="0">اختر منتج للإضافة...</option>
+              <option *ngFor="let p of allProducts" [ngValue]="p.id"
+                [disabled]="isProductInGiftOptions(p.id)">
+                {{ p.name }} {{ p.sku ? '(' + p.sku + ')' : '' }}
+              </option>
+            </select>
+            <button type="button" class="btn btn-orange btn-sm" (click)="addGiftProduct()"
+              [disabled]="!giftProductToAdd || isSavingGift">
+              <i class="bi bi-plus"></i> إضافة
+            </button>
+          </div>
+
+          <div class="list-group">
+            <div *ngFor="let g of giftOptions" class="list-group-item d-flex justify-content-between align-items-center">
+              <span>{{ g.productName }} <small class="text-muted" *ngIf="g.sku">({{ g.sku }})</small></span>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeGiftProduct(g.productId)"
+                [disabled]="isSavingGift">
+                <i class="bi bi-trash"></i> حذف
+              </button>
+            </div>
+            <div *ngIf="giftOptions.length === 0" class="text-muted text-center py-3 small">
+              لا توجد هدايا مضافة. اختر منتج واضغط "إضافة"
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

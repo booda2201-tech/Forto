@@ -21,6 +21,7 @@ import { PaymentPointComponent } from './components/cashier/payment-point/paymen
 import { DashboardComponent } from './components/admin/dashboard/dashboard.component';
 import { MaterialsComponent } from './components/admin/materials/materials.component';
 import { ShiftsComponent } from './components/admin/shifts/shifts.component';
+import { EmployeesReportComponent } from './components/admin/employees-report/employees-report.component';
 
 
 
@@ -40,6 +41,7 @@ const routes: Routes = [
       { path: 'materials', component: MaterialsComponent, data: { title: 'المواد' } },
       { path: 'shifts', component: ShiftsComponent, data: { title: 'الشيفتات' } },
       { path: 'dashboard', component: DashboardComponent, data: { title: 'لوحة التحكم' } },
+      { path: 'employees-report', component: EmployeesReportComponent, data: { title: 'تقرير الموظفين' } },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
     ],
   },

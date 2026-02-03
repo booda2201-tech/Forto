@@ -108,6 +108,7 @@ export class DashboardComponent implements OnInit {
         this.totalDoneItemsEmployees = 0;
       }
     });
+
   }
 
   // KPIs for UI

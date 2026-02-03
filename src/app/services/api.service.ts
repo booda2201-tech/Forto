@@ -6,8 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-  private baseUrl = 'https://api.fortolaundry.com';
-  // private baseUrl = 'https://localhost:7179';
+  // private baseUrl = 'https://api.fortolaundry.com';
+  private baseUrl = 'https://localhost:7179';
 
   constructor(private http: HttpClient) {}
 
@@ -272,6 +272,24 @@ export class ApiService {
     });
   }
 
+  getDashboardEmployeesWithServices(params: {
+    branchId: number;
+    from: string;
+    to: string;
+    role?: number | null;
+  }) {
+    let httpParams = new HttpParams()
+      .set('branchId', String(params.branchId))
+      .set('from', params.from)
+      .set('to', params.to);
+    if (params.role != null && params.role > 0) {
+      httpParams = httpParams.set('role', String(params.role));
+    }
+    return this.http.get(`${this.baseUrl}/api/dashboard/employees-with-services`, {
+      params: httpParams,
+    });
+  }
+
   getMaterials() {
     return this.http.get(`${this.baseUrl}/api/materials/GetAll`);
   }
@@ -290,6 +308,40 @@ export class ApiService {
     return this.http.put(
       `${this.baseUrl}/api/catalog/services/${serviceId}/recipes/${bodyType}`,
       payload
+    );
+  }
+
+  // Gift Options (هدايا الخدمات)
+  getGiftOptions(serviceIds: number[], branchId: number) {
+    const params = new HttpParams()
+      .set('serviceIds', serviceIds.join(','))
+      .set('branchId', String(branchId));
+    return this.http.get(`${this.baseUrl}/api/catalog/services/gift-options`, { params });
+  }
+
+  addGiftOptions(serviceId: number, productIds: number[]) {
+    return this.http.post(
+      `${this.baseUrl}/api/catalog/services/${serviceId}/gift-options`,
+      { productIds }
+    );
+  }
+
+  removeGiftOptions(serviceId: number, productIds: number[]) {
+    return this.http.request('DELETE',
+      `${this.baseUrl}/api/catalog/services/${serviceId}/gift-options`,
+      { body: { productIds } }
+    );
+  }
+
+  selectGiftForInvoice(invoiceId: number, payload: {
+    cashierId: number;
+    productId: number;
+    occurredAt?: string;
+    notes?: string;
+  }) {
+    return this.http.post(
+      `${this.baseUrl}/api/invoices/${invoiceId}/gift/select`,
+      { ...payload, occurredAt: payload.occurredAt ?? new Date().toISOString() }
     );
   }
 

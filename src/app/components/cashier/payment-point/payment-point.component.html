@@ -261,7 +261,25 @@
           </div>
 
 
-          <div class="card-head d-flex align-items-center justify-content-start">
+          <div class="card-head d-flex align-items-center justify-content-start" *ngIf="giftOptions.length > 0">
+            <div class="card-head-title fs-4">
+              <i class="bi bi-gift text-orange"></i>
+              اختر هدية واحدة (اختياري)
+            </div>
+          </div>
+
+          <div class="services-grid mt-2" *ngIf="giftOptions.length > 0">
+            <div *ngFor="let g of giftOptions" class="service-card" [class.selected-active]="isGiftSelected(g.productId)"
+              (click)="toggleGift(g.productId)">
+              <div class="service-name">{{ g.productName }}</div>
+              <small class="text-muted" *ngIf="g.availableQty != null">متاح: {{ g.availableQty }}</small>
+              <div class="check-mark" *ngIf="isGiftSelected(g.productId)">
+                <i class="bi bi-check-circle-fill"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-head d-flex align-items-center justify-content-start mt-3">
             <div class="card-head-title fs-4">
               <i class="bi bi-bag-fill text-orange"></i>
               اختر المنتجات
@@ -304,7 +322,7 @@
           <button type="button" class="btn-cancel" (click)="customerForm.reset()">
             إلغاء
           </button>
-          <button type="submit" class="btn-save">تأكيد الحجز</button>
+          <button type="submit" class="btn-save">تأكيد الدفع</button>
         </div>
       </div>
     </form>

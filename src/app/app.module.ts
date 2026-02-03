@@ -33,10 +33,12 @@ import { ProductsComponent } from './components/admin/products/products.componen
 import { WorkersComponent } from './components/admin/workers/workers.component';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { PaymentPointComponent } from './components/cashier/payment-point/payment-point.component';
 import { DashboardComponent } from './components/admin/dashboard/dashboard.component';
 import { MaterialsComponent } from './components/admin/materials/materials.component';
 import { ShiftsComponent } from './components/admin/shifts/shifts.component';
+import { EmployeesReportComponent } from './components/admin/employees-report/employees-report.component';
 
 @NgModule({
   declarations: [
@@ -58,6 +60,7 @@ import { ShiftsComponent } from './components/admin/shifts/shifts.component';
     DashboardComponent,
     MaterialsComponent,
     ShiftsComponent,
+    EmployeesReportComponent,
   ],
   imports: [
     BrowserModule,
@@ -73,6 +76,7 @@ import { ShiftsComponent } from './components/admin/shifts/shifts.component';
   providers: [
     NotificationService,
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     provideAnimations(),
     provideToastr({
       timeOut: 3000,

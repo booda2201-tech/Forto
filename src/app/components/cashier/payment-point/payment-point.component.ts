@@ -41,6 +41,11 @@ export class PaymentPointComponent implements OnInit {
   selectedSlotHour: string | null = null;
   isSlotsLoading = false;
 
+  // Gifts (هدايا)
+  giftOptions: { productId: number; productName: string; sku?: string; availableQty?: number }[] = [];
+  selectedGiftIds: number[] = [];
+  isLoadingGifts = false;
+
   // Pricing & Invoice Data
   totalPrice = 0; // عرض السعر المباشر
   subTotal = 0;
@@ -142,6 +147,8 @@ export class PaymentPointComponent implements OnInit {
       this.totalPrice = 0;
       this.serviceEmployeeMap = {};
       this.serviceEmployees = {};
+      this.giftOptions = [];
+      this.selectedGiftIds = [];
 
       if (!bodyType || Number.isNaN(bodyType)) {
         this.services = [];
@@ -232,7 +239,49 @@ toggleService(service: ServiceCardVm, event: any) {
     delete this.serviceEmployees[service.id];
   }
 
+  this.loadGiftOptions();
   this.calculateTotal();
+}
+
+private loadGiftOptions() {
+  const ids = this.selectedServices.map(s => s.id);
+  if (ids.length === 0) {
+    this.giftOptions = [];
+    this.selectedGiftIds = [];
+    return;
+  }
+  this.isLoadingGifts = true;
+  this.api.getGiftOptions(ids, this.branchId).subscribe({
+    next: (res: any) => {
+      const data = res?.data ?? res;
+      const opts = data?.options ?? [];
+      this.giftOptions = (Array.isArray(opts) ? opts : []).map((o: any) => ({
+        productId: o.productId ?? o.product_id ?? 0,
+        productName: o.productName ?? o.name ?? '',
+        sku: o.sku,
+        availableQty: o.availableQty
+      }));
+      this.selectedGiftIds = [];
+      this.isLoadingGifts = false;
+    },
+    error: () => {
+      this.giftOptions = [];
+      this.isLoadingGifts = false;
+    }
+  });
+}
+
+toggleGift(productId: number) {
+  // هدية واحدة فقط
+  if (this.selectedGiftIds.includes(productId)) {
+    this.selectedGiftIds = [];
+  } else {
+    this.selectedGiftIds = [productId];
+  }
+}
+
+isGiftSelected(productId: number): boolean {
+  return this.selectedGiftIds.includes(productId);
 }
 
 
@@ -362,6 +411,10 @@ submitBooking() {
       employeeId: this.serviceEmployeeMap[s.id]
     })),
 
+    gifts: this.selectedGiftIds.length > 0
+      ? [{ productId: this.selectedGiftIds[0] }]
+      : [],
+
     products: this.cart.map(c => ({
       productId: c.product.id,
       qty: c.qty
@@ -398,6 +451,8 @@ submitBooking() {
       // reset
       this.cart = [];
       this.selectedServices = [];
+      this.selectedGiftIds = [];
+      this.giftOptions = [];
       this.serviceEmployeeMap = {};
       this.serviceEmployees = {};
       this.selectedSupervisorId = null;
@@ -407,7 +462,7 @@ submitBooking() {
     },
     error: (err) => {
       console.error(err);
-      this.toastr.error(err?.error?.message || 'فشل تنفيذ Checkout', 'خطأ');
+      // الخطأ يُعرض من ErrorInterceptor (رسالة الباك إند)
     }
   });
 }

@@ -1,0 +1,95 @@
+<div class="report-container" dir="rtl">
+  <h3 class="page-title mb-4">
+    <i class="bi bi-people-fill text-orange me-2"></i>
+    تقرير الموظفين والخدمات
+  </h3>
+
+  <!-- Filters -->
+  <div class="filter-card forto-card mb-4 p-3 d-flex flex-wrap align-items-center gap-3">
+    <input type="date" class="form-control custom-input" [(ngModel)]="fromDate" placeholder="من" />
+    <input type="date" class="form-control custom-input" [(ngModel)]="toDate" placeholder="إلى" />
+
+    <select class="form-select custom-input" style="max-width: 120px;" [(ngModel)]="roleFilter" (ngModelChange)="load()">
+      <option *ngFor="let o of roleOptions" [ngValue]="o.id">{{ o.label }}</option>
+    </select>
+
+    <button class="btn-submit py-2 px-4 fw-bold rounded-3" (click)="load()"
+      [disabled]="isLoading || !fromDate || !toDate">
+      {{ isLoading ? 'جاري التحميل...' : 'تحديث' }}
+    </button>
+  </div>
+
+  <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
+
+  <!-- Summary -->
+  <div class="stats-row mb-4 d-flex gap-3 flex-wrap">
+  <!--   <div class="stat-badge" *ngIf="showInvoicesAsCashier">
+      <span class="stat-label">إجمالي الفواتير ككاشير</span>
+      <span class="stat-value">{{ totalInvoicesAsCashier }}</span>
+    </div>
+    <div class="stat-badge" *ngIf="showInvoicesAsSupervisor">
+      <span class="stat-label">إجمالي الفواتير كمشرف</span>
+      <span class="stat-value">{{ totalInvoicesAsSupervisor }}</span>
+    </div> -->
+    <div class="stat-badge" *ngIf="showServices">
+      <span class="stat-label">إجمالي الخدمات المنفذة</span>
+      <span class="stat-value">{{ totalDoneItems }}</span>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="forto-card">
+    <div class="table-wrapper">
+      <table class="pos-table">
+        <thead>
+          <tr>
+            <th>الموظف</th>
+            <th class="text-center">الدور</th>
+            <th class="text-center" *ngIf="showInvoicesAsCashier">فواتير ككاشير</th>
+            <th class="text-center" *ngIf="showInvoicesAsSupervisor">فواتير كمشرف</th>
+            <th class="text-center" *ngIf="showServices">الخدمات المنفذة</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let emp of items">
+            <tr (click)="showServices && emp.services?.length && toggleExpand(emp.employeeId)"
+              [class.expanded]="expandedEmployeeId === emp.employeeId"
+              [class.row-clickable]="showServices && emp.services?.length">
+              <td>
+                <strong>{{ emp.employeeName }}</strong>
+                <i class="bi bi-chevron-down ms-1 small" *ngIf="showServices && emp.services?.length"
+                  [class.rotated]="expandedEmployeeId === emp.employeeId"></i>
+              </td>
+              <td class="text-center">{{ getRoleLabel(emp.role) }}</td>
+              <td class="text-center" *ngIf="showInvoicesAsCashier">{{ emp.invoicesAsCashierCount }}</td>
+              <td class="text-center" *ngIf="showInvoicesAsSupervisor">{{ emp.invoicesAsSupervisorCount }}</td>
+              <td class="text-center" *ngIf="showServices">
+                {{ emp.count ?? 0 }}
+                <span class="small text-muted" *ngIf="emp.services?.length">({{ emp.services.length }} خدمة)</span>
+              </td>
+            </tr>
+            <tr *ngIf="showServices && expandedEmployeeId === emp.employeeId && emp.services?.length"
+              class="services-detail-row">
+              <td [attr.colspan]="visibleColumnCount" class="bg-light">
+                <div class="p-3">
+                  <h6 class="mb-2 small text-muted">الخدمات التي نفذها {{ emp.employeeName }}:</h6>
+                  <ul class="list-unstyled mb-0">
+                    <li *ngFor="let svc of emp.services" class="d-flex justify-content-between align-items-center py-1 small">
+                      <span>{{ getServiceDisplayName(svc) }}</span>
+                      <span class="badge bg-warning text-dark">{{ getServiceCount(svc) }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+          <tr *ngIf="items.length === 0 && !isLoading">
+            <td [attr.colspan]="visibleColumnCount" class="text-center text-muted py-4">
+              لا توجد بيانات للفترة المحددة
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

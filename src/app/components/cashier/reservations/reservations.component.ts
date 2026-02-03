@@ -400,7 +400,177 @@ export class ReservationsComponent implements OnInit {
 
 
 
-  onComplete(bookingId: number) {
+  // هدايا إنهاء الخدمة
+  completeGiftOptions: { productId: number; productName: string; sku?: string }[] = [];
+  completeSelectedGiftIds: number[] = [];
+  completeBookingId: number | null = null;
+  completeBooking: BookingCard | null = null;
+  isLoadingCompleteGifts = false;
+
+  // إضافة هدية لفاتورة غير مدفوعة
+  addGiftBooking: BookingCard | null = null;
+  addGiftOptions: { productId: number; productName: string; sku?: string }[] = [];
+  addGiftSelectedId: number | null = null;
+  isLoadingAddGift = false;
+  isSavingAddGift = false;
+
+  onComplete(customer: BookingCard) {
+    const bookingId = customer.id;
+    const serviceIds = (customer.serviceItem ?? []).map((s: any) => s.serviceId).filter(Boolean);
+
+    if (serviceIds.length === 0) {
+      this.doComplete(bookingId, []);
+      return;
+    }
+
+    this.isLoadingCompleteGifts = true;
+    Swal.fire({ title: 'جاري التحقق من الهدايا...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    this.api.getGiftOptions(serviceIds, this.branchId).subscribe({
+      next: (res: any) => {
+        this.isLoadingCompleteGifts = false;
+        Swal.close();
+        const data = res?.data ?? res;
+        const opts = data?.options ?? [];
+        this.completeGiftOptions = (Array.isArray(opts) ? opts : []).map((o: any) => ({
+          productId: o.productId ?? o.product_id ?? 0,
+          productName: o.productName ?? o.name ?? '',
+          sku: o.sku
+        }));
+
+        if (this.completeGiftOptions.length > 0) {
+          this.completeBookingId = bookingId;
+          this.completeBooking = customer;
+          this.completeSelectedGiftIds = [];
+          const el = document.getElementById('completeGiftModal');
+          const modal = new (window as any).bootstrap.Modal(el);
+          modal.show();
+        } else {
+          this.doComplete(bookingId, []);
+        }
+      },
+      error: () => {
+        this.isLoadingCompleteGifts = false;
+        Swal.close();
+        this.doComplete(bookingId, []);
+      }
+    });
+  }
+
+  toggleCompleteGift(productId: number) {
+    // هدية واحدة فقط
+    if (this.completeSelectedGiftIds.includes(productId)) {
+      this.completeSelectedGiftIds = [];
+    } else {
+      this.completeSelectedGiftIds = [productId];
+    }
+  }
+
+  isCompleteGiftSelected(productId: number): boolean {
+    return this.completeSelectedGiftIds.includes(productId);
+  }
+
+  confirmCompleteWithGifts() {
+    const id = this.completeBookingId;
+    const gifts = this.completeSelectedGiftIds.length > 0 ? [this.completeSelectedGiftIds[0]] : [];
+    this.completeBookingId = null;
+    this.completeBooking = null;
+    const el = document.getElementById('completeGiftModal');
+    const modal = (window as any).bootstrap.Modal.getInstance(el);
+    modal?.hide();
+    if (id) this.doComplete(id, gifts);
+  }
+
+  /** فتح مودال إضافة هدية لفاتورة غير مدفوعة */
+  openAddGiftToInvoiceModal(booking: BookingCard) {
+    const serviceIds = (booking.serviceItem ?? []).map((s: any) => s.serviceId).filter(Boolean);
+    if (serviceIds.length === 0) {
+      Swal.fire('تنبيه', 'لا توجد خدمات في هذا الحجز', 'info');
+      return;
+    }
+    this.addGiftBooking = booking;
+    this.addGiftSelectedId = null;
+    this.isLoadingAddGift = true;
+    this.api.getGiftOptions(serviceIds, this.branchId).subscribe({
+      next: (res: any) => {
+        const data = res?.data ?? res;
+        const opts = data?.options ?? [];
+        this.addGiftOptions = (Array.isArray(opts) ? opts : []).map((o: any) => ({
+          productId: o.productId ?? o.product_id ?? 0,
+          productName: o.productName ?? o.name ?? '',
+          sku: o.sku
+        }));
+        this.isLoadingAddGift = false;
+        const el = document.getElementById('addGiftToInvoiceModal');
+        const modal = new (window as any).bootstrap.Modal(el);
+        modal.show();
+      },
+      error: () => {
+        this.isLoadingAddGift = false;
+        Swal.fire('خطأ', 'فشل تحميل الهدايا المتاحة', 'error');
+      }
+    });
+  }
+
+  selectAddGift(productId: number) {
+    this.addGiftSelectedId = this.addGiftSelectedId === productId ? null : productId;
+  }
+
+  confirmAddGiftToInvoice() {
+    const booking = this.addGiftBooking;
+    const productId = this.addGiftSelectedId;
+    if (!booking || !productId) {
+      Swal.fire('تنبيه', 'اختر هدية', 'warning');
+      return;
+    }
+    this.isSavingAddGift = true;
+    this.api.getInvoiceByBooking(booking.id).subscribe({
+      next: (invRes: any) => {
+        const inv = invRes?.data ?? invRes;
+        const invoiceId = inv?.id ?? inv?.invoiceId;
+        if (!invoiceId) {
+          this.isSavingAddGift = false;
+          Swal.fire('خطأ', 'لم يتم العثور على الفاتورة', 'error');
+          return;
+        }
+        this.api.selectGiftForInvoice(invoiceId, {
+          cashierId: this.cashierId,
+          productId
+        }).subscribe({
+          next: () => {
+            this.isSavingAddGift = false;
+            const el = document.getElementById('addGiftToInvoiceModal');
+            const modal = (window as any).bootstrap.Modal.getInstance(el);
+            modal?.hide();
+            this.addGiftBooking = null;
+            this.addGiftOptions = [];
+            this.addGiftSelectedId = null;
+            Swal.fire({ icon: 'success', title: 'تم إضافة الهدية للفاتورة', timer: 1500, showConfirmButton: false });
+            this.refresh();
+          },
+          error: (err) => {
+            this.isSavingAddGift = false;
+            Swal.fire('خطأ', err?.error?.message || 'فشل إضافة الهدية للفاتورة', 'error');
+          }
+        });
+      },
+      error: () => {
+        this.isSavingAddGift = false;
+        Swal.fire('خطأ', 'لم يتم العثور على الفاتورة', 'error');
+      }
+    });
+  }
+
+  cancelCompleteGifts() {
+    const id = this.completeBookingId;
+    this.completeBookingId = null;
+    this.completeBooking = null;
+    const el = document.getElementById('completeGiftModal');
+    const modal = (window as any).bootstrap.Modal.getInstance(el);
+    modal?.hide();
+    if (id) this.doComplete(id, []);
+  }
+
+  private doComplete(bookingId: number, selectedGiftIds: number[]) {
     Swal.fire({
       title: 'إنهاء الحجز',
       text: 'هل تريد إنهاء الحجز؟',
@@ -412,9 +582,7 @@ export class ReservationsComponent implements OnInit {
     }).then((result) => {
       if (!result.isConfirmed) return;
 
-      const payload = {
-        cashierId: this.cashierId
-      };
+      const payload = { cashierId: this.cashierId };
 
       this.api.completeBookingCashier(bookingId, payload).subscribe({
         next: () => {
@@ -424,16 +592,43 @@ export class ReservationsComponent implements OnInit {
             timer: 1200,
             showConfirmButton: false,
           });
-
-          this.refresh();
+          // إضافة الهدايا للفاتورة بعد الـ complete
+          if (selectedGiftIds.length > 0) {
+            this.api.getInvoiceByBooking(bookingId).subscribe({
+              next: (invRes: any) => {
+                const inv = invRes?.data ?? invRes;
+                const invoiceId = inv?.id ?? inv?.invoiceId;
+                if (invoiceId && selectedGiftIds.length > 0) {
+                  const productId = selectedGiftIds[0];
+                  this.api.selectGiftForInvoice(invoiceId, {
+                    cashierId: this.cashierId,
+                    productId
+                  }).subscribe({
+                    next: () => {
+                      this.refresh();
+                    },
+                    error: (err) => {
+                      Swal.fire(
+                        'تحذير',
+                        err?.error?.message || 'فشل إضافة الهدية للفاتورة. يمكنك إضافتها لاحقاً من زر "إضافة هدية".',
+                        'warning'
+                      );
+                      this.refresh();
+                    }
+                  });
+                } else {
+                  this.refresh();
+                }
+              },
+              error: () => this.refresh()
+            });
+          } else {
+            this.refresh();
+          }
         },
         error: (err) => {
           console.error(err);
-          Swal.fire(
-            'خطأ',
-            err?.error?.message || 'فشل إنهاء الحجز',
-            'error'
-          );
+          Swal.fire('خطأ', err?.error?.message || 'فشل إنهاء الحجز', 'error');
         },
       });
     });

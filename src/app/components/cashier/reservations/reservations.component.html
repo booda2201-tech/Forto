@@ -152,7 +152,7 @@
 
           <button *ngIf="currentTab === 'active'"
             class="btn btn-success flex-grow-1 text-white fw-bold rounded-15 shadow-sm"
-            (click)="onComplete(customer.id)">
+            (click)="onComplete(customer)" [disabled]="isLoadingCompleteGifts">
             إنهاء الخدمة <i class="bi bi-check2-circle ms-1"></i>
           </button>
 
@@ -166,6 +166,12 @@
             (click)="openPayInvoice(customer)"
             title="تأكيد الدفع">
             <i class="bi bi-cash-coin me-1"></i> دفع
+          </button>
+          <button *ngIf="currentTab === 'completed' && !isInvoicePaid(customer.id)"
+            class="btn btn-outline-warning btn-sm fw-bold rounded-15"
+            (click)="openAddGiftToInvoiceModal(customer)"
+            title="إضافة هدية للفاتورة غير المدفوعة">
+            <i class="bi bi-gift me-1"></i> إضافة هدية
           </button>
           <span *ngIf="currentTab === 'completed' && isInvoicePaid(customer.id)"
             class="badge bg-success-subtle text-success border border-success px-3 py-2 rounded-pill fw-bold">
@@ -278,6 +284,72 @@
 </div>
 
 
+
+<!-- Modal اختيار الهدايا قبل إنهاء الخدمة -->
+<div class="modal fade" id="completeGiftModal" tabindex="-1" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold"><i class="bi bi-gift me-2 text-warning"></i> اختر الهدايا (اختياري)</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-muted small mb-3">اختر هدية واحدة فقط (اختياري):</p>
+        <div class="d-flex flex-wrap gap-2">
+          <div *ngFor="let g of completeGiftOptions" (click)="toggleCompleteGift(g.productId)"
+            class="service-badge pointer transition-all shadow-sm"
+            [class.active-service]="isCompleteGiftSelected(g.productId)"
+            [style.cursor]="'pointer'">
+            <span class="fw-bold">{{ g.productName }}</span>
+            <i class="bi bi-check-circle-fill text-success ms-2" *ngIf="isCompleteGiftSelected(g.productId)"></i>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" (click)="cancelCompleteGifts()">
+          تخطي (بدون هدايا)
+        </button>
+        <button type="button" class="btn btn-success fw-bold" (click)="confirmCompleteWithGifts()">
+          <i class="bi bi-check2-circle me-1"></i> إنهاء وإضافة الهدية
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal إضافة هدية لفاتورة غير مدفوعة -->
+<div class="modal fade" id="addGiftToInvoiceModal" tabindex="-1" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold"><i class="bi bi-gift me-2 text-warning"></i> إضافة هدية للفاتورة</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-muted small mb-3">اختر هدية واحدة لإضافتها للفاتورة غير المدفوعة:</p>
+        <div *ngIf="isLoadingAddGift" class="text-center py-3">
+          <div class="spinner-border text-primary"></div>
+        </div>
+        <div *ngIf="!isLoadingAddGift" class="d-flex flex-wrap gap-2">
+          <div *ngFor="let g of addGiftOptions" (click)="selectAddGift(g.productId)"
+            class="service-badge pointer transition-all shadow-sm"
+            [class.active-service]="addGiftSelectedId === g.productId">
+            <span class="fw-bold">{{ g.productName }}</span>
+            <i class="bi bi-check-circle-fill text-success ms-2" *ngIf="addGiftSelectedId === g.productId"></i>
+          </div>
+          <div *ngIf="addGiftOptions.length === 0" class="text-muted small w-100">لا توجد هدايا متاحة</div>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+        <button type="button" class="btn btn-warning fw-bold" (click)="confirmAddGiftToInvoice()"
+          [disabled]="!addGiftSelectedId || isSavingAddGift">
+          {{ isSavingAddGift ? 'جاري الإضافة...' : 'إضافة الهدية' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="modal fade" id="cancelModal" tabindex="-1">
   <div class="modal-dialog">
