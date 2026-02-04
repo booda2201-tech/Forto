@@ -16,7 +16,7 @@
               [class.material-below-reorder]="isBelowReorder(mat)"
               [class.material-alert-dismissed]="isBelowReorder(mat) && isAlertDismissed(mat)">
 
-              <div class="card-body text-center p-4 position-relative">
+              <!-- <div class="card-body text-center p-4 position-relative">
                 <div *ngIf="isBelowReorder(mat) && !isAlertDismissed(mat)" class="alert alert-warning py-2 px-3 mb-2 small d-flex align-items-center justify-content-between gap-2">
                   <span><i class="bi bi-exclamation-triangle-fill me-1"></i>المخزون تحت حد إعادة الطلب</span>
                   <button type="button" class="btn btn-sm btn-outline-dark" (click)="dismissAlert(mat)">تمام</button>
@@ -24,9 +24,7 @@
                 <div *ngIf="isBelowReorder(mat) && isAlertDismissed(mat)" class="text-warning small mb-1">
                   <i class="bi bi-exclamation-circle"></i> لا يزال تحت الحد
                 </div>
-                <!-- <div class="icon-circle mb-3 bg-light-orange">
-                  <i class="bi bi-droplet-fill fs-2 text-orange"></i>
-                </div> -->
+
 
                 <h6 class="fw-bold mb-1">{{ mat.name }}</h6>
 
@@ -48,42 +46,71 @@
                   <span class="text-success fw-bold">المخزون: {{ mat.stock }}</span>
                   <span class="text-muted ms-2">حد إعادة الطلب: {{ mat.reorderLevel }}</span>
                 </p>
-
-                <div class="d-flex justify-content-center flex-wrap gap-2 mt-2">
-                  <button
-                    class="btn btn-sm btn-outline-success"
-                    (click)="openStockInModal(mat)"
-                    data-bs-toggle="modal"
-                    data-bs-target="#stockInModal"
-                  >
+                <div class="d-flex justify-content-center flex-wrap gap-2 mt-3">
+                  <button class="action-btn btn-stock-in" (click)="openStockInModal(mat)" data-bs-toggle="modal" data-bs-target="#stockInModal">
                     إدخال مخزون
                   </button>
-                  <button
-                    class="btn btn-sm btn-outline-info"
-                    (click)="openAdjustModal(mat)"
-                    data-bs-toggle="modal"
-                    data-bs-target="#adjustStockModal"
-                  >
+                  <button class="action-btn btn-adjust" (click)="openAdjustModal(mat)" data-bs-toggle="modal" data-bs-target="#adjustStockModal">
                     تعديل المخزون
                   </button>
-                  <button
-                    class="btn btn-sm btn-light-warning"
-                    (click)="openEditModal(mat)"
-                    data-bs-toggle="modal"
-                    data-bs-target="#editMaterialModal"
-                  >
-                    تعديل
+                  <button class="action-btn btn-edit" (click)="openEditModal(mat)" data-bs-toggle="modal" data-bs-target="#editMaterialModal">
+                    تعديل البيانات
                   </button>
-
-                  <button
-                    class="btn btn-sm btn-outline-danger rounded-3"
-                    (click)="deleteMaterial(mat.id)"
-                  >
+                  <button class="action-btn btn-delete" (click)="deleteMaterial(mat.id)">
                     حذف
                   </button>
                 </div>
-              </div>
+              </div> -->
 
+                <div class="card-body text-center p-3 position-relative d-flex flex-column h-100">
+                  <div *ngIf="isBelowReorder(mat) && !isAlertDismissed(mat)" class="alert-mini mb-3">
+                    <i class="bi bi-exclamation-triangle-fill"></i> المخزون منخفض
+                    <button (click)="dismissAlert(mat)" class="btn-ok">تم</button>
+                  </div>
+
+                  <div class="mb-3">
+                    <h5 class="fw-bold mb-1">{{ mat.name }}</h5>
+                    <span class="badge-unit">{{ unitLabel(mat.unit) }}</span>
+                  </div>
+
+                  <div class="info-grid mb-1">
+                    <div class="info-row">
+                      <span class="info-label"><i class="bi bi-tag-fill"></i> التكلفة:</span>
+                      <span class="info-value text-orange">{{ mat.costPerUnit }} ج.م</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label"><i class="bi bi-truck"></i> التحميل:</span>
+                      <span class="info-value">{{ mat.chargePerUnit }} ج.م</span>
+                    </div>
+                    <div class="info-row border-top pt-2 mt-2">
+                      <span class="info-label">المخزون الحالي:</span>
+                      <span class="info-value" [class.text-danger]="isBelowReorder(mat)" [class.text-success]="!isBelowReorder(mat)">
+                        {{ mat.stock }}
+                      </span>
+                    </div>
+                    <div class="info-row small">
+                      <span class="info-label text-muted">حد إعادة الطلب:</span>
+                      <span class="info-value text-muted">{{ mat.reorderLevel }}</span>
+                    </div>
+                  </div>
+
+                  <div class="mt-0 d-flex flex-wrap gap-2">
+                    <button class="btn-action btn-green flex-grow-1" (click)="openStockInModal(mat)" data-bs-toggle="modal" data-bs-target="#stockInModal">
+                      إدخال مخزون
+                    </button>
+                    <button class="btn-action btn-blue flex-grow-1" (click)="openAdjustModal(mat)" data-bs-toggle="modal" data-bs-target="#adjustStockModal">
+                      تعديل
+                    </button>
+                    <div class="w-100 d-flex gap-2">
+                      <button class="btn-action btn-gray flex-grow-1" (click)="openEditModal(mat)" data-bs-toggle="modal" data-bs-target="#editMaterialModal">
+                        بيانات
+                      </button>
+                      <button class="btn-action btn-red" (click)="deleteMaterial(mat.id)">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
             </div>
           </div>
         </div>

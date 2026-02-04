@@ -15,51 +15,55 @@
               [class.product-below-reorder]="isBelowReorder(prod)"
               [class.product-alert-dismissed]="isBelowReorder(prod) && isAlertDismissed(prod)"
             >
-              <div class="card-body text-center p-4 position-relative">
-                <div *ngIf="isBelowReorder(prod) && !isAlertDismissed(prod)" class="alert alert-warning py-2 px-3 mb-2 small d-flex align-items-center justify-content-between gap-2">
-                  <span><i class="bi bi-exclamation-triangle-fill me-1"></i>المخزون تحت حد إعادة الطلب</span>
-                  <button type="button" class="btn btn-sm btn-outline-dark" (click)="dismissAlert(prod)">تمام</button>
-                </div>
-                <div *ngIf="isBelowReorder(prod) && isAlertDismissed(prod)" class="text-warning small mb-1">
-                  <i class="bi bi-exclamation-circle"></i> لا يزال تحت الحد
-                </div>
+                <div class="card-body text-center p-3 position-relative d-flex flex-column">
+                    <div *ngIf="isBelowReorder(prod) && !isAlertDismissed(prod)" class="alert-mini mb-2">
+                      <span><i class="bi bi-exclamation-triangle-fill"></i> مخزون منخفض</span>
+                      <button (click)="dismissAlert(prod)" class="btn-ok">تم</button>
+                    </div>
+                    <div class="mb-2">
+                      <h6 class="fw-bold mb-0">{{ prod.name }}</h6>
+                      <span class="badge-sku">{{ prod.sku }}</span>
+                    </div>
 
-                <h6 class="fw-bold mb-1">{{ prod.name }}</h6>
+                    <div class="info-grid mt-2 mb-2 text-end">
+                      <div class="info-row">
+                        <span class="info-label"><i class="bi bi-cash-stack"></i> سعر البيع:</span>
+                        <span class="info-value text-orange">{{ prod.price }} ج.م</span>
+                      </div>
+                      <div class="info-row">
+                        <span class="info-label"><i class="bi bi-tag-fill"></i> التكلفة:</span>
+                        <span class="info-value">{{ prod.costPerUnit }} ج.م</span>
+                      </div>
+                      <div class="info-row border-top pt-1 mt-1">
+                        <span class="info-label font-bold">المخزون الحالي:</span>
+                        <span class="info-value" [class.text-danger]="isBelowReorder(prod)" [class.text-success]="!isBelowReorder(prod)">
+                          {{ prod.stock }}
+                        </span>
+                      </div>
+                      <div class="info-row small">
+                        <span class="info-label text-muted">حد إعادة الطلب:</span>
+                        <span class="info-value text-muted">{{ prod.reorderLevel }}</span>
+                      </div>
+                    </div>
 
-                <div class="mb-2">
-                  <span class="badge bg-light text-dark">{{ prod.sku }}</span>
-                </div>
-
-                <p class="text-orange fw-bold mb-1">
-                  سعر البيع: {{ prod.price }} ج.م
-                </p>
-
-                <p class="text-muted fw-bold mb-1">
-                  التكلفة: {{ prod.costPerUnit }} ج.م
-                </p>
-
-                <p class="small mb-1">
-                  <span class="text-success fw-bold">المخزون: {{ prod.stock }}</span>
-                  <span class="text-muted ms-2">حد إعادة الطلب: {{ prod.reorderLevel }}</span>
-                </p>
-
-                <div class="d-flex justify-content-center flex-wrap gap-2 mt-2">
-                  <button class="btn btn-sm btn-outline-success" (click)="openStockInModal(prod)" data-bs-toggle="modal" data-bs-target="#productStockInModal">
-                    إدخال مخزون
-                  </button>
-                  <button class="btn btn-sm btn-outline-info" (click)="openAdjustModal(prod)" data-bs-toggle="modal" data-bs-target="#productAdjustStockModal">
-                    تعديل المخزون
-                  </button>
-                  <button class="btn btn-sm btn-light-warning" (click)="openEditModal(prod)" data-bs-toggle="modal" data-bs-target="#editProductModal">
-                    تعديل
-                  </button>
-                  <button class="btn btn-sm btn-outline-danger rounded-3" (click)="deleteProduct(prod.id)">
-                    <!-- <i class="bi bi-trash"></i> -->
-                    حذف
-                  </button>
-                </div>
+                    <div class="mt-auto d-flex flex-wrap gap-1">
+                      <button class="btn-action btn-green flex-grow-1" (click)="openStockInModal(prod)" data-bs-toggle="modal" data-bs-target="#productStockInModal">
+                        إدخال مخزون
+                      </button>
+                      <button class="btn-action btn-blue flex-grow-1" (click)="openAdjustModal(prod)" data-bs-toggle="modal" data-bs-target="#productAdjustStockModal">
+                        تعديل المخزون
+                      </button>
+                      <div class="w-100 d-flex gap-1">
+                        <button class="btn-action btn-gray flex-grow-1" (click)="openEditModal(prod)" data-bs-toggle="modal" data-bs-target="#editProductModal">
+                          تعديل البيانات
+                        </button>
+                        <button class="btn-action btn-red" (click)="deleteProduct(prod.id)">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
               </div>
-            </div>
           </div>
         </div>
       </div>
