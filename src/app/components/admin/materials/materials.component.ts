@@ -107,8 +107,9 @@ export class MaterialsComponent implements OnInit {
         });
             let alertCount = 0;
             this.materials.forEach(mat => {
+              const stock = Number(mat.stock) || 0;
               const r = Number(mat.reorderLevel) || 0;
-              if (r > 0 && (Number(mat.stock) || 0) < r) alertCount++;
+              if (stock === 0 || (r > 0 && stock < r)) alertCount++;
             });
             this.alertService.setCount(alertCount);
           },
@@ -294,9 +295,11 @@ export class MaterialsComponent implements OnInit {
   }
 
   isBelowReorder(mat: MaterialUi): boolean {
+    const stock = Number(mat.stock) || 0;
     const r = Number(mat.reorderLevel) || 0;
+    if (stock === 0) return true;
     if (r <= 0) return false;
-    return (Number(mat.stock) || 0) < r;
+    return stock < r;
   }
 
   isAlertDismissed(mat: MaterialUi): boolean {

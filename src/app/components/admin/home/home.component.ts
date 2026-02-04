@@ -46,7 +46,7 @@ export class HomeComponent implements OnInit {
               const s = map.get(p.id);
               const onHand = Number(s?.onHandQty ?? s?.OnHandQty ?? 0);
               const reorder = Number(s?.reorderLevel ?? s?.ReorderLevel ?? 0);
-              if (reorder > 0 && onHand < reorder) count++;
+              if (onHand === 0 || (reorder > 0 && onHand < reorder)) count++;
             });
             this.productAlertService.setCount(count);
           },
@@ -76,7 +76,7 @@ export class HomeComponent implements OnInit {
               const s = map.get(m.id);
               const onHand = Number(s?.onHandQty ?? s?.OnHandQty ?? 0);
               const reorder = Number(s?.reorderLevel ?? s?.ReorderLevel ?? 0);
-              if (reorder > 0 && onHand < reorder) count++;
+              if (onHand === 0 || (reorder > 0 && onHand < reorder)) count++;
             });
             this.materialAlertService.setCount(count);
           },

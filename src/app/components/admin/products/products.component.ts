@@ -96,8 +96,9 @@ export class ProductsComponent implements OnInit {
 
             let alertCount = 0;
             this.products.forEach((prod) => {
+              const stock = Number(prod.stock) || 0;
               const r = Number(prod.reorderLevel) || 0;
-              if (r > 0 && (Number(prod.stock) || 0) < r) alertCount++;
+              if (stock === 0 || (r > 0 && stock < r)) alertCount++;
             });
             this.alertService.setCount(alertCount);
           },
@@ -240,8 +241,7 @@ export class ProductsComponent implements OnInit {
       next: () => {
         const onHand = Number(this.selectedProduct.stock) ?? 0;
         const reorder = Number(this.selectedProduct.reorderLevel) ?? 0;
-        this.api.upsertBranchProductStock({
-          branchId: this.branchId,
+        this.api.upsertBranchProductStock(this.branchId, {
           productId: this.selectedProduct.id,
           onHandQty: onHand,
           reorderLevel: reorder,
@@ -279,9 +279,11 @@ export class ProductsComponent implements OnInit {
   }
 
   isBelowReorder(prod: ProductUi): boolean {
+    const stock = Number(prod.stock) || 0;
     const r = Number(prod.reorderLevel) || 0;
+    if (stock === 0) return true;
     if (r <= 0) return false;
-    return (Number(prod.stock) || 0) < r;
+    return stock < r;
   }
 
   isAlertDismissed(prod: ProductUi): boolean {

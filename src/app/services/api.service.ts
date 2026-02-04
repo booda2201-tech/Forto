@@ -6,8 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-  // private baseUrl = 'https://api.fortolaundry.com';
-  private baseUrl = 'https://localhost:7179';
+  private baseUrl = 'https://api.fortolaundry.com';
+  // private baseUrl = 'https://localhost:7179';
 
   constructor(private http: HttpClient) {}
 
@@ -195,13 +195,12 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/api/GetBranchProductStock/${branchId}`);
   }
 
-  upsertBranchProductStock(payload: {
-    branchId: number;
+  upsertBranchProductStock(branchId: number, payload: {
     productId: number;
     onHandQty: number;
     reorderLevel: number;
   }) {
-    return this.http.put(`${this.baseUrl}/api/UpsertBranchProductStock`, payload);
+    return this.http.put(`${this.baseUrl}/api/UpsertBranchProductStock?branchId=${branchId}`, payload);
   }
 
   addProductStockIn(branchId: number, payload: {
