@@ -16,9 +16,15 @@
 
 <div class="tabs-wrapper pt-5" dir="rtl" *ngIf="router.url !== '/admin/requests'">
     <div class="tabs-container">
-        <a routerLink="/admin/materials" routerLinkActive="active" class="tab-item"> المواد </a>
+        <a routerLink="/admin/materials" routerLinkActive="active" class="tab-item">
+          المواد
+          <span *ngIf="materialsAlertCount > 0" class="badge bg-warning text-dark ms-1">{{ materialsAlertCount }}</span>
+        </a>
         <a routerLink="/admin/services" routerLinkActive="active" class="tab-item"> الخدمات </a>
-        <a routerLink="/admin/products" routerLinkActive="active" class="tab-item"> المنتجات </a>
+        <a routerLink="/admin/products" routerLinkActive="active" class="tab-item">
+          المنتجات
+          <span *ngIf="productsAlertCount > 0" class="badge bg-warning text-dark ms-1">{{ productsAlertCount }}</span>
+        </a>
         <a routerLink="/admin/workers" routerLinkActive="active" class="tab-item"> العمال </a>
         <a routerLink="/admin/shifts" routerLinkActive="active" class="tab-item"> الشيفتات </a>
         <a routerLink="/admin/dashboard" routerLinkActive="active" class="tab-item"> تقارير اليومية </a>

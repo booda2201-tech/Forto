@@ -13,6 +13,16 @@ $orange-color: #ff9a27;
 .text-orange { color: $orange-color !important; }
 .bg-orange { background-color: $orange-color !important; }
 
+.material-below-reorder.product-card {
+  border-color: #ffc107 !important;
+  border-width: 2px !important;
+}
+.material-alert-dismissed.product-card {
+  border-color: #ffc107 !important;
+  border-width: 2px !important;
+  background-color: #fffef8 !important;
+}
+
 .product-card {
   cursor: pointer;
   border-radius: 20px;

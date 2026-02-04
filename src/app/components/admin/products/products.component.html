@@ -12,63 +12,49 @@
           <div class="col-md-4" *ngFor="let prod of products">
             <div
               class="card product-card border-0 shadow-sm"
-              [class.border-danger]="prod.stock === 0"
-              [class.bg-light-danger]="prod.stock === 0"
+              [class.product-below-reorder]="isBelowReorder(prod)"
+              [class.product-alert-dismissed]="isBelowReorder(prod) && isAlertDismissed(prod)"
             >
-              <div class="card-body text-center p-4">
-                <div
-                  class="icon-circle mb-3"
-                  [class.bg-danger]="prod.stock === 0"
-                >
-                  <i
-                    class="bi"
-                    [ngClass]="
-                      prod.stock === 0
-                        ? 'bi-exclamation-triangle-fill fs-3 text-center'
-                        : 'bi-cup-hot fs-2 text-center'
-                    "
-                  ></i>
+              <div class="card-body text-center p-4 position-relative">
+                <div *ngIf="isBelowReorder(prod) && !isAlertDismissed(prod)" class="alert alert-warning py-2 px-3 mb-2 small d-flex align-items-center justify-content-between gap-2">
+                  <span><i class="bi bi-exclamation-triangle-fill me-1"></i>المخزون تحت حد إعادة الطلب</span>
+                  <button type="button" class="btn btn-sm btn-outline-dark" (click)="dismissAlert(prod)">تمام</button>
+                </div>
+                <div *ngIf="isBelowReorder(prod) && isAlertDismissed(prod)" class="text-warning small mb-1">
+                  <i class="bi bi-exclamation-circle"></i> لا يزال تحت الحد
+                </div>
+
+                <div class="icon-circle mb-3" [class.bg-danger]="prod.stock === 0">
+                  <i class="bi" [ngClass]="prod.stock === 0 ? 'bi-exclamation-triangle-fill fs-3 text-center' : 'bi-cup-hot fs-2 text-center'"></i>
                 </div>
 
                 <h6 class="fw-bold mb-1">{{ prod.name }}</h6>
 
                 <div class="mb-2">
-                  <span
-                    class="badge"
-                    [ngClass]="{
-                      'bg-danger': prod.stock === 0,
-                      'bg-warning text-dark': prod.stock <= 5 && prod.stock > 0,
-                      'bg-success': prod.stock > 5,
-                    }"
-                  >
-                    {{
-                      prod.stock === 0 ? "غير متوفر" : "المخزون: " + prod.stock
-                    }}
+                  <span class="badge" [ngClass]="{ 'bg-danger': prod.stock === 0, 'bg-warning text-dark': prod.stock > 0 && prod.stock <= (prod.reorderLevel || 0), 'bg-success': prod.stock > (prod.reorderLevel || 0) }">
+                    {{ prod.stock === 0 ? "غير متوفر" : "المخزون: " + prod.stock }}
                   </span>
                 </div>
 
+                <p class="small mb-1">
+                  <span class="text-muted">حد إعادة الطلب: {{ prod.reorderLevel }}</span>
+                </p>
+
                 <p class="text-orange fw-bold mb-1">{{ prod.price }} ج.م</p>
 
-                <div class="d-flex justify-content-center gap-2 mt-2">
-                  <div class="d-flex justify-content-center gap-2 mt-2">
-                    <button
-                      class="btn btn-sm btn-light-warning"
-                      (click)="openEditModal(prod)"
-                      data-bs-toggle="modal"
-                      data-bs-target="#editProductModal"
-                    >
-                      <!-- <i class="bi bi-pencil-square"></i> -->
-                      تعديل
-                    </button>
-
-                    <button
-                      class="btn btn-sm btn-outline-danger"
-                      (click)="deleteProduct(prod.id)"
-                    >
-                      <!-- <i class="bi bi-trash"></i> -->
-                      حذف
-                    </button>
-                  </div>
+                <div class="d-flex justify-content-center flex-wrap gap-2 mt-2">
+                  <button class="btn btn-sm btn-outline-success" (click)="openStockInModal(prod)" data-bs-toggle="modal" data-bs-target="#productStockInModal">
+                    إدخال مخزون
+                  </button>
+                  <button class="btn btn-sm btn-outline-info" (click)="openAdjustModal(prod)" data-bs-toggle="modal" data-bs-target="#productAdjustStockModal">
+                    تعديل المخزون
+                  </button>
+                  <button class="btn btn-sm btn-light-warning" (click)="openEditModal(prod)" data-bs-toggle="modal" data-bs-target="#editProductModal">
+                    تعديل
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="deleteProduct(prod.id)">
+                    حذف
+                  </button>
                 </div>
               </div>
             </div>
@@ -201,16 +187,20 @@
             />
           </div>
         </div>
+        <div class="row mt-3">
+          <div class="col-6">
+            <label class="form-label small fw-bold">المخزون الحالي</label>
+            <input type="number" min="0" class="form-control custom-input" [(ngModel)]="selectedProduct.stock" />
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-bold">حد إعادة الطلب</label>
+            <input type="number" min="0" class="form-control custom-input" [(ngModel)]="selectedProduct.reorderLevel" />
+          </div>
+        </div>
+
         <div class="form-check mt-2">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            id="isActiveChk"
-            [(ngModel)]="selectedProduct.isActive"
-          />
-          <label class="form-check-label fw-bold" for="isActiveChk"
-            >Active</label
-          >
+          <input class="form-check-input" type="checkbox" id="isActiveChk" [(ngModel)]="selectedProduct.isActive" />
+          <label class="form-check-label fw-bold" for="isActiveChk">Active</label>
         </div>
       </div>
       <div class="modal-footer border-0 pt-0">
@@ -234,4 +224,62 @@
   </div>
 </div>
 
-<!-- [class.active]="prod.selected" (click)="toggleProduct(prod)" -->
+<!-- إدخال مخزون Modal -->
+<div class="modal fade" id="productStockInModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">إدخال مخزون{{ stockInProduct ? ' - ' + stockInProduct.name : '' }}</h5>
+        <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4 text-end">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">الكمية *</label>
+          <input type="number" min="1" class="form-control custom-input" [(ngModel)]="stockInQty" placeholder="0" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">تكلفة الوحدة</label>
+          <input type="number" min="0" step="0.01" class="form-control custom-input" [(ngModel)]="stockInUnitCost" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">ملاحظات</label>
+          <input type="text" class="form-control custom-input" [(ngModel)]="stockInNotes" placeholder="اختياري" />
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-orange px-4 py-2 fw-bold rounded-3" (click)="saveStockIn()" [disabled]="isSavingStock || stockInQty <= 0">
+          {{ isSavingStock ? 'جاري الحفظ...' : 'إدخال' }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-bold rounded-3" data-bs-dismiss="modal">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- تعديل المخزون Modal -->
+<div class="modal fade" id="productAdjustStockModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">تعديل المخزون (الكمية الفعلية){{ adjustProduct ? ' - ' + adjustProduct.name : '' }}</h5>
+        <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4 text-end">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">الكمية الفعلية الحالية *</label>
+          <input type="number" min="0" class="form-control custom-input" [(ngModel)]="adjustQty" placeholder="0" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">ملاحظات</label>
+          <input type="text" class="form-control custom-input" [(ngModel)]="adjustNotes" placeholder="اختياري" />
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-orange px-4 py-2 fw-bold rounded-3" (click)="saveAdjust()" [disabled]="isSavingStock">
+          {{ isSavingStock ? 'جاري الحفظ...' : 'حفظ' }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-bold rounded-3" data-bs-dismiss="modal">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>

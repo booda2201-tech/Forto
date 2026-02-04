@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from 'src/app/services/api.service';
+import { AuthService } from 'src/app/services/auth.service';
+import { MaterialStockAlertService } from 'src/app/services/material-stock-alert.service';
 
 type MaterialApiDto = {
   id: number;
@@ -17,10 +19,11 @@ type MaterialUi = {
   costPerUnit: number;
   chargePerUnit: number;
   isActive: boolean;
-
-  // UI-only (لو عايزة نفس بادج "المخزون" مؤقتًا)
   stock: number;
+  reorderLevel: number;
 };
+
+type StockItem = { materialId: number; onHandQty?: number; reorderLevel?: number };
 
 @Component({
   selector: 'app-materials',
@@ -37,8 +40,24 @@ export class MaterialsComponent implements OnInit {
     costPerUnit: 0,
     chargePerUnit: 0,
     isActive: true,
-    stock: 0
+    stock: 0,
+    reorderLevel: 0
   };
+
+  branchId = 1;
+
+  /** مواد تم تجاهل إنذارها في هذه الجلسة (يتلاشى بعد refresh) */
+  dismissedAlertIds = new Set<number>();
+
+  // Stock modals
+  stockInMaterial: MaterialUi | null = null;
+  stockInQty = 0;
+  stockInUnitCost = 0;
+  stockInNotes = '';
+  adjustMaterial: MaterialUi | null = null;
+  adjustQty = 0;
+  adjustNotes = '';
+  isSavingStock = false;
 
   // units dropdown (غيري المسميات حسب نظامكم)
   units = [
@@ -47,7 +66,11 @@ export class MaterialsComponent implements OnInit {
     { id: 3, label: 'جرام (g)' }
   ];
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private auth: AuthService,
+    private alertService: MaterialStockAlertService
+  ) {}
 
   ngOnInit(): void {
     this.loadMaterials();
@@ -55,21 +78,121 @@ export class MaterialsComponent implements OnInit {
 
   loadMaterials() {
     this.api.getMaterials().subscribe({
-      next: (res: any) => {
-        const data: MaterialApiDto[] = res?.data ?? [];
-        this.materials = data.map(m => ({
-          id: m.id,
-          name: m.name,
-          unit: Number(m.unit ?? 1),
-          costPerUnit: Number(m.costPerUnit ?? 0),
-          chargePerUnit: Number(m.chargePerUnit ?? 0),
-          isActive: !!m.isActive,
-          stock: 0 // UI-only
-        }));
+      next: (matsRes: any) => {
+        const data: MaterialApiDto[] = matsRes?.data ?? [];
+        this.api.getBranchStock(this.branchId).subscribe({
+          next: (stockRes: any) => {
+            const stock = stockRes?.data ?? stockRes;
+            const stockItems: any[] = Array.isArray(stock) ? stock : [];
+        const stockMap = new Map<number, any>();
+        stockItems.forEach((s: any) => {
+          const mid = s.materialId ?? s.MaterialId;
+          if (mid != null) stockMap.set(Number(mid), s);
+        });
+
+        this.materials = data.map(m => {
+          const s = stockMap.get(m.id);
+          const onHand = s?.onHandQty ?? s?.OnHandQty ?? 0;
+          const reorder = s?.reorderLevel ?? s?.ReorderLevel ?? 0;
+          return {
+            id: m.id,
+            name: m.name,
+            unit: Number(m.unit ?? 1),
+            costPerUnit: Number(m.costPerUnit ?? 0),
+            chargePerUnit: Number(m.chargePerUnit ?? 0),
+            isActive: !!m.isActive,
+            stock: Number(onHand),
+            reorderLevel: Number(reorder),
+          };
+        });
+            let alertCount = 0;
+            this.materials.forEach(mat => {
+              const r = Number(mat.reorderLevel) || 0;
+              if (r > 0 && (Number(mat.stock) || 0) < r) alertCount++;
+            });
+            this.alertService.setCount(alertCount);
+          },
+          error: () => {
+            this.materials = data.map(m => ({
+              id: m.id,
+              name: m.name,
+              unit: Number(m.unit ?? 1),
+              costPerUnit: Number(m.costPerUnit ?? 0),
+              chargePerUnit: Number(m.chargePerUnit ?? 0),
+              isActive: !!m.isActive,
+              stock: 0,
+              reorderLevel: 0,
+            }));
+            this.alertService.setCount(0);
+          }
+        });
       },
       error: (err) => {
         console.error(err);
         alert('فشل تحميل المواد');
+      }
+    });
+  }
+
+  openStockInModal(mat: MaterialUi) {
+    this.stockInMaterial = mat;
+    this.stockInQty = 0;
+    this.stockInUnitCost = mat.costPerUnit ?? 0;
+    this.stockInNotes = '';
+  }
+
+  saveStockIn() {
+    if (!this.stockInMaterial || this.stockInQty <= 0) {
+      alert('أدخل الكمية بشكل صحيح');
+      return;
+    }
+    const cashierId = this.auth.getEmployeeId() ?? 0;
+    this.isSavingStock = true;
+    this.api.addStockIn(this.branchId, {
+      cashierId,
+      materialId: this.stockInMaterial.id,
+      qty: this.stockInQty,
+      unitCost: this.stockInUnitCost,
+      notes: this.stockInNotes || undefined,
+    }).subscribe({
+      next: () => {
+        alert('تم إدخال المخزون بنجاح');
+        this.loadMaterials();
+        this.isSavingStock = false;
+        (window as any).bootstrap?.Modal?.getOrCreateInstance(document.getElementById('stockInModal'))?.hide();
+      },
+      error: (err) => {
+        this.isSavingStock = false;
+        alert(err?.error?.message || err?.error?.Message || 'فشل إدخال المخزون');
+      }
+    });
+  }
+
+  openAdjustModal(mat: MaterialUi) {
+    this.adjustMaterial = mat;
+    this.adjustQty = mat.stock ?? 0;
+    this.adjustNotes = '';
+  }
+
+  saveAdjust() {
+    if (!this.adjustMaterial) return;
+    const cashierId = this.auth.getEmployeeId() ?? 0;
+    this.isSavingStock = true;
+    this.api.adjustStock(this.branchId, {
+      cashierId,
+      materialId: this.adjustMaterial.id,
+      physicalOnHandQty: this.adjustQty,
+      notes: this.adjustNotes || undefined,
+    }).subscribe({
+      next: () => {
+        alert('تم تعديل المخزون بنجاح');
+        this.loadMaterials();
+        this.isSavingStock = false;
+        (window as any).bootstrap?.Modal?.getOrCreateInstance(document.getElementById('adjustStockModal'))?.hide();
+      },
+      error: (err) => {
+        this.isSavingStock = false;
+        alert(err?.error?.message || err?.error?.Message || 'فشل تعديل المخزون');
       }
     });
   }
@@ -99,7 +222,8 @@ export class MaterialsComponent implements OnInit {
           costPerUnit: 0,
           chargePerUnit: 0,
           isActive: true,
-          stock: 0
+          stock: 0,
+          reorderLevel: 0
         };
       },
       error: (err) => {
@@ -126,8 +250,22 @@ export class MaterialsComponent implements OnInit {
 
     this.api.updateMaterial(this.selectedMaterial.id, payload).subscribe({
       next: () => {
-        alert('تم تحديث بيانات المادة بنجاح');
-        this.loadMaterials();
+        const onHand = Number(this.selectedMaterial.stock) ?? 0;
+        const reorder = Number(this.selectedMaterial.reorderLevel) ?? 0;
+        this.api.upsertStock(this.branchId, {
+          materialId: this.selectedMaterial.id,
+          onHandQty: onHand,
+          reorderLevel: reorder,
+        }).subscribe({
+          next: () => {
+            alert('تم تحديث بيانات المادة والمخزون بنجاح');
+            this.loadMaterials();
+          },
+          error: (e) => {
+            alert('تم تحديث المادة، لكن فشل تحديث المخزون: ' + (e?.error?.message || e?.error?.Message || ''));
+            this.loadMaterials();
+          }
+        });
       },
       error: (err) => {
         console.error(err);
@@ -155,9 +293,18 @@ export class MaterialsComponent implements OnInit {
     return this.units.find(u => u.id === unitId)?.label || `Unit ${unitId}`;
   }
 
-  // UI-only stock +/- لو عايزة تسيبيه مؤقت
-  updateQuickStock(mat: MaterialUi, amount: number) {
-    const newStock = (mat.stock ?? 0) + amount;
-    if (newStock >= 0) mat.stock = newStock;
+  isBelowReorder(mat: MaterialUi): boolean {
+    const r = Number(mat.reorderLevel) || 0;
+    if (r <= 0) return false;
+    return (Number(mat.stock) || 0) < r;
   }
+
+  isAlertDismissed(mat: MaterialUi): boolean {
+    return this.dismissedAlertIds.has(mat.id);
+  }
+
+  dismissAlert(mat: MaterialUi): void {
+    this.dismissedAlertIds.add(mat.id);
+  }
+
 }

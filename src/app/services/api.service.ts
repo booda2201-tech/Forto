@@ -6,8 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-  private baseUrl = 'https://api.fortolaundry.com';
-  // private baseUrl = 'https://localhost:7179';
+  // private baseUrl = 'https://api.fortolaundry.com';
+  private baseUrl = 'https://localhost:7179';
 
   constructor(private http: HttpClient) {}
 
@@ -191,6 +191,46 @@ export class ApiService {
     return this.http.delete(`${this.baseUrl}/api/products/Delete/${id}`);
   }
 
+  getBranchProductStock(branchId: number) {
+    return this.http.get(`${this.baseUrl}/api/GetBranchProductStock/${branchId}`);
+  }
+
+  upsertBranchProductStock(payload: {
+    branchId: number;
+    productId: number;
+    onHandQty: number;
+    reorderLevel: number;
+  }) {
+    return this.http.put(`${this.baseUrl}/api/UpsertBranchProductStock`, payload);
+  }
+
+  addProductStockIn(branchId: number, payload: {
+    cashierId: number;
+    productId: number;
+    qty: number;
+    unitCost: number;
+    notes?: string;
+    occurredAt?: string;
+  }) {
+    return this.http.post(`${this.baseUrl}/api/branches/${branchId}/products/stock/in`, {
+      ...payload,
+      occurredAt: payload.occurredAt ?? new Date().toISOString(),
+    });
+  }
+
+  adjustProductStock(branchId: number, payload: {
+    cashierId: number;
+    productId: number;
+    physicalOnHandQty: number;
+    notes?: string;
+    occurredAt?: string;
+  }) {
+    return this.http.post(`${this.baseUrl}/api/branches/${branchId}/products/stock/adjust`, {
+      ...payload,
+      occurredAt: payload.occurredAt ?? new Date().toISOString(),
+    });
+  }
+
   getEmployees() {
     return this.http.get(`${this.baseUrl}/api/employees/GetAll`);
   }
@@ -292,6 +332,41 @@ export class ApiService {
 
   getMaterials() {
     return this.http.get(`${this.baseUrl}/api/materials/GetAll`);
+  }
+
+  getBranchStock(branchId: number) {
+    return this.http.get(`${this.baseUrl}/api/branches/${branchId}/stock/GetBranchStock`);
+  }
+
+  upsertStock(branchId: number, payload: { materialId: number; onHandQty: number; reorderLevel: number }) {
+    return this.http.put(`${this.baseUrl}/api/branches/${branchId}/stock/Upsert`, payload);
+  }
+
+  addStockIn(branchId: number, payload: {
+    cashierId: number;
+    materialId: number;
+    qty: number;
+    unitCost: number;
+    notes?: string;
+    occurredAt?: string;
+  }) {
+    return this.http.post(`${this.baseUrl}/api/branches/${branchId}/stock/in`, {
+      ...payload,
+      occurredAt: payload.occurredAt ?? new Date().toISOString(),
+    });
+  }
+
+  adjustStock(branchId: number, payload: {
+    cashierId: number;
+    materialId: number;
+    physicalOnHandQty: number;
+    notes?: string;
+    occurredAt?: string;
+  }) {
+    return this.http.post(`${this.baseUrl}/api/branches/${branchId}/stock/adjust`, {
+      ...payload,
+      occurredAt: payload.occurredAt ?? new Date().toISOString(),
+    });
   }
 
   getServiceRecipes(serviceId: number, bodyType: number) {

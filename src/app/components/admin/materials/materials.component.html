@@ -12,9 +12,18 @@
 
         <div class="row g-3">
           <div class="col-md-4" *ngFor="let mat of materials">
-            <div class="card product-card border-0 shadow-sm">
+            <div class="card product-card border-0 shadow-sm"
+              [class.material-below-reorder]="isBelowReorder(mat)"
+              [class.material-alert-dismissed]="isBelowReorder(mat) && isAlertDismissed(mat)">
 
-              <div class="card-body text-center p-4">
+              <div class="card-body text-center p-4 position-relative">
+                <div *ngIf="isBelowReorder(mat) && !isAlertDismissed(mat)" class="alert alert-warning py-2 px-3 mb-2 small d-flex align-items-center justify-content-between gap-2">
+                  <span><i class="bi bi-exclamation-triangle-fill me-1"></i>المخزون تحت حد إعادة الطلب</span>
+                  <button type="button" class="btn btn-sm btn-outline-dark" (click)="dismissAlert(mat)">تمام</button>
+                </div>
+                <div *ngIf="isBelowReorder(mat) && isAlertDismissed(mat)" class="text-warning small mb-1">
+                  <i class="bi bi-exclamation-circle"></i> لا يزال تحت الحد
+                </div>
                 <!-- <div class="icon-circle mb-3 bg-light-orange">
                   <i class="bi bi-droplet-fill fs-2 text-orange"></i>
                 </div> -->
@@ -35,7 +44,28 @@
                   التحميل: {{ mat.chargePerUnit }} ج.م
                 </p>
 
-                <div class="d-flex justify-content-center gap-2 mt-2">
+                <p class="small mb-1">
+                  <span class="text-success fw-bold">المخزون: {{ mat.stock }}</span>
+                  <span class="text-muted ms-2">حد إعادة الطلب: {{ mat.reorderLevel }}</span>
+                </p>
+
+                <div class="d-flex justify-content-center flex-wrap gap-2 mt-2">
+                  <button
+                    class="btn btn-sm btn-outline-success"
+                    (click)="openStockInModal(mat)"
+                    data-bs-toggle="modal"
+                    data-bs-target="#stockInModal"
+                  >
+                    إدخال مخزون
+                  </button>
+                  <button
+                    class="btn btn-sm btn-outline-info"
+                    (click)="openAdjustModal(mat)"
+                    data-bs-toggle="modal"
+                    data-bs-target="#adjustStockModal"
+                  >
+                    تعديل المخزون
+                  </button>
                   <button
                     class="btn btn-sm btn-light-warning"
                     (click)="openEditModal(mat)"
@@ -85,7 +115,7 @@
                 <input type="number" step="0.1" class="form-control custom-input" [(ngModel)]="selectedMaterial.costPerUnit" />
               </div>
               <div class="col-6">
-                <label class="form-label small fw-bold">التحميل *</label>
+                <label class="form-label small fw-bold">سعر البيع *</label>
                 <input type="number" step="0.1" class="form-control custom-input" [(ngModel)]="selectedMaterial.chargePerUnit" />
               </div>
             </div>
@@ -134,6 +164,17 @@
           </div>
         </div>
 
+        <div class="row mt-3">
+          <div class="col-6">
+            <label class="form-label small fw-bold">المخزون الحالي</label>
+            <input type="number" min="0" class="form-control custom-input" [(ngModel)]="selectedMaterial.stock" />
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-bold">حد إعادة الطلب</label>
+            <input type="number" min="0" class="form-control custom-input" [(ngModel)]="selectedMaterial.reorderLevel" />
+          </div>
+        </div>
+
         <div class="form-check mt-3">
           <input class="form-check-input" type="checkbox" id="matActiveChk" [(ngModel)]="selectedMaterial.isActive" />
           <label class="form-check-label fw-bold" for="matActiveChk">Active</label>
@@ -148,6 +189,68 @@
         <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-bold rounded-3" data-bs-dismiss="modal">
           إلغاء
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- إدخال مخزون Modal -->
+<div class="modal fade" id="stockInModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">إدخال مخزون{{ stockInMaterial ? ' - ' + stockInMaterial.name : '' }}</h5>
+        <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4 text-end">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">الكمية *</label>
+          <input type="number" min="1" class="form-control custom-input" [(ngModel)]="stockInQty" placeholder="0" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">تكلفة الوحدة</label>
+          <input type="number" min="0" step="0.01" class="form-control custom-input" [(ngModel)]="stockInUnitCost" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">ملاحظات</label>
+          <input type="text" class="form-control custom-input" [(ngModel)]="stockInNotes" placeholder="اختياري" />
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-orange px-4 py-2 fw-bold rounded-3"
+          (click)="saveStockIn()" [disabled]="isSavingStock || stockInQty <= 0">
+          {{ isSavingStock ? 'جاري الحفظ...' : 'إدخال' }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-bold rounded-3" data-bs-dismiss="modal">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- تعديل المخزون Modal -->
+<div class="modal fade" id="adjustStockModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">تعديل المخزون (الكمية الفعلية){{ adjustMaterial ? ' - ' + adjustMaterial.name : '' }}</h5>
+        <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4 text-end">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">الكمية الفعلية الحالية *</label>
+          <input type="number" min="0" class="form-control custom-input" [(ngModel)]="adjustQty" placeholder="0" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">ملاحظات</label>
+          <input type="text" class="form-control custom-input" [(ngModel)]="adjustNotes" placeholder="اختياري" />
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-orange px-4 py-2 fw-bold rounded-3"
+          (click)="saveAdjust()" [disabled]="isSavingStock">
+          {{ isSavingStock ? 'جاري الحفظ...' : 'حفظ' }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-bold rounded-3" data-bs-dismiss="modal">إلغاء</button>
       </div>
     </div>
   </div>
