@@ -13,10 +13,10 @@
         <div class="row">
           <div class="form-group">
             <label><i class="bi bi-person mx-1"></i> اسم العميل </label>
-            <input type="text" formControlName="name" placeholder="مثال: عصام الشوالي" />
+            <input type="text" formControlName="name" placeholder="ادخل اسم العميل" />
           </div>
             <div class="form-group">
-              <label><i class="bi bi-telephone mx-1"></i> رقم الهاتف 
+              <label><i class="bi bi-telephone mx-1"></i> رقم الهاتف
                 <span class="spinner-border spinner-border-sm text-primary ms-2" *ngIf="isLookingUpClient" role="status">
                   <span class="visually-hidden">Loading...</span>
                 </span>
@@ -124,7 +124,7 @@
         </div>
       </div>
     </form>
-    
+
   </div>
 </section>
 
@@ -132,7 +132,7 @@
 <div class="modal fade" id="carSelectionModal" tabindex="-1" aria-hidden="true" dir="rtl" *ngIf="showCarSelectionModal">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-4">
-      
+
       <div class="modal-header border-0 pb-0">
         <h5 class="modal-title fw-bold">اختر السيارة</h5>
         <button type="button" class="btn-close ms-0 me-auto" (click)="closeCarSelectionModal()"></button>
@@ -151,11 +151,11 @@
         </div>
 
         <div class="cars-list">
-          <div 
-            *ngFor="let car of getCarsToDisplay(); let i = index" 
+          <div
+            *ngFor="let car of getCarsToDisplay(); let i = index"
             class="car-card p-3 mb-2 border rounded-3 cursor-pointer car-card-hover"
             (click)="selectCar(car)">
-            
+
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <div class="fw-bold">

@@ -1,3 +1,5 @@
+
+<div class="contt">
 <div class="report-container" dir="rtl">
   <h3 class="page-title mb-4">
     <i class="bi bi-people-fill text-orange me-2"></i>
@@ -5,19 +7,29 @@
   </h3>
 
   <!-- Filters -->
-  <div class="filter-card forto-card mb-4 p-3 d-flex flex-wrap align-items-center gap-3">
-    <input type="date" class="form-control custom-input" [(ngModel)]="fromDate" placeholder="من" />
-    <input type="date" class="form-control custom-input" [(ngModel)]="toDate" placeholder="إلى" />
+<div class="filter-card forto-card mb-4 p-3 d-flex align-items-center gap-3">
+  <div class="d-flex gap-2 flex-grow-1">
+    <input
+      type="date"
+      class="form-control custom-input flex-grow-1"
+      [(ngModel)]="fromDate" placeholder="من" />
 
-    <select class="form-select custom-input" style="max-width: 120px;" [(ngModel)]="roleFilter" (ngModelChange)="load()">
+    <input
+      type="date"
+      class="form-control custom-input flex-grow-1"
+      [(ngModel)]="toDate" placeholder="إلى" />
+
+    <select class="form-select custom-input flex-grow-1" [(ngModel)]="roleFilter" (ngModelChange)="load()">
       <option *ngFor="let o of roleOptions" [ngValue]="o.id">{{ o.label }}</option>
     </select>
+  </div>
 
-    <button class="btn-submit py-2 px-4 fw-bold rounded-3" (click)="load()"
+  <button
+      class="btn-submit w-25 py-2 px-5 fw-bold rounded-3" (click)="load()"
       [disabled]="isLoading || !fromDate || !toDate">
       {{ isLoading ? 'جاري التحميل...' : 'تحديث' }}
-    </button>
-  </div>
+  </button>
+</div>
 
   <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
 
@@ -92,4 +104,5 @@
       </table>
     </div>
   </div>
+</div>
 </div>

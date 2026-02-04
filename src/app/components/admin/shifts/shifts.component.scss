@@ -1,7 +1,44 @@
 .contt {
   background: linear-gradient(to left, );
   padding: 20px;
+  height: 100vh;
 }
+
+.container-fluid{
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.badge{
+  width: 80px;
+  height: 30px;
+  background-color: #ff9a27 !important;
+  color: white !important;
+}
+
+.card{
+  cursor: pointer;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent !important;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
+  }
+
+  &.active {
+    background-color: #fff9f2;
+    transform: scale(0.95);
+  }
+    .icon-circle {
+      color: white;
+    }
+
+}
+
+
+
 
 .text-orange {
   color: #ff9a27 !important;

@@ -22,16 +22,27 @@
   border-radius: 15px;
   padding: 15px;
   border: 1px solid #eee;
+
 }
+
 
 .custom-input {
-  max-width: 180px;
+  max-width: none;
+  width: 100%;
 }
 
+
+select.custom-input {
+  max-width: none !important;
+}
+
+
 .btn-submit {
+  min-width: 150px;
   background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
   color: white;
   border: none;
+  white-space: nowrap;
 }
 
 .stats-row {
@@ -96,4 +107,32 @@
 .bi-chevron-down.rotated {
   transform: rotate(180deg);
   display: inline-block;
+}
+
+
+
+
+@media (max-width: 991px) {
+
+  .filter-card, .header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+
+    .d-flex, input, button {
+      width: 100% !important;
+      max-width: none !important;
+      margin: 0 !important;
+    }
+  }
+
+
+
+
+
+
+
+
+
+
 }
