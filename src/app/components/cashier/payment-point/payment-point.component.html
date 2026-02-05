@@ -133,7 +133,7 @@
         <div class="row">
           <div class="form-group">
             <label><i class="bi bi-person mx-1"></i> اسم العميل
-              <span *ngIf="currentClientIsPremium" class="badge bg-warning text-dark ms-2">عميل مميز</span>
+              <span *ngIf="currentClientIsPremium" class="badge bg-warning text-dark ms-2 p-2">عميل مميز</span>
             </label>
             <input type="text" formControlName="name" placeholder="ادخل اسم العميل" />
           </div>
@@ -315,7 +315,7 @@
 
 
 
-      <div class="form-footer">
+      <!-- <div class="form-footer">
         <div class="form-footer-inner">
           <div class="total-price">
             <span>الإجمالي المتوقع: </span>
@@ -350,15 +350,110 @@
           </div>
 
           <div class="actions">
-          <button type="button" class="btn-cancel" (click)="resetQuickBookingForm()">
+          <button type="button" class="btn-cancel w-25" (click)="resetQuickBookingForm()">
             إلغاء
           </button>
-          <button type="submit" class="btn-save" [disabled]="isSubmitting">
+          <button type="submit" class="btn-save w-50" [disabled]="isSubmitting">
             {{ isSubmitting ? 'جاري التنفيذ...' : 'تأكيد الدفع' }}
           </button>
           </div>
         </div>
+      </div> -->
+
+
+<!-- <div class="form-footer">
+  <div class="form-footer-inner">
+    <div class="total-price">
+      <span>الإجمالي المتوقع:</span>
+      <strong>{{ totalPrice }} ج.م</strong>
+    </div>
+
+    <div class="adjust-total-section">
+      <span class="adjust-label">المبلغ النهائي:</span>
+      <div class="adjust-options">
+        <button type="button" class="adjust-opt" [class.active]="adjustTotalMode === 'normal'" (click)="adjustTotalMode = 'normal'">
+          <i class="bi bi-receipt"></i>
+          الإجمالي العادي
+        </button>
+
+        <button type="button" class="adjust-opt adjust-opt-free" [class.active]="adjustTotalMode === 'free'" (click)="adjustTotalMode = 'free'">
+          <i class="bi bi-gift"></i>
+          مجاني
+        </button>
+
+<div class="adjust-opt-custom" [class.active]="adjustTotalMode === 'custom'">
+  <button type="button" class="btn-trigger-edit" (click)="adjustTotalMode = 'custom'">
+    <i class="bi bi-pencil-square"></i>
+    تعديل
+  </button>
+
+  <input type="number"
+          min="0"
+          step="0.01"
+          class="adjust-input"
+          [(ngModel)]="adjustCustomAmount"
+          [ngModelOptions]="{standalone: true}"
+          [disabled]="adjustTotalMode !== 'custom'"
+          placeholder="0"
+          (focus)="adjustTotalMode = 'custom'">
+
+  <span class="adjust-currency">ج.م</span>
+</div>
       </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn-cancel" (click)="resetQuickBookingForm()">
+        إلغاء
+      </button>
+      <button type="submit" class="btn-save d-flex align-items-center justify-content-center w-75" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'جاري...' : 'تأكيد الدفع' }}
+      </button>
+    </div>
+  </div>
+</div> -->
+
+
+<div class="form-footer">
+  <div class="form-footer-inner">
+
+    <div class="total-price">
+      <span>الإجمالي المتوقع:</span>
+      <strong>{{ totalPrice }} ج.م</strong>
+    </div>
+
+    <div class="adjust-total-section">
+      <span class="adjust-label">المبلغ النهائي:</span>
+      <div class="adjust-options">
+        <button type="button" class="adjust-opt" [class.active]="adjustTotalMode === 'normal'" (click)="adjustTotalMode = 'normal'">
+          <i class="bi bi-receipt"></i> العادي
+        </button>
+
+        <button type="button" class="adjust-opt adjust-opt-free" [class.active]="adjustTotalMode === 'free'" (click)="adjustTotalMode = 'free'">
+          <i class="bi bi-gift"></i> مجاني
+        </button>
+
+        <div class="adjust-opt-custom" [class.active]="adjustTotalMode === 'custom'">
+          <button type="button" class="btn-trigger-edit" (click)="adjustTotalMode = 'custom'">
+            <i class="bi bi-pencil-square"></i> تعديل
+          </button>
+          <input type="number" class="adjust-input" [(ngModel)]="adjustCustomAmount" [disabled]="adjustTotalMode !== 'custom'">
+          <span class="adjust-currency">ج.م</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn-cancel" (click)="resetQuickBookingForm()">إلغاء</button>
+      <button type="submit" class="btn-save" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'جاري...' : 'تأكيد الدفع' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+
     </form>
 
   </div>

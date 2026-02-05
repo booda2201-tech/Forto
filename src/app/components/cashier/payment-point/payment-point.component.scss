@@ -830,233 +830,221 @@
   }
 }
 
+
+
+
+
+
 .form-footer {
+  background: #2d3238 !important;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 15px !important;
+  border-radius: 16px !important;
+  margin-top: 25px;
+  direction: rtl;
+
+  .form-footer-inner {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    background: #6e7279;
-    color: white;
-    padding: 20px;
-    border-radius: 15px;
+    justify-content: space-between;
     gap: 15px;
+    width: 100%;
+  }
 
 
-    @media (max-width: 576px) {
-        flex-direction: column;
+  .total-price {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    white-space: nowrap;
+
+    span {
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+
+    strong {
+      color: #ffa500 !important;
+      font-size: 1.4rem !important;
+      font-weight: 800;
+    }
+  }
+
+
+  .adjust-total-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    justify-content: center;
+
+    .adjust-label {
+      font-size: 0.9rem;
+      color: #e5e7eb;
+      white-space: nowrap;
+    }
+
+    .adjust-options {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .adjust-opt, .adjust-opt-custom {
+      height: 38px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .adjust-opt {
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      color: #d1d5db;
+      padding: 0 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      i { font-size: 1rem; }
+
+      &.active {
+        background: #ffa500;
+        border-color: #ffa500;
+        color: #fff;
+      }
+
+      &.adjust-opt-free.active {
+        background: #10b964;
+        border-color: #10b981;
+      }
+    }
+
+
+    .adjust-opt-custom {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 0 8px;
+
+      .btn-trigger-edit {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .adjust-input {
+        width: 70px;
+        background: transparent;
+        border: none;
+        color: #fff;
         text-align: center;
-        padding: 15px;
+        font-weight: 700;
+        outline: none;
+        &::-webkit-inner-spin-button { -webkit-appearance: none; }
+      }
+
+      .adjust-currency { font-size: 0.7rem; color: #9ca3af; }
+
+      &.active {
+        background: #fff;
+        border-color: #ffa500;
+        .btn-trigger-edit, .adjust-input, .adjust-currency { color: #000; }
+      }
+    }
+  }
+
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: fit-content;
+
+    .btn-cancel {
+      padding: 0 15px;
+      height: 38px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #9ca3af;
+      border-radius: 8px;
+      cursor: pointer;
+      &:hover { color: #fff; background: rgba(255, 255, 255, 0.1); }
     }
 
-    .total-price {
-        font-size: 18px;
-        white-space: nowrap;
-
-        strong {
-            color: #f39c12;
-            font-size: 24px;
-            margin-right: 10px;
-        }
-
-        @media (max-width: 576px) {
-            font-size: 16px;
-            strong { font-size: 22px; }
-        }
+    .btn-save {
+      padding: 0 35px;
+      height: 40px;
+      background: #ffa500 !important;
+      color: #fff !important;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      &:hover:not(:disabled) { transform: scale(1.03); filter: brightness(1.1); }
     }
-
-    .actions {
-
-
-        @media (max-width: 576px) {
-            display: flex;
-            gap: 10;
-            width: 100%;
-            justify-content: center;
-
-        }
-
-        .btn-save {
-            background: #f39c12;
-            color: white;
-            border: none;
-            padding: 12px 50px;
-            margin: 0 10px;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            flex: 1;
-
-            &:hover { background: #c0691c; }
-
-            @media (max-width: 576px) {
-                padding: 10px 25px;
-                margin: 0 5px;
-              }
-
-        }
-
-        .btn-cancel {
-            background: transparent;
-            color: #ecf0f1;
-            border: 1px solid #7f8c8d;
-            padding: 10px 25px;
-            border-radius: 10px;
-            cursor: pointer;
-            flex: 1;
-            &:hover { background: #919191; color: #fff;
-                }
-        }
-
-    }
+  }
 }
 
 
-
-.form-group label i {
-  margin-left: 8px;
-  color: #f39c12;
-  font-size: 0.9em;
-}
-
-.actions button i {
-  margin-left: 5px;
-}
-
-.service-item span i {
-  margin-left: 5px;
-  color: #7f8c8d;
-}
+@media (max-width: 992px) {
+  .form-footer {
 
 
-.custom-select {
-    height: 45px;
-    border-radius: 8px;
-    border: 1px solid #ced4da;
-    color: #000000;
-    font-size: 0.9rem;
-    background-color: #ffffff;
-    cursor: pointer;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-
-    &:focus { border-color: #f39c12; box-shadow: 0 0 5px rgba(243, 156, 18, 0.2); }
-}
-
-.car-card-hover {
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background-color: white;    &:hover {
-        background-color: #f8f9fa !important;
-    }
-}
-
-/* تحسين شكل footer الدفع والمبلغ النهائي */
-.form-footer {
-    background: linear-gradient(135deg, #5a5f66 0%, #4a4f56 100%) !important;
-    padding: 24px !important;
-    border-radius: 20px !important;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+    padding: 20px !important;
 
     .form-footer-inner {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-        width: 100%;
+      flex-direction: column;
+      gap: 18px;
     }
 
-    .total-price strong { color: #ffa500 !important; font-size: 1.5rem !important; }
+
+    .total-price {
+      width: 100%;
+      justify-content: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
 
     .adjust-total-section {
-        display: flex;
-        align-items: center;
-        gap: 12px;
+      width: 100%;
+      flex-direction: column;
+      gap: 10px;
+
+      .adjust-options {
+        width: 100%;
+        justify-content: center;
         flex-wrap: wrap;
+      }
 
-        .adjust-label { font-weight: 600; font-size: 0.9rem; opacity: 0.95; }
-
-        .adjust-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .adjust-opt {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 10px 18px;
-            border-radius: 12px;
-            border: 2px solid rgba(255,255,255,0.25);
-            background: rgba(255,255,255,0.08);
-            color: #fff;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.25s ease;
-
-            i { font-size: 1.1rem; }
-            &:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.4); }
-            &.active {
-                background: #ffa500;
-                border-color: #ffa500;
-                color: #fff;
-                box-shadow: 0 4px 12px rgba(255,165,0,0.35);
-            }
-            &.adjust-opt-free.active {
-                background: #22c55e;
-                border-color: #22c55e;
-                box-shadow: 0 4px 12px rgba(34,197,94,0.35);
-            }
-        }
-
-        .adjust-opt-custom {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 4px 4px 4px 12px;
-            border-radius: 12px;
-            border: 2px solid rgba(255,255,255,0.25);
-            background: rgba(255,255,255,0.08);
-            transition: all 0.25s ease;
-
-            &.active { border-color: #ffa500; background: rgba(255,165,0,0.15); }
-
-            .adjust-input {
-                width: 85px;
-                padding: 8px 10px;
-                border: 1px solid rgba(255,255,255,0.3);
-                border-radius: 8px;
-                background: rgba(255,255,255,0.9);
-                color: #1f2a37;
-                font-weight: 600;
-                font-size: 0.95rem;
-                text-align: center;
-                &:focus { outline: none; border-color: #ffa500; box-shadow: 0 0 0 3px rgba(255,165,0,0.2); }
-                &:disabled { opacity: 0.6; cursor: not-allowed; }
-            }
-            .adjust-currency { font-size: 0.85rem; opacity: 0.85; }
-        }
+      .adjust-opt, .adjust-opt-custom {
+        flex: 1;
+        justify-content: center;
+        min-width: 100px;
+      }
     }
+
 
     .actions {
-        .btn-save {
-            background: linear-gradient(135deg, #ffa500 0%, #e69500 100%) !important;
-            box-shadow: 0 4px 14px rgba(255,165,0,0.3);
-            &:hover { filter: brightness(1.08); transform: translateY(-1px); }
-        }
-        .btn-cancel {
-            background: rgba(255,255,255,0.1) !important;
-            border: 2px solid rgba(255,255,255,0.3);
-            &:hover { background: rgba(255,255,255,0.2) !important; }
-        }
-    }
+      width: 100%;
+      flex-direction: column-reverse;
+      gap: 12px;
 
-    @media (max-width: 768px) {
-        .form-footer-inner { flex-direction: column; align-items: stretch; }
-        .adjust-total-section { flex-direction: column; align-items: stretch; }
-        .adjust-options { justify-content: center; }
-        .actions { justify-content: center; }
+      .btn-save, .btn-cancel {
+        width: 100% !important;
+        height: 48px !important;
+        margin: 0;
+      }
     }
+  }
 }
