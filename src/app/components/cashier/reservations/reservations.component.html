@@ -8,18 +8,13 @@
           لديك {{ (filteredBookings$ | async)?.length || 0 }} عملاء في هذا القسم
         </p>
       </div>
-      
+
       <div class="date-selector">
         <label class="form-label fw-bold mb-2 d-block text-start">
           <i class="bi bi-calendar-event me-2"></i>اختر التاريخ
         </label>
-        <input 
-          type="date" 
-          class="form-control form-control-lg"
-          [value]="selectedDate"
-          (change)="onDateChange($event)"
-          style="min-width: 200px;"
-        />
+        <input type="date" class="form-control form-control-lg" [value]="selectedDate" (change)="onDateChange($event)"
+          style="min-width: 200px;" />
       </div>
     </div>
 
@@ -151,8 +146,8 @@
           </button>
 
           <button *ngIf="currentTab === 'active'"
-            class="btn btn-success flex-grow-1 text-white fw-bold rounded-15 shadow-sm"
-            (click)="onComplete(customer)" [disabled]="isLoadingCompleteGifts">
+            class="btn btn-success flex-grow-1 text-white fw-bold rounded-15 shadow-sm" (click)="onComplete(customer)"
+            [disabled]="isLoadingCompleteGifts">
             إنهاء الخدمة <i class="bi bi-check2-circle ms-1"></i>
           </button>
 
@@ -163,13 +158,11 @@
 
           <button *ngIf="currentTab === 'completed' && !isInvoicePaid(customer.id)"
             class="btn btn-success flex-grow-1 text-white fw-bold rounded-15 shadow-sm"
-            (click)="openPayInvoice(customer)"
-            title="تأكيد الدفع">
+            (click)="openPayInvoice(customer)" title="تأكيد الدفع">
             <i class="bi bi-cash-coin me-1"></i> دفع
           </button>
           <button *ngIf="currentTab === 'completed' && !isInvoicePaid(customer.id)"
-            class="btn btn-outline-warning btn-sm fw-bold rounded-15"
-            (click)="openAddGiftToInvoiceModal(customer)"
+            class="btn btn-outline-warning btn-sm fw-bold rounded-15" (click)="openAddGiftToInvoiceModal(customer)"
             title="إضافة هدية للفاتورة غير المدفوعة">
             <i class="bi bi-gift me-1"></i> إضافة هدية
           </button>
@@ -178,8 +171,7 @@
             <i class="bi bi-check-circle me-1"></i> مدفوع
           </span>
           <button *ngIf="currentTab === 'completed'"
-            class="btn btn-outline-success flex-grow-1 fw-bold rounded-15 shadow-sm"
-            (click)="openViewInvoice(customer)"
+            class="btn btn-outline-success flex-grow-1 fw-bold rounded-15 shadow-sm" (click)="openViewInvoice(customer)"
             title="عرض الفاتورة وطباعتها">
             <i class="bi bi-receipt me-1"></i> عرض الفاتورة
           </button>
@@ -285,32 +277,62 @@
 
 
 
-<!-- Modal اختيار الهدايا قبل إنهاء الخدمة -->
+<!-- Modal إنهاء الخدمة - تعديل السعر واختيار الهدايا -->
 <div class="modal fade" id="completeGiftModal" tabindex="-1" dir="rtl">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-4">
       <div class="modal-header border-0">
-        <h5 class="modal-title fw-bold"><i class="bi bi-gift me-2 text-warning"></i> اختر الهدايا (اختياري)</h5>
+        <h5 class="modal-title fw-bold"><i class="bi bi-check-circle me-2 text-success"></i> إنهاء الخدمة</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body p-4">
-        <p class="text-muted small mb-3">اختر هدية واحدة فقط (اختياري):</p>
-        <div class="d-flex flex-wrap gap-2">
-          <div *ngFor="let g of completeGiftOptions" (click)="toggleCompleteGift(g.productId)"
-            class="service-badge pointer transition-all shadow-sm"
-            [class.active-service]="isCompleteGiftSelected(g.productId)"
-            [style.cursor]="'pointer'">
-            <span class="fw-bold">{{ g.productName }}</span>
-            <i class="bi bi-check-circle-fill text-success ms-2" *ngIf="isCompleteGiftSelected(g.productId)"></i>
+        <!-- تعديل السعر -->
+        <div class="adjust-total-section mb-4">
+          <span class="adjust-label d-block mb-2 fw-bold">المبلغ النهائي:</span>
+          <div class="adjust-options d-flex flex-wrap gap-2 align-items-center">
+            <button type="button" class="adjust-opt" [class.active]="adjustTotalMode === 'normal'"
+              (click)="adjustTotalMode = 'normal'">
+              <i class="bi bi-receipt"></i>
+              الإجمالي العادي ({{ completeBooking?.totalAmount ?? 0 }} ج.م)
+            </button>
+            <button type="button" class="adjust-opt adjust-opt-free" [class.active]="adjustTotalMode === 'free'"
+              (click)="adjustTotalMode = 'free'">
+              <i class="bi bi-gift"></i>
+              مجاني
+            </button>
+            <div class="adjust-opt-custom d-inline-flex align-items-center gap-2" [class.active]="adjustTotalMode === 'custom'">
+              <button type="button" class="adjust-opt" (click)="adjustTotalMode = 'custom'">
+                <i class="bi bi-pencil-square"></i>
+                تعديل
+              </button>
+              <input type="number" min="0" step="0.01" class="adjust-input"
+                [(ngModel)]="adjustCustomAmount" [ngModelOptions]="{standalone: true}"
+                [disabled]="adjustTotalMode !== 'custom'" placeholder="0"
+                (focus)="adjustTotalMode = 'custom'">
+              <span class="adjust-currency text-muted">ج.م</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- الهدايا (إن وجدت) -->
+        <div *ngIf="completeGiftOptions.length > 0" class="gifts-section">
+          <p class="text-muted small mb-2">اختر هدية واحدة (اختياري):</p>
+          <div class="d-flex flex-wrap gap-2">
+            <div *ngFor="let g of completeGiftOptions" (click)="toggleCompleteGift(g.productId)"
+              class="service-badge pointer transition-all shadow-sm"
+              [class.active-service]="isCompleteGiftSelected(g.productId)" [style.cursor]="'pointer'">
+              <span class="fw-bold">{{ g.productName }}</span>
+              <i class="bi bi-check-circle-fill text-success ms-2" *ngIf="isCompleteGiftSelected(g.productId)"></i>
+            </div>
           </div>
         </div>
       </div>
       <div class="modal-footer border-0">
         <button type="button" class="btn btn-secondary" (click)="cancelCompleteGifts()">
-          تخطي (بدون هدايا)
+          إنهاء (بدون هدايا)
         </button>
         <button type="button" class="btn btn-success fw-bold" (click)="confirmCompleteWithGifts()">
-          <i class="bi bi-check2-circle me-1"></i> إنهاء وإضافة الهدية
+          <i class="bi bi-check2-circle me-1"></i> تأكيد إنهاء الخدمة
         </button>
       </div>
     </div>
@@ -390,7 +412,7 @@
       <div class="modal-body p-4 forto-invoice-container" id="printableInvoice">
         <div class="text-center mb-3">
           <img src="assets/imeg/logo forto.png" class="brand-logo mb-1" style="max-width: 70px;" />
-          <div class="small">#{{ selectedInvoice?.id }}</div>
+          <div class="small">#{{ invoiceDisplayNumber }}</div>
         </div>
 
         <hr class="my-2" style="border-top: 1px dashed #000;">
@@ -573,14 +595,14 @@
 <div class="modal fade" id="cancelServiceModal" tabindex="-1" aria-hidden="true" dir="rtl">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content border-0 shadow-lg rounded-4">
-      
+
       <div class="modal-header border-0 pb-0">
         <h5 class="modal-title fw-bold">إلغاء الخدمة وإدخال المواد المستخدمة</h5>
         <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body p-4 text-end" *ngIf="selectedItemForCancel">
-        
+
         <div class="alert alert-info mb-4">
           <strong>الخدمة المراد إلغاؤها:</strong> {{ selectedItemForCancel.serviceName }}
         </div>
@@ -588,10 +610,7 @@
         <!-- Reason -->
         <div class="mb-4">
           <label class="form-label fw-bold mb-2">سبب الإلغاء (اختياري)</label>
-          <textarea 
-            class="form-control" 
-            rows="2" 
-            [(ngModel)]="cancelServiceReason" 
+          <textarea class="form-control" rows="2" [(ngModel)]="cancelServiceReason"
             placeholder="اكتب سبب الإلغاء هنا...">
           </textarea>
         </div>
@@ -600,10 +619,7 @@
         <div class="mb-4">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h6 class="fw-bold mb-0">المواد المستخدمة</h6>
-            <button 
-              type="button" 
-              class="btn btn-sm btn-outline-primary"
-              (click)="addMaterialRow()">
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="addMaterialRow()">
               <i class="bi bi-plus-circle me-1"></i> إضافة مادة
             </button>
           </div>
@@ -630,9 +646,7 @@
                 <tbody>
                   <tr *ngFor="let material of usedMaterials; let i = index">
                     <td>
-                      <select 
-                        class="form-select form-select-sm"
-                        [(ngModel)]="material.materialId"
+                      <select class="form-select form-select-sm" [(ngModel)]="material.materialId"
                         [ngModelOptions]="{ standalone: true }">
                         <option [value]="0" disabled>اختر المادة</option>
                         <option *ngFor="let mat of allMaterials" [value]="$any(mat).materialId ?? $any(mat).id">
@@ -641,20 +655,12 @@
                       </select>
                     </td>
                     <td>
-                      <input 
-                        type="number" 
-                        class="form-control form-control-sm text-center"
-                        [(ngModel)]="material.actualQty"
-                        [ngModelOptions]="{ standalone: true }"
-                        min="0"
-                        step="0.01"
+                      <input type="number" class="form-control form-control-sm text-center"
+                        [(ngModel)]="material.actualQty" [ngModelOptions]="{ standalone: true }" min="0" step="0.01"
                         placeholder="0">
                     </td>
                     <td class="text-center">
-                      <button 
-                        type="button" 
-                        class="btn btn-sm btn-outline-danger"
-                        (click)="removeMaterialRow(i)">
+                      <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeMaterialRow(i)">
                         <i class="bi bi-trash"></i>
                       </button>
                     </td>
@@ -668,16 +674,10 @@
       </div>
 
       <div class="modal-footer border-0 pt-0">
-        <button 
-          type="button" 
-          class="btn btn-outline-secondary fw-bold px-4" 
-          data-bs-dismiss="modal">
+        <button type="button" class="btn btn-outline-secondary fw-bold px-4" data-bs-dismiss="modal">
           إلغاء
         </button>
-        <button 
-          type="button" 
-          class="btn btn-danger fw-bold px-4" 
-          (click)="confirmCancelService()"
+        <button type="button" class="btn btn-danger fw-bold px-4" (click)="confirmCancelService()"
           [disabled]="isLoadingMaterials">
           تأكيد الإلغاء
         </button>

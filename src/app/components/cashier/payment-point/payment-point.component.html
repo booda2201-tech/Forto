@@ -314,15 +314,47 @@
 
 
       <div class="form-footer">
-        <div class="total-price">
-          <span>الإجمالي المتوقع: </span>
-          <strong>{{ totalPrice }} ج.م</strong>
-        </div>
-        <div class="actions">
+        <div class="form-footer-inner">
+          <div class="total-price">
+            <span>الإجمالي المتوقع: </span>
+            <strong>{{ totalPrice }} ج.م</strong>
+          </div>
+
+          <div class="adjust-total-section">
+            <span class="adjust-label">المبلغ النهائي:</span>
+            <div class="adjust-options">
+              <button type="button" class="adjust-opt" [class.active]="adjustTotalMode === 'normal'"
+                (click)="adjustTotalMode = 'normal'">
+                <i class="bi bi-receipt"></i>
+                الإجمالي العادي
+              </button>
+              <button type="button" class="adjust-opt adjust-opt-free" [class.active]="adjustTotalMode === 'free'"
+                (click)="adjustTotalMode = 'free'">
+                <i class="bi bi-gift"></i>
+                مجاني
+              </button>
+              <div class="adjust-opt-custom" [class.active]="adjustTotalMode === 'custom'">
+                <button type="button" class="adjust-opt" (click)="adjustTotalMode = 'custom'">
+                  <i class="bi bi-pencil-square"></i>
+                  تعديل
+                </button>
+                <input type="number" min="0" step="0.01" class="adjust-input"
+                  [(ngModel)]="adjustCustomAmount" [ngModelOptions]="{standalone: true}"
+                  [disabled]="adjustTotalMode !== 'custom'" placeholder="0"
+                  (focus)="adjustTotalMode = 'custom'">
+                <span class="adjust-currency">ج.م</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
           <button type="button" class="btn-cancel" (click)="customerForm.reset()">
             إلغاء
           </button>
-          <button type="submit" class="btn-save">تأكيد الدفع</button>
+          <button type="submit" class="btn-save" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'جاري التنفيذ...' : 'تأكيد الدفع' }}
+          </button>
+          </div>
         </div>
       </div>
     </form>

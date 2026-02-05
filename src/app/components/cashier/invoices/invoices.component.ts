@@ -61,16 +61,18 @@ export class InvoicesComponent {
   totalInvoicesCount = 0;
   totalDailyAmount = 0;
 
-  // filters (قيم معروضة في الـ UI ومربوطة بـ ngModel)
+  private todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+  // filters (قيم معروضة في الـ UI ومربوطة بـ ngModel) - من ويوم انهارده افتراضياً
   filterSearch = '';
-  filterFrom = '';
-  filterTo = '';
+  filterFrom = this.todayStr;
+  filterTo = this.todayStr;
   filterMethod = '';
   filterStatus = '';
 
   private searchTerm$ = new BehaviorSubject<string>('');
-  private from$ = new BehaviorSubject<string>('');
-  private to$ = new BehaviorSubject<string>('');
+  private from$ = new BehaviorSubject<string>(this.todayStr);
+  private to$ = new BehaviorSubject<string>(this.todayStr);
   private paymentMethod$ = new BehaviorSubject<string>('');
   private statusFilter$ = new BehaviorSubject<string>(''); // "" | "unpaid" | "paid" | "cancelled"
 
@@ -176,14 +178,15 @@ export class InvoicesComponent {
   }
 
   resetFilters(): void {
+    const today = new Date().toISOString().slice(0, 10);
     this.filterSearch = '';
-    this.filterFrom = '';
-    this.filterTo = '';
+    this.filterFrom = today;
+    this.filterTo = today;
     this.filterMethod = '';
     this.filterStatus = '';
     this.searchTerm$.next('');
-    this.from$.next('');
-    this.to$.next('');
+    this.from$.next(today);
+    this.to$.next(today);
     this.paymentMethod$.next('');
     this.statusFilter$.next('');
     this.page$.next(1);

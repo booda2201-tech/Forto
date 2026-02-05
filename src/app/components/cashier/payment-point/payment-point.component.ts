@@ -46,6 +46,10 @@ export class PaymentPointComponent implements OnInit {
   selectedGiftIds: number[] = [];
   isLoadingGifts = false;
 
+  // Adjusted Total: normal | free (0) | custom
+  adjustTotalMode: 'normal' | 'free' | 'custom' = 'normal';
+  adjustCustomAmount = 0;
+
   // Pricing & Invoice Data
   totalPrice = 0; // عرض السعر المباشر
   subTotal = 0;
@@ -424,18 +428,27 @@ submitBooking() {
   };
   payload.supervisorId = this.selectedSupervisorId;
 
+  // adjustedTotal: لو مجاني = 0، لو تعديل = القيمة، لو عادي = الإجمالي المحسوب
+  const adjTotal = this.adjustTotalMode === 'free' ? 0
+    : this.adjustTotalMode === 'custom' ? (Number(this.adjustCustomAmount) || this.totalPrice)
+    : this.totalPrice;
+  payload.adjustedTotal = adjTotal;
+
   // Save customer data before submitting
   this.customerFormData = {
     name: String(v.name ?? '').trim(),
     phone: String(v.phone ?? '').trim()
   };
 
+  this.isSubmitting = true;
   this.api.cashierCheckout(payload).subscribe({
     next: (res: any) => {
       if (res?.success === false) {
+        this.isSubmitting = false;
         this.toastr.error(res?.message || 'فشل تنفيذ العملية', 'خطأ');
         return;
       }
+      this.isSubmitting = false;
 
       this.toastr.success('تم تنفيذ Checkout بنجاح', 'نجاح');
 
@@ -457,11 +470,13 @@ submitBooking() {
       this.serviceEmployees = {};
       this.selectedSupervisorId = null;
       this.showSupervisorError = false;
+      this.adjustTotalMode = 'normal';
+      this.adjustCustomAmount = 0;
       this.customerForm.reset({ appointmentDate: this.todayYYYYMMDD() });
       this.customerFormData = null;
     },
-    error: (err) => {
-      console.error(err);
+    error: () => {
+      this.isSubmitting = false;
       // الخطأ يُعرض من ErrorInterceptor (رسالة الباك إند)
     }
   });

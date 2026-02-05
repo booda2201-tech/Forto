@@ -6,8 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-  private baseUrl = 'https://api.fortolaundry.com';
-  // private baseUrl = 'https://localhost:7179';
+  // private baseUrl = 'https://api.fortolaundry.com';
+  private baseUrl = 'https://localhost:7179';
 
   constructor(private http: HttpClient) {}
 
@@ -476,10 +476,21 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/api/invoices/by-booking/${bookingId}`);
   }
 
+  getInvoiceById(invoiceId: number) {
+    return this.http.get(`${this.baseUrl}/api/invoices/${invoiceId}`);
+  }
+
   payInvoiceCash(invoiceId: number, cashierId: number) {
     return this.http.post(
       `${this.baseUrl}/api/invoices/${invoiceId}/pay-cash`,
       { cashierId }
+    );
+  }
+
+  patchInvoiceAdjustedTotal(invoiceId: number, adjustedTotal: number) {
+    return this.http.patch(
+      `${this.baseUrl}/api/invoices/${invoiceId}/adjusted-total`,
+      { adjustedTotal }
     );
   }
 

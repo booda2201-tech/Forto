@@ -407,6 +407,10 @@ export class ReservationsComponent implements OnInit {
   completeBooking: BookingCard | null = null;
   isLoadingCompleteGifts = false;
 
+  // تعديل السعر عند إنهاء الخدمة: normal | free | custom
+  adjustTotalMode: 'normal' | 'free' | 'custom' = 'normal';
+  adjustCustomAmount = 0;
+
   // إضافة هدية لفاتورة غير مدفوعة
   addGiftBooking: BookingCard | null = null;
   addGiftOptions: { productId: number; productName: string; sku?: string }[] = [];
@@ -437,16 +441,14 @@ export class ReservationsComponent implements OnInit {
           sku: o.sku
         }));
 
-        if (this.completeGiftOptions.length > 0) {
-          this.completeBookingId = bookingId;
-          this.completeBooking = customer;
-          this.completeSelectedGiftIds = [];
-          const el = document.getElementById('completeGiftModal');
-          const modal = new (window as any).bootstrap.Modal(el);
-          modal.show();
-        } else {
-          this.doComplete(bookingId, []);
-        }
+        this.completeBookingId = bookingId;
+        this.completeBooking = customer;
+        this.completeSelectedGiftIds = [];
+        this.adjustTotalMode = 'normal';
+        this.adjustCustomAmount = customer.totalAmount ?? 0;
+        const el = document.getElementById('completeGiftModal');
+        const modal = new (window as any).bootstrap.Modal(el);
+        modal.show();
       },
       error: () => {
         this.isLoadingCompleteGifts = false;
@@ -472,12 +474,13 @@ export class ReservationsComponent implements OnInit {
   confirmCompleteWithGifts() {
     const id = this.completeBookingId;
     const gifts = this.completeSelectedGiftIds.length > 0 ? [this.completeSelectedGiftIds[0]] : [];
+    const normalTotal = this.completeBooking?.totalAmount ?? 0;
     this.completeBookingId = null;
     this.completeBooking = null;
     const el = document.getElementById('completeGiftModal');
     const modal = (window as any).bootstrap.Modal.getInstance(el);
     modal?.hide();
-    if (id) this.doComplete(id, gifts);
+    if (id) this.doComplete(id, gifts, false, { adjustTotalMode: this.adjustTotalMode, adjustCustomAmount: this.adjustCustomAmount, normalTotal });
   }
 
   /** فتح مودال إضافة هدية لفاتورة غير مدفوعة */
@@ -562,27 +565,27 @@ export class ReservationsComponent implements OnInit {
 
   cancelCompleteGifts() {
     const id = this.completeBookingId;
+    const normalTotal = this.completeBooking?.totalAmount ?? 0;
     this.completeBookingId = null;
     this.completeBooking = null;
     const el = document.getElementById('completeGiftModal');
     const modal = (window as any).bootstrap.Modal.getInstance(el);
     modal?.hide();
-    if (id) this.doComplete(id, []);
+    if (id) this.doComplete(id, [], true, { adjustTotalMode: this.adjustTotalMode, adjustCustomAmount: this.adjustCustomAmount, normalTotal });
   }
 
-  private doComplete(bookingId: number, selectedGiftIds: number[]) {
-    Swal.fire({
-      title: 'إنهاء الحجز',
-      text: 'هل تريد إنهاء الحجز؟',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'نعم',
-      cancelButtonText: 'لا',
-      confirmButtonColor: '#198754',
-    }).then((result) => {
-      if (!result.isConfirmed) return;
-
+  private doComplete(
+    bookingId: number,
+    selectedGiftIds: number[],
+    skipConfirm = false,
+    adjustInfo?: { adjustTotalMode: string; adjustCustomAmount: number; normalTotal: number }
+  ) {
+    const run = () => {
       const payload = { cashierId: this.cashierId };
+      const needsAdjust = adjustInfo && (adjustInfo.adjustTotalMode === 'free' || adjustInfo.adjustTotalMode === 'custom');
+      const adjTotal = needsAdjust
+        ? (adjustInfo!.adjustTotalMode === 'free' ? 0 : (Number(adjustInfo!.adjustCustomAmount) || adjustInfo!.normalTotal))
+        : null;
 
       this.api.completeBookingCashier(bookingId, payload).subscribe({
         next: () => {
@@ -592,21 +595,22 @@ export class ReservationsComponent implements OnInit {
             timer: 1200,
             showConfirmButton: false,
           });
-          // إضافة الهدايا للفاتورة بعد الـ complete
-          if (selectedGiftIds.length > 0) {
-            this.api.getInvoiceByBooking(bookingId).subscribe({
-              next: (invRes: any) => {
-                const inv = invRes?.data ?? invRes;
-                const invoiceId = inv?.id ?? inv?.invoiceId;
-                if (invoiceId && selectedGiftIds.length > 0) {
+          this.api.getInvoiceByBooking(bookingId).subscribe({
+            next: (invRes: any) => {
+              const inv = invRes?.data ?? invRes;
+              const invoiceId = inv?.id ?? inv?.invoiceId;
+              if (!invoiceId) {
+                this.refresh();
+                return;
+              }
+              const doNext = () => {
+                if (selectedGiftIds.length > 0) {
                   const productId = selectedGiftIds[0];
                   this.api.selectGiftForInvoice(invoiceId, {
                     cashierId: this.cashierId,
                     productId
                   }).subscribe({
-                    next: () => {
-                      this.refresh();
-                    },
+                    next: () => this.refresh(),
                     error: (err) => {
                       Swal.fire(
                         'تحذير',
@@ -619,24 +623,52 @@ export class ReservationsComponent implements OnInit {
                 } else {
                   this.refresh();
                 }
-              },
-              error: () => this.refresh()
-            });
-          } else {
-            this.refresh();
-          }
+              };
+              if (needsAdjust && adjTotal !== null) {
+                this.api.patchInvoiceAdjustedTotal(invoiceId, adjTotal).subscribe({
+                  next: () => doNext(),
+                  error: (err) => {
+                    Swal.fire('تحذير', err?.error?.message || 'فشل تعديل السعر', 'warning');
+                    doNext();
+                  }
+                });
+              } else {
+                doNext();
+              }
+            },
+            error: () => this.refresh()
+          });
         },
         error: (err) => {
           console.error(err);
           Swal.fire('خطأ', err?.error?.message || 'فشل إنهاء الحجز', 'error');
         },
       });
-    });
+    };
+
+    if (skipConfirm) {
+      run();
+    } else {
+      Swal.fire({
+        title: 'إنهاء الحجز',
+        text: 'هل تريد إنهاء الحجز؟',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'نعم',
+        cancelButtonText: 'لا',
+        confirmButtonColor: '#198754',
+      }).then((result) => {
+        if (result.isConfirmed) run();
+      });
+    }
   }
 
 
   
+  /** المجموع: من adjustedTotal إن وُجد، وإلا من subTotal */
   get subTotal(): number {
+    if (this.selectedInvoice?.adjustedTotal != null) return Number(this.selectedInvoice.adjustedTotal);
+    if (this.selectedInvoice?.subTotal != null) return Number(this.selectedInvoice.subTotal);
     if (!this.selectedInvoice?.serviceItem) return 0;
     return this.selectedInvoice.serviceItem.reduce(
       (acc: number, item: any) => acc + (item.price || 0),
@@ -645,11 +677,20 @@ export class ReservationsComponent implements OnInit {
   }
 
   get taxAmount(): number {
+    if (this.selectedInvoice?.taxAmount != null) return Number(this.selectedInvoice.taxAmount);
     return this.subTotal * 0.14;
   }
 
   get finalTotal(): number {
+    if (this.selectedInvoice?.total != null) return Number(this.selectedInvoice.total);
     return this.subTotal + this.taxAmount;
+  }
+
+  /** رقم الفاتورة للعرض (#181) */
+  get invoiceDisplayNumber(): string | number {
+    if (this.selectedInvoice?.invoiceNumber != null) return this.selectedInvoice.invoiceNumber;
+    if (this.selectedInvoice?.id != null) return this.selectedInvoice.id;
+    return '-';
   }
 
   downloadInvoice() {
@@ -659,10 +700,15 @@ export class ReservationsComponent implements OnInit {
   private mapInvoiceToSelected(inv: any, booking: BookingCard, id: number) {
     return {
       id: inv?.id ?? id,
+      invoiceNumber: inv?.invoiceNumber ?? inv?.invoiceId ?? inv?.id ?? id,
       customerName: inv?.clientName ?? inv?.customerName ?? booking.customerName,
-      phone: inv?.clientNumber ?? inv?.phone ?? booking.phone,
+      phone: inv?.clientNumber ?? inv?.phone ?? inv?.customerPhone ?? booking.phone,
       cars: inv?.cars ?? booking.cars,
-      appointmentDate: inv?.date ?? booking.appointmentDate,
+      appointmentDate: inv?.date ?? inv?.appointmentDate ?? booking.appointmentDate,
+      subTotal: inv?.subTotal,
+      adjustedTotal: inv?.adjustedTotal,
+      taxAmount: inv?.taxAmount,
+      total: inv?.total ?? inv?.grandTotal ?? inv?.adjustedTotal,
       serviceItem: ((inv?.lines ?? inv?.serviceItem ?? booking.serviceItem) ?? []).map((l: any) => ({
         name: l.description ?? l.name ?? (l as any).serviceName ?? '',
         price: Number(l.unitPrice ?? l.total ?? l.price ?? (l as any).unitPrice ?? 0),
@@ -676,10 +722,8 @@ export class ReservationsComponent implements OnInit {
     modal.show();
   }
 
-  /** زر عرض الفاتورة فقط (بدون دفع) */
+  /** زر عرض الفاتورة - يجلب الفاتورة من by-booking (الـ API لا يدعم get by id) */
   openViewInvoice(booking: BookingCard) {
-    const invoiceId = booking.invoiceId ?? (booking.raw as any)?.invoiceId ?? (booking.raw as any)?.invoice?.id;
-
     const showInvoice = (inv: any, id: number) => {
       this.selectedInvoice = this.mapInvoiceToSelected(inv, booking, id);
       if (inv?.status === 2 || String(inv?.status).toLowerCase() === 'paid') {
@@ -690,25 +734,11 @@ export class ReservationsComponent implements OnInit {
       this.showInvoiceModal();
     };
 
-    if (invoiceId) {
-      this.api.getInvoiceByBooking(booking.id).subscribe({
-        next: (res: any) => {
-          const inv = res?.data ?? res;
-          showInvoice(inv, inv?.id ?? invoiceId);
-        },
-        error: () => {
-          this.selectedInvoice = this.mapInvoiceToSelected(null, booking, invoiceId);
-          this.showInvoiceModal();
-        },
-      });
-      return;
-    }
-
     this.api.getInvoiceByBooking(booking.id).subscribe({
       next: (res: any) => {
         const inv = res?.data ?? res;
-        const id = inv?.id ?? inv?.invoiceId;
-        if (id || inv) {
+        const id = inv?.id ?? inv?.invoiceId ?? booking.invoiceId ?? (booking.raw as any)?.invoiceId ?? 0;
+        if (inv || id) {
           showInvoice(inv ?? {}, id ?? 0);
         } else {
           Swal.fire({
@@ -733,7 +763,7 @@ export class ReservationsComponent implements OnInit {
     this.api.getInvoiceByBooking(booking.id).subscribe({
       next: (res: any) => {
         const inv = res?.data ?? res;
-        const id = inv?.id ?? inv?.invoiceId;
+        const id = inv?.id ?? inv?.invoiceId ?? booking.invoiceId ?? (booking.raw as any)?.invoiceId;
         const isPaid = inv?.status === 2 || String(inv?.status).toLowerCase() === 'paid';
 
         if (isPaid) {
