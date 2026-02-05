@@ -452,13 +452,14 @@ submitBooking() {
 
       this.toastr.success('تم تنفيذ Checkout بنجاح', 'نجاح');
 
-      // optional: show invoice modal if returned
-      this.invoiceData = res?.data;
-      // Ensure customer data is included in invoice data
+      this.invoiceData = res?.data ?? res;
       if (this.invoiceData && this.customerFormData) {
         this.invoiceData.clientName = this.invoiceData.clientName || this.invoiceData.customerName || this.customerFormData.name;
         this.invoiceData.clientNumber = this.invoiceData.clientNumber || this.invoiceData.phoneNumber || this.invoiceData.phone || this.customerFormData.phone;
       }
+      // المجموع والإجمالي من adjustedTotal: المجموع = adjTotal، الضريبة 14% عليه، الإجمالي = adjTotal + ضريبة
+      this.invoiceData.subTotal = adjTotal;
+      this.invoiceData.total = adjTotal + (adjTotal * 0.14);
       this.openInvoiceModal?.();
 
       // reset
@@ -545,17 +546,12 @@ submitBooking() {
       next: (res: any) => {
         this.toastr.success('تم تسجيل الطلب بنجاح');
 
-        // ✅ use server invoice data
-        this.invoiceData = res?.data;
-        // Ensure customer data is included in invoice data
+        this.invoiceData = res?.data ?? res;
         if (this.invoiceData && this.customerFormData) {
           this.invoiceData.clientName = this.invoiceData.clientName || this.invoiceData.customerName || this.customerFormData.name;
           this.invoiceData.clientNumber = this.invoiceData.clientNumber || this.invoiceData.phoneNumber || this.invoiceData.phone || this.customerFormData.phone;
         }
-
         this.openInvoiceModal();
-
-        // reset AFTER opening modal
         this.cart = [];
         this.orderForm.reset();
         this.customerFormData = null;

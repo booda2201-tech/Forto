@@ -158,17 +158,17 @@
             تفعيل الحجز <i class="bi bi-check2-circle ms-1"></i>
           </button>
 
-          <button *ngIf="currentTab === 'completed' && !isInvoicePaid(customer.id)"
+          <button *ngIf="currentTab === 'completed' && !isInvoicePaid(customer)"
             class="btn btn-success flex-grow-1 text-white fw-bold rounded-15 shadow-sm"
             (click)="openPayInvoice(customer)" title="تأكيد الدفع">
             <i class="bi bi-cash-coin me-1"></i> دفع
           </button>
-          <button *ngIf="currentTab === 'completed' && !isInvoicePaid(customer.id)"
+          <button *ngIf="currentTab === 'completed' && !isInvoicePaid(customer)"
             class="btn btn-outline-warning btn-sm fw-bold rounded-15" (click)="openAddGiftToInvoiceModal(customer)"
             title="إضافة هدية للفاتورة غير المدفوعة">
             <i class="bi bi-gift me-1"></i> إضافة هدية
           </button>
-          <span *ngIf="currentTab === 'completed' && isInvoicePaid(customer.id)"
+          <span *ngIf="currentTab === 'completed' && isInvoicePaid(customer)"
             class="badge bg-success-subtle text-success border border-success px-3 py-2 rounded-pill fw-bold">
             <i class="bi bi-check-circle me-1"></i> مدفوع
           </span>

@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import {
   BehaviorSubject,
   combineLatest,
-  filter,
-  forkJoin,
   map,
   Observable,
   of,
@@ -14,7 +12,6 @@ import {
   take,
   tap,
 } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { ApiService } from 'src/app/services/api.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
@@ -53,6 +50,7 @@ type BookingCard = {
   worker?: string | null;
   role?: string | null;
   invoiceId?: number | null;
+  isInvoicePaid?: boolean; // من الـ API مباشرة
 
   raw?: any;
 };
@@ -133,7 +131,6 @@ export class ReservationsComponent implements OnInit {
   currentTab: BookingStatusUi = 'waiting';
   // invoice
   selectedInvoice: any;
-  paidBookingIds: number[] = []; // IDs حجوزات مدفوعة (نحدّثها عند عرض تبويب المكتملة)
   // selected date for display
   selectedDate: string = this.todayYYYYMMDD();
   // ===== Worker modal state =====
@@ -179,35 +176,7 @@ export class ReservationsComponent implements OnInit {
     private printInvoice: PrintInvoiceService
   ) { }
 
-  ngOnInit(): void {
-    this.loadPaidStatusWhenCompletedShown();
-  }
-
-  /** عند عرض الحجوزات المكتملة نجيب حالة الدفع لكل حجز من البداية */
-  private loadPaidStatusWhenCompletedShown(): void {
-    combineLatest([this.filteredBookings$, this.currentTab$]).pipe(
-      filter(([list, tab]) => tab === 'completed' && (list?.length ?? 0) > 0),
-      switchMap(([list]) => {
-        const ids = list.map((b) => b.id);
-        const calls = ids.map((id) =>
-          this.api.getInvoiceByBooking(id).pipe(
-            map((res: any) => {
-              const inv = res?.data ?? res;
-              const paid = inv?.status === 2 || String(inv?.status ?? '').toLowerCase() === 'paid';
-              return { id, paid };
-            }),
-            catchError(() => of({ id, paid: false }))
-          )
-        );
-        return forkJoin(calls).pipe(
-          map((results) => results.filter((r) => r.paid).map((r) => r.id))
-        );
-      }),
-      tap((paidIds) => {
-        this.paidBookingIds = paidIds;
-      })
-    ).subscribe();
-  }
+  ngOnInit(): void {}
 
   setTab(tab: BookingStatusUi) {
     this.currentTab = tab;
@@ -726,11 +695,6 @@ export class ReservationsComponent implements OnInit {
   openViewInvoice(booking: BookingCard) {
     const showInvoice = (inv: any, id: number) => {
       this.selectedInvoice = this.mapInvoiceToSelected(inv, booking, id);
-      if (inv?.status === 2 || String(inv?.status).toLowerCase() === 'paid') {
-        if (!this.paidBookingIds.includes(booking.id)) {
-          this.paidBookingIds = [...this.paidBookingIds, booking.id];
-        }
-      }
       this.showInvoiceModal();
     };
 
@@ -767,9 +731,6 @@ export class ReservationsComponent implements OnInit {
         const isPaid = inv?.status === 2 || String(inv?.status).toLowerCase() === 'paid';
 
         if (isPaid) {
-          if (!this.paidBookingIds.includes(booking.id)) {
-            this.paidBookingIds = [...this.paidBookingIds, booking.id];
-          }
           this.selectedInvoice = this.mapInvoiceToSelected(inv, booking, id ?? 0);
           this.showInvoiceModal();
           Swal.fire({ icon: 'info', title: 'مدفوعة', text: 'هذه الفاتورة مدفوعة مسبقاً.', timer: 2000, showConfirmButton: false });
@@ -790,10 +751,8 @@ export class ReservationsComponent implements OnInit {
           next: (payRes: any) => {
             const invoiceFromApi = payRes?.data;
             this.selectedInvoice = this.mapInvoiceToSelected(invoiceFromApi ?? inv, booking, id);
-            if (!this.paidBookingIds.includes(booking.id)) {
-              this.paidBookingIds = [...this.paidBookingIds, booking.id];
-            }
             Swal.close();
+            this.refresh(); // تحديث القائمة عشان isInvoicePaid يتحدث من الـ API
             this.showInvoiceModal();
           },
           error: (err: any) => {
@@ -816,8 +775,8 @@ export class ReservationsComponent implements OnInit {
     });
   }
 
-  isInvoicePaid(bookingId: number): boolean {
-    return this.paidBookingIds.includes(bookingId);
+  isInvoicePaid(booking: BookingCard): boolean {
+    return booking.isInvoicePaid ?? false;
   }
 
   // ===== Mapping =====
@@ -854,6 +813,7 @@ export class ReservationsComponent implements OnInit {
         serviceItem,
         bodyType,
         invoiceId: b.invoiceId ?? b.invoice?.id ?? null,
+        isInvoicePaid: b.isInvoicePaid ?? false,
         raw: b,
       };
     };
