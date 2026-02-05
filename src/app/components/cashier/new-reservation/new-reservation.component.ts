@@ -71,6 +71,8 @@ export class NewReservationComponent implements OnInit {
   isLookingUpClient = false;
   showCarSelectionModal = false;
   selectedClient: any = null;
+  /** عميل مميز - من الـ API */
+  currentClientIsPremium = false;
 
   customerForm = new FormGroup({
     name: new FormControl('', [Validators.required]),
@@ -368,6 +370,7 @@ export class NewReservationComponent implements OnInit {
   lookupClient(phoneNumber: string) {
     if (!phoneNumber || phoneNumber.length < 10) {
       this.foundClients = [];
+      this.currentClientIsPremium = false;
       return;
     }
 
@@ -382,8 +385,7 @@ export class NewReservationComponent implements OnInit {
         console.log('[Phone Lookup] Found clients:', this.foundClients.length);
 
         if (this.foundClients.length === 0) {
-          // No client found, do nothing
-          console.log('[Phone Lookup] No clients found');
+          this.currentClientIsPremium = false;
           return;
         }
 
@@ -409,13 +411,13 @@ export class NewReservationComponent implements OnInit {
         console.error('[Phone Lookup] API Error:', err);
         this.isLookingUpClient = false;
         this.foundClients = [];
+        this.currentClientIsPremium = false;
       }
     });
   }
 
   handleClientFound(client: any) {
-    console.log('[Phone Lookup] Handling client found:', client);
-    // Fill name and email
+    this.currentClientIsPremium = client?.isPremiumCustomer ?? false;
     this.customerForm.patchValue({
       name: client.fullName || '',
       email: client.email || ''
@@ -464,6 +466,7 @@ export class NewReservationComponent implements OnInit {
   }
 
   selectCar(car: any) {
+    if (car?.clientIsPremium != null) this.currentClientIsPremium = car.clientIsPremium;
     this.fillCarData(car);
     this.closeCarSelectionModal();
   }
@@ -483,14 +486,17 @@ export class NewReservationComponent implements OnInit {
 
   getCarsToDisplay(): any[] {
     if (this.selectedClient) {
-      return this.selectedClient.cars || [];
+      return (this.selectedClient.cars || []).map((car: any) => ({
+        ...car,
+        clientIsPremium: this.selectedClient?.isPremiumCustomer
+      }));
     }
-    // If multiple clients, return all cars from all clients
     return this.foundClients.flatMap(client => 
       (client.cars || []).map((car: any) => ({
         ...car,
         clientName: client.fullName,
-        clientPhone: client.phoneNumber
+        clientPhone: client.phoneNumber,
+        clientIsPremium: client.isPremiumCustomer
       }))
     );
   }

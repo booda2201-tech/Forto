@@ -515,6 +515,9 @@ submitBooking() {
   invoiceData: any = null;
   customerFormData: { name: string; phone: string } | null = null;
 
+  /** عميل مميز - من الـ API (lookup / GetAll) */
+  currentClientIsPremium = false;
+
   private submitOrder() {
     if (this.orderForm.invalid || this.cart.length === 0) {
       this.toastr.error('يرجى إكمال البيانات واختيار المنتجات');
@@ -649,6 +652,7 @@ submitBooking() {
   lookupClient(phoneNumber: string) {
     if (!phoneNumber || phoneNumber.length < 10) {
       this.foundClients = [];
+      this.currentClientIsPremium = false;
       return;
     }
 
@@ -660,6 +664,7 @@ submitBooking() {
         this.isLookingUpClient = false;
 
         if (this.foundClients.length === 0) {
+          this.currentClientIsPremium = false;
           return;
         }
 
@@ -681,12 +686,13 @@ submitBooking() {
         console.error(err);
         this.isLookingUpClient = false;
         this.foundClients = [];
+        this.currentClientIsPremium = false;
       }
     });
   }
 
   handleClientFound(client: any) {
-    // Fill name
+    this.currentClientIsPremium = client?.isPremiumCustomer ?? false;
     this.customerForm.patchValue({
       name: client.fullName || ''
     });
@@ -724,8 +730,16 @@ submitBooking() {
   }
 
   selectCar(car: any) {
+    if (car?.clientIsPremium != null) this.currentClientIsPremium = car.clientIsPremium;
     this.fillCarData(car);
     this.closeCarSelectionModal();
+  }
+
+  resetQuickBookingForm() {
+    this.customerForm.reset({ appointmentDate: this.todayYYYYMMDD() });
+    this.currentClientIsPremium = false;
+    this.foundClients = [];
+    this.selectedClient = null;
   }
 
   closeCarSelectionModal() {
@@ -742,13 +756,17 @@ submitBooking() {
 
   getCarsToDisplay(): any[] {
     if (this.selectedClient) {
-      return this.selectedClient.cars || [];
+      return (this.selectedClient.cars || []).map((car: any) => ({
+        ...car,
+        clientIsPremium: this.selectedClient?.isPremiumCustomer
+      }));
     }
     return this.foundClients.flatMap(client => 
       (client.cars || []).map((car: any) => ({
         ...car,
         clientName: client.fullName,
-        clientPhone: client.phoneNumber
+        clientPhone: client.phoneNumber,
+        clientIsPremium: client.isPremiumCustomer
       }))
     );
   }

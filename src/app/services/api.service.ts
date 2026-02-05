@@ -52,8 +52,9 @@ export class ApiService {
     return this.http.get(url);
   }
 
-  lookupClientByPhone(phoneNumber: string): Observable<any> {
-    const params = new HttpParams().set('phone', phoneNumber);
+  lookupClientByPhone(phoneNumber: string, take = 10): Observable<any> {
+    let params = new HttpParams().set('phone', phoneNumber);
+    if (take) params = params.set('take', String(take));
     return this.http.get(`${this.baseUrl}/api/clients/lookup`, { params });
   }
 

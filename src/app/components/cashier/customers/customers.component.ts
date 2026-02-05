@@ -126,8 +126,8 @@ export class CustomersComponent implements OnInit {
           id: c.id,
           customerName: c.fullName,
           phone: c.phoneNumber,
-          // لو السيرفر بيرجع cars ضمن العميل هتشتغل، غير كده هتبقى فاضية
           cars: c.cars || [],
+          isPremiumCustomer: c.isPremiumCustomer ?? false,
         }));
         this.filteredCarRequests = [...this.carRequests];
       },
