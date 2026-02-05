@@ -35,6 +35,7 @@
       <button class="tab-btn" [class.active]="currentTab === 'canceled'" (click)="setTab('canceled')">
         ملغي ({{ (canceledCount$ | async) ?? 0 }})
       </button>
+      
     </div>
 
     <!-- Cards -->
@@ -108,6 +109,7 @@
             <span><i class="bi bi-person-badge ms-2"></i> العامل المسؤول:</span>
             <strong class="text-primary">{{ customer.worker }}</strong>
           </div>
+
         </div>
 
         <hr class="my-2 opacity-25" />

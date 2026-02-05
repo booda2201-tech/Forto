@@ -6,8 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-  // private baseUrl = 'https://api.fortolaundry.com';
-  private baseUrl = 'https://localhost:7179';
+  private baseUrl = 'https://api.fortolaundry.com';
+  // private baseUrl = 'https://localhost:7179';
 
   constructor(private http: HttpClient) {}
 
