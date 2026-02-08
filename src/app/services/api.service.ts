@@ -757,4 +757,46 @@ export class ApiService {
   // getServiceEmployees(serviceId: number) {
   //   return this.http.get(`${this.baseUrl}/api/catalog/services/${serviceId}/employees`);
   // }
+
+
+
+
+
+
+
+
+updateCatalogService(id: number, payload: any) {
+  return this.http.put(`${this.baseUrl}/Catalog/UpdateService/${id}`, payload);
+}
+
+
+// إضافة فئة جديدة
+createCategory(payload: any) {
+  return this.http.post(`${this.baseUrl}/Catalog/CreateCategory`, payload);
+}
+
+// تحديث فئة موجودة
+updateCategory(id: number, payload: any) {
+  return this.http.put(`${this.baseUrl}/Catalog/UpdateCategory/${id}`, payload);
+}
+
+// حذف فئة
+deleteCategory(id: number) {
+  return this.http.delete(`${this.baseUrl}/Catalog/DeleteCategory/${id}`);
+}
+
+// ملاحظة: تأكد من أن المسارات (Endpoints) تطابق ما هو موجود في الـ Backend لديك
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

@@ -39,6 +39,7 @@ import { DashboardComponent } from './components/admin/dashboard/dashboard.compo
 import { MaterialsComponent } from './components/admin/materials/materials.component';
 import { ShiftsComponent } from './components/admin/shifts/shifts.component';
 import { EmployeesReportComponent } from './components/admin/employees-report/employees-report.component';
+import { TestComponent } from './components/cashier/test/test.component';
 
 @NgModule({
   declarations: [
@@ -61,6 +62,7 @@ import { EmployeesReportComponent } from './components/admin/employees-report/em
     MaterialsComponent,
     ShiftsComponent,
     EmployeesReportComponent,
+
   ],
   imports: [
     BrowserModule,
@@ -72,7 +74,8 @@ import { EmployeesReportComponent } from './components/admin/employees-report/em
     FormsModule,
     NgbModule,
     HttpClientModule,
-  ],
+    TestComponent
+],
   providers: [
     NotificationService,
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

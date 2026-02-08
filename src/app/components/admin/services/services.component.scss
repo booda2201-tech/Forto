@@ -116,11 +116,11 @@
   border-radius: 12px;
   background-color: #d3d3d3;
 
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    background-color: #eeeeeee5;
-  }
+  // &:hover {
+  //   transform: translateY(-5px);
+  //   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  //   background-color: #eeeeeee5;
+  // }
 
   &.selected {
     border-color: #ff9a27;
@@ -356,4 +356,235 @@ button{
 
 .modal-header .btn-close {
     margin: -0.5rem auto -0.5rem -0.5rem;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+.btn-action-menu {
+  background: #f0f0f0;
+  color: #333;
+  border: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #e0e0e0;
+    color: #ff9a27;
+  }
+}
+
+
+.custom-dropdown {
+  border-radius: 12px;
+  padding: 8px;
+  min-width: 180px;
+  text-align: right;
+
+  .dropdown-item {
+    border-radius: 8px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background-color: #fff9f2;
+    }
+
+    i {
+      font-size: 1.1rem;
+    }
+  }
+}
+
+
+[direction="rtl"] .dropdown-menu {
+  text-align: right;
+  left: 0 !important;
+  right: auto !important;
+}
+
+
+
+/* تأكد أن الكارت يسمح بظهور العناصر خارجه */
+.service-card {
+  position: relative;
+  overflow: visible !important; /* هذا السطر هو الأهم ليظهر المنيو فوق الكارت */
+  // z-index: 10000;
+
+  // &:hover {
+  //   z-index: 10; /* يرفع الكارت المفتوح فوق الكروت المجاورة */
+  // }
+}
+
+/* تنسيق القائمة لتظهر فوق الكل */
+.custom-dropdown {
+  z-index: 9999 !important; /* رقم عالي جداً لضمان الظهور فوق أي عنصر */
+  position: absolute;
+  background-color: white !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important; /* ظل أقوى لتبرز فوق الخلفية */
+}
+
+/* زر القائمة */
+.btn-action-menu {
+  position: relative;
+  z-index: 2;
+}
+
+
+
+
+
+
+
+
+
+.section-container {
+  border: 1px solid #eee;
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.custom-modal-input {
+  border: 1px solid #ddd !important;
+  background-color: #fff !important;
+
+  &:focus {
+    border-color: #ff9a27 !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 154, 39, 0.1) !important;
+  }
+}
+
+.btn-orange {
+  background-color: #ff9a27;
+  color: white;
+  border: none;
+  &:hover {
+    background-color: #e6891f;
+    color: white;
+  }
+}
+
+.form-check-input:checked {
+  background-color: #ff9a27;
+  border-color: #ff9a27;
+}
+
+table {
+  thead {
+    tr {
+      background-color: #f8f9fa;
+    }
+  }
+}
+
+
+
+
+.btn-manage {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ff9a27;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+
+  &.add-cat {
+    background-color: #ff9a27;
+    color: white;
+    &:hover { background-color: #e68a1d; border-color: #e68a1d; }
+  }
+
+  &.edit-cat {
+    background-color: white;
+    color: #ff9a27;
+    &:hover { background-color: #fff4e6; }
+  }
+
+  i {
+    font-size: 1.2rem;
+  }
+}
+
+
+.services-container .d-flex {
+  direction: rtl;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* توحيد الارتفاع لجميع العناصر في شريط الفئات */
+.services-container {
+  .buttons-grid {
+    display: flex !important; /* نستخدم flex لضمان اصطفافهم مع الأزرار الجديدة */
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* زر الفئة الأصلي */
+  .service-btn {
+    height: 50px; /* تحديد ارتفاع ثابت */
+    min-width: 100px;
+    padding: 0 25px !important; /* توزيع متساوي */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ff9a27;
+    border-radius: 12px;
+    background-color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+
+    @media (min-width: 768px) {
+      height: 55px; /* ارتفاع أكبر قليلاً للشاشات الكبيرة */
+      font-size: 1.1rem;
+    }
+  }
+
+  /* أزرار الإدارة (إضافة وتعديل) */
+  .btn-manage {
+    height: 50px; /* نفس ارتفاع أزرار الفئات */
+    width: 50px;  /* عرض مساوي للارتفاع ليكون مربعاً */
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ff9a27;
+    transition: all 0.2s ease;
+
+    @media (min-width: 768px) {
+      height: 55px;
+      width: 55px;
+    }
+
+    i {
+      font-size: 1.4rem; /* تكبير الأيقونة قليلاً لتناسب الحجم الجديد */
+    }
+  }
 }

@@ -42,6 +42,9 @@ type ServiceCardVm = {
   styleUrls: ['./services.component.scss'],
 })
 export class ServicesComponent implements OnInit {
+  newCategoryName: string = '';
+isSavingCat: boolean = false;
+  isSavingName = false;
   categories: CategoryDto[] = [];
   activeCategoryId: number | null = null; // null = All
   services: ServiceCardVm[] = [];
@@ -509,4 +512,137 @@ export class ServicesComponent implements OnInit {
       },
     });
   }
+
+
+updateServiceName() {
+  if (!this.selectedService || !this.selectedService.name.trim()) return;
+
+  this.isSavingName = true;
+  const payload = {
+    categoryId: this.selectedService.categoryId,
+    name: this.selectedService.name,
+    description: this.selectedService.description // نرسل الوصف القديم
+  };
+
+  this.api.updateCatalogService(this.selectedService.id, payload).subscribe({
+    next: () => {
+      this.isSavingName = false;
+      alert('تم تحديث اسم الخدمة بنجاح');
+      this.loadServicesForActiveCategory(); // لتحديث البيانات في الخلفية
+    },
+    error: (err) => {
+      console.error(err);
+      this.isSavingName = false;
+      alert('فشل تحديث الاسم');
+    }
+  });
+}
+
+
+
+
+// فتح مودال إضافة فئة
+// openAddCategoryModal() {
+//   // كود فتح المودال أو توجيه لصفحة الإضافة
+// }
+
+// // فتح مودال الإدارة
+// openManageCategoriesModal() {
+//   const el = document.getElementById('manageCategoriesModal');
+//   const modal = new (window as any).bootstrap.Modal(el);
+//   modal.show();
+// }
+
+// حذف فئة
+deleteCategory(id: number) {
+  if(confirm('هل أنت متأكد من حذف هذه الفئة؟ سيتم حذف جميع الخدمات التابعة لها.')) {
+    this.api.deleteCategory(id).subscribe({
+      next: () => {
+        this.loadCategories(); // تحديث القائمة بعد الحذف
+        alert('تم الحذف بنجاح');
+      },
+      error: (err: any) => console.error(err)
+    });
+  }
+}
+
+
+
+// دالة إضافة فئة جديدة (مثال مبسط)
+addNewCategory(name: string) {
+  const payload = { name: name, isActive: true };
+  this.api.createCategory(payload).subscribe({
+    next: () => {
+      this.loadCategories();
+      alert('تم إضافة الفئة بنجاح');
+    },
+    error: (err: any) => console.error(err)
+  });
+}
+
+editCategory(cat: any) {
+  const newName = prompt('أدخل الاسم الجديد للفئة:', cat.name);
+  if (newName && newName.trim() !== cat.name) {
+    const payload = { ...cat, name: newName.trim() };
+    this.api.updateCategory(cat.id, payload).subscribe({
+      next: () => {
+        this.loadCategories();
+        alert('تم تحديث الفئة');
+      },
+      error: (err: any) => console.error(err)
+    });
+  }
+}
+
+
+
+
+saveNewCategory() {
+  if (!this.newCategoryName.trim()) return;
+
+  this.isSavingCat = true;
+  const payload = {
+    name: this.newCategoryName.trim(),
+    isActive: true
+  };
+
+  this.api.createCategory(payload).subscribe({
+    next: () => {
+      this.isSavingCat = false;
+      this.newCategoryName = ''; // تصفير الحقل
+      this.loadCategories(); // تحديث القائمة في الصفحة الرئيسية
+
+      // إغلاق المودال برمجياً
+      const el = document.getElementById('addCategoryModal');
+      const modal = (window as any).bootstrap.Modal.getInstance(el);
+      modal?.hide();
+
+      alert('تم إضافة الفئة بنجاح');
+    },
+    error: (err: any) => { // تحديد النوع : any لإصلاح خطأ TypeScript
+      console.error(err);
+      this.isSavingCat = false;
+      alert('فشل في إضافة الفئة');
+    }
+  });
+}
+
+
+// فتح مودال إضافة فئة جديدة (+)
+openAddCategoryModal() {
+  const el = document.getElementById('addCategoryModal');
+  const modal = new (window as any).bootstrap.Modal(el);
+  modal.show();
+}
+
+// فتح مودال إدارة وتعديل الفئات (القلم)
+openManageCategoriesModal() {
+  const el = document.getElementById('manageCategoriesModal');
+  const modal = new (window as any).bootstrap.Modal(el);
+  modal.show();
+}
+
+
+
+
 }

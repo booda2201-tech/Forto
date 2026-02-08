@@ -22,7 +22,7 @@ import { DashboardComponent } from './components/admin/dashboard/dashboard.compo
 import { MaterialsComponent } from './components/admin/materials/materials.component';
 import { ShiftsComponent } from './components/admin/shifts/shifts.component';
 import { EmployeesReportComponent } from './components/admin/employees-report/employees-report.component';
-
+import { TestComponent } from './components/cashier/test/test.component';
 
 
 
@@ -59,6 +59,7 @@ const routes: Routes = [
       { path: 'new-reservation', component: NewReservationComponent, data: { title: 'حجز جديد' } },
       { path: 'invoices', component: InvoicesComponent, data: { title: 'الفواتير' } },
       { path: 'messages', component: MessagesComponent, data: { title: 'الرسائل' } },
+      { path: 'test', component: TestComponent, data: { title: 'اختبار' } },
       { path: '', redirectTo: 'cashier', pathMatch: 'full' },
     ],
   },

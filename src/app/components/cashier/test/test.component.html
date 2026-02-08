@@ -1,0 +1,316 @@
+<div class="contt">
+  <div class="invoices-page p-2 p-md-4" dir="rtl">
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4 no-print">
+      <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm p-3">
+          <span class="text-muted small">عدد العمليات</span>
+          <h4 class="fw-bold mb-0">{{ totalInvoicesCount }}</h4>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm p-3 bg-orange-light text-orange">
+          <span class="small">إجمالي الدخل المفلتر</span>
+          <h4 class="fw-bold mb-0">{{ totalDailyAmount | number:'1.0-0' }} ج.م</h4>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar card border-0 shadow-sm p-3 mb-4 no-print">
+      <div class="row g-2">
+        <div class="col-lg-4 col-md-6">
+          <input
+            type="text"
+            class="form-control custom-input"
+            placeholder="رقم الفاتورة، اسم العميل، التليفون..."
+            [(ngModel)]="filterSearch"
+            (ngModelChange)="onSearch($event)"
+          />
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <input
+            type="date"
+            class="form-control custom-input"
+            [(ngModel)]="filterFrom"
+            (ngModelChange)="onFromChange($event)"
+          />
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <input
+            type="date"
+            class="form-control custom-input"
+            [(ngModel)]="filterTo"
+            (ngModelChange)="onToChange($event)"
+          />
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <select
+            class="form-select custom-input"
+            [(ngModel)]="filterMethod"
+            (ngModelChange)="onMethodChange($event)"
+          >
+            <option value="">كل طرق الدفع</option>
+            <option value="1">كاش</option>
+            <option value="2">فيزا / ماستر كارد</option>
+          </select>
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <select
+            class="form-select custom-input"
+            [(ngModel)]="filterStatus"
+            (ngModelChange)="onStatusFilterChange($event)"
+          >
+            <option value="">كل الفواتير</option>
+            <option value="unpaid">غير مدفوعة</option>
+            <option value="paid">مدفوعة</option>
+            <option value="cancelled">ملغاة</option>
+          </select>
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <button class="btn btn-light w-100 text-danger fw-bold" (click)="exportFilteredToExcel()">
+                تصدير الفواتير (Excel)
+        </button>
+        </div>
+          <div class="col-lg-2 col-md-6">
+            <button class="btn btn-outline-danger w-100 fw-bold shadow-sm" (click)="exportTableToPDF()">
+              <i class="bi bi-file-pdf"></i> تصدير (PDF)
+            </button>
+          </div>
+          <div class="col-lg-2 col-md-6">
+            <button class="btn btn-dark w-100 fw-bold shadow-sm" (click)="exportDailySummaryPDF()">
+              <i class="bi bi-file-earmark-text"></i> ملخص اليوم (PDF)
+            </button>
+          </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 text-center">
+          <thead class="bg-light">
+            <tr class="text-muted small">
+              <th>رقم الفاتورة</th>
+              <th class="text-end">العميل</th>
+              <th class="d-none d-md-table-cell">البنود</th>
+              <th>المبلغ</th>
+              <th>طريقة الدفع</th>
+              <th>حالة الدفع</th>
+              <th class="d-none d-lg-table-cell">التاريخ</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let invoice of (invoices$ | async)">
+              <td class="fw-bold text-orange">#{{ invoice.id }}</td>
+
+              <td class="text-end">
+                <div class="fw-bold text-truncate" style="max-width:150px;">
+                  {{ invoice.customerName || 'Walk-in' }}
+                </div>
+                <small class="text-muted d-none d-sm-block">{{ invoice.phone || '-' }}</small>
+              </td>
+
+              <td class="d-none d-md-table-cell">
+                <!-- API gives itemsText string -->
+                <span class="text-muted small">{{ invoice.itemsText || '-' }}</span>
+              </td>
+
+              <td>
+                <span class="fw-bold text-success">
+                  {{ invoice.total | number:'1.1-1' }} <small>ج.م</small>
+                </span>
+              </td>
+
+              <td>
+                <span [class]="invoice.paymentMethod === 1 ? 'text-primary' : 'text-purple'">
+                  <i [class]="paymentIcon(invoice.paymentMethod)"></i>
+                  {{ paymentLabel(invoice.paymentMethod) }}
+                </span>
+              </td>
+
+              <td>
+                <span *ngIf="invoice.status === 1" class="badge bg-warning text-dark">غير مدفوعة</span>
+                <span *ngIf="invoice.status === 2" class="badge bg-success">مدفوعة</span>
+                <span *ngIf="invoice.status === 3" class="badge bg-secondary">ملغاة</span>
+              </td>
+
+              <td class="small text-muted d-none d-lg-table-cell">
+                {{ invoice.date }}
+              </td>
+
+              <td>
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                  <button
+                    *ngIf="invoice.status === 1"
+                    class="btn btn-sm btn-success rounded-3"
+                    (click)="payInvoice(invoice)"
+                    [disabled]="payingInvoiceId !== null"
+                  >
+                    <span *ngIf="payingInvoiceId !== invoice.invoiceId"><i class="bi bi-cash-coin"></i> دفع</span>
+                    <span *ngIf="payingInvoiceId === invoice.invoiceId">جاري...</span>
+                  </button>
+                  <button class="btn btn-sm btn-outline-success rounded-3" (click)="exportToExcel(invoice)">
+                    <i class="bi bi-file-earmark-excel"></i>
+                  </button>
+                  <button
+                    class="btn btn-sm btn-orange text-white rounded-3 shadow-sm"
+                    (click)="openInvoice(invoice)"
+                    data-bs-toggle="modal"
+                    data-bs-target="#invoiceModal"
+                  >
+                    <i class="bi bi-printer"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr *ngIf="((invoices$ | async)?.length || 0) === 0">
+              <td colspan="8" class="py-5 text-muted">
+                <i class="bi bi-inbox h1 d-block mb-2"></i>
+                لا توجد فواتير مطابقة للبحث
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container p-3 border-top bg-light d-flex justify-content-between align-items-center flex-wrap gap-3" *ngIf="totalPages > 1">
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">عرض:</span>
+          <select class="form-select form-select-sm" style="width: auto;"
+                  [value]="pageSize"
+                  (change)="changePageSize(+$any($event.target).value)">
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+            <option [value]="50">50</option>
+            <option [value]="100">100</option>
+          </select>
+          <span class="text-muted small">من {{ totalInvoicesCount }} فاتورة</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">
+            عرض {{ startIndex }} - {{ endIndex }} من {{ totalInvoicesCount }}
+          </span>
+        </div>
+
+        <nav>
+          <ul class="pagination mb-0 pagination-sm">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <a class="page-link" href="javascript:void(0)" (click)="previousPage()" aria-label="السابق">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+
+            <li class="page-item" *ngFor="let pageNum of getPageNumbers()"
+                [class.active]="pageNum === currentPage"
+                [class.disabled]="pageNum === -1">
+              <a class="page-link"
+                 href="javascript:void(0)"
+                 *ngIf="pageNum !== -1"
+                 (click)="goToPage(pageNum)">
+                {{ pageNum }}
+              </a>
+              <span class="page-link" *ngIf="pageNum === -1">...</span>
+            </li>
+
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <a class="page-link" href="javascript:void(0)" (click)="nextPage()" aria-label="التالي">
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+    <div class="modal-content border-0 shadow-lg">
+
+      <div class="text-end p-2 no-print">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4 forto-invoice-container" id="printableInvoice">
+        <div class="text-center mb-3">
+          <img src="../../../../assets/imeg/logo forto.png" class="brand-logo mb-1" style="max-width: 70px;">
+          <div class="small">#{{ selectedInvoice?.id }}</div>
+        </div>
+
+        <hr class="my-2" style="border-top: 1px dashed #000;">
+
+        <div class="client-data mb-3 fw-bold" style="font-size: 12px;">
+          <div><strong>العميل:</strong> {{ selectedInvoice?.customerName || 'Walk-in' }}</div>
+          <div><strong>الهاتف:</strong> {{ selectedInvoice?.phone || '-' }}</div>
+          <div><strong>التاريخ:</strong> {{ selectedInvoice?.date }}</div>
+          <div><strong>حالة الدفع:</strong> {{ selectedInvoice ? statusLabel(selectedInvoice.status) : '' }}</div>
+        </div>
+
+        <!-- Lines table (REAL prices + qty) -->
+        <table class="table table-sm invoice-table mb-2" style="font-size: 12px;">
+          <thead class="border-bottom">
+            <tr>
+              <th class="text-end">البند</th>
+              <th class="text-center">الكمية</th>
+              <th class="text-center">سعر الوحدة</th>
+              <th class="text-center">الإجمالي</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let line of selectedInvoice?.lines">
+              <td class="text-end">{{ line.description }}</td>
+              <td class="text-center">{{ line.qty }}</td>
+              <td class="text-center fw-bold">{{ line.unitPrice }} ج.م</td>
+              <td class="text-center fw-bold">{{ line.total }} ج.م</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <hr class="my-2" style="border-top: 1px dashed #000;">
+
+        <div style="font-size: 13px; font-weight: bold;">
+          <div class="d-flex justify-content-between">
+            <span>المجموع:</span>
+            <span>{{ subTotal | number:'1.2-2' }} ج.م</span>
+          </div>
+          <div class="d-flex justify-content-between fw-bold">
+            <span>الضريبة (14%):</span>
+            <span>{{ taxAmount | number:'1.2-2' }} ج.م</span>
+          </div>
+          <div class="d-flex justify-content-between fw-bold mt-1" style="font-size: 15px;">
+            <span>الإجمالي:</span>
+            <span>{{ finalTotal | number:'1.2-2' }} ج.م</span>
+          </div>
+        </div>
+
+        <div class="text-center mt-4" style="font-size: 11px;">
+          <div>شكراً لزيارتكم فورتو</div>
+          <div class="mt-1">نظام فورتو لإدارة المغاسل</div>
+        </div>
+      </div>
+
+      <div class="modal-footer no-print justify-content-center bg-light">
+        <button type="button" class="btn btn-warning text-white px-5 rounded-pill shadow-sm fw-bold print-btn" (click)="downloadInvoice()">
+          <i class="bi bi-printer me-2"></i> طباعة الفاتورة
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

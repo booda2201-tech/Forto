@@ -1,7 +1,7 @@
 <div class="conttt">
   <!-- Category Buttons -->
   <div class="contt mt-0">
-    <div class="services-container">
+    <!-- <div class="services-container">
       <div class="buttons-grid d-flex justify-content-center gap-2 flex-wrap mb-5">
 
         <button class="service-btn" [class.active]="activeCategoryId === null" (click)="setCategory(null)">
@@ -18,8 +18,36 @@
         </button>
 
       </div>
+    </div> -->
+
+  <div class="services-container">
+  <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap mb-4">
+
+    <div class="buttons-grid m-0">
+      <button class="service-btn" [class.active]="activeCategoryId === null" (click)="setCategory(null)">
+        الكل
+      </button>
+      <button *ngFor="let cat of categories" class="service-btn"
+              [class.active]="activeCategoryId === cat.id" (click)="setCategory(cat.id)">
+        {{ cat.name }}
+      </button>
     </div>
+
+    <div class="d-flex gap-2">
+<button class="btn-manage add-cat" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+  <i class="bi bi-plus-lg"></i>
+</button>
+
+      <button class="btn-manage edit-cat" title="إدارة الفئات" (click)="openManageCategoriesModal()">
+        <i class="bi bi-pencil-square"></i>
+      </button>
+    </div>
+
   </div>
+</div>
+
+  </div>
+
 
   <!-- Main -->
   <div class="pointer">
@@ -54,15 +82,14 @@
                     </span>
                   </div>
 
-                  <div class="d-flex gap-2 align-items-center">
+                  <!-- <div class="d-flex gap-2 align-items-center">
                     <button class="btn btn-action btn-recipe" (click)="openGiftModal(item); $event.stopPropagation()"
                       title="الهدايا - إضافة/حذف هدايا للخدمة">
                       <i class="bi bi-gift"></i>
                     </button>
                     <button class="btn btn-action btn-recipe" (click)="openRecipeModal(item); $event.stopPropagation()"
                       title="الوصفة - المواد والكميات">
-                      <!-- <i class="bi bi-cup-hot"></i> -->
-                       <i class="fa-solid fa-recycle"></i>
+                        <i class="bi bi-recycle"></i>
                     </button>
                     <button class="btn btn-action btn-delete" (click)="deleteService(item.id); $event.stopPropagation()">
                       <i class="bi bi-trash"></i>
@@ -70,7 +97,46 @@
                     <button class="btn btn-action btn-edit" (click)="openRatesModal(item); $event.stopPropagation()">
                       <i class="bi bi-pencil-square"></i>
                     </button>
-                  </div>
+                  </div> -->
+
+          <div class="dropdown">
+            <button class="btn btn-action-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-three-dots-vertical"></i>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 custom-dropdown">
+              <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2" (click)="openRatesModal(item); $event.stopPropagation()">
+                  <i class="bi bi-pencil-square text-orange"></i>
+                  <span>  تعديل  </span>
+                </a>
+              </li>
+
+              <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2" (click)="openRecipeModal(item); $event.stopPropagation()">
+                  <i class="bi bi-recycle text-primary"></i>
+                  <span>الوصفة والكميات</span>
+                </a>
+              </li>
+
+              <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2" (click)="openGiftModal(item); $event.stopPropagation()">
+                  <i class="bi bi-gift text-success"></i>
+                  <span>إضافة هدايا</span>
+                </a>
+              </li>
+
+              <li><hr class="dropdown-divider"></li>
+
+              <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger" (click)="deleteService(item.id); $event.stopPropagation()">
+                  <i class="bi bi-trash"></i>
+                  <span>حذف الخدمة</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
 
                 </div>
               </div>
@@ -91,7 +157,7 @@
                 <form (submit)="$event.preventDefault(); createService();">
                   <div class="mb-3">
                     <label class="form-label fw-bold text-dark small">
-                     الفئات<span class="text-danger">*</span>
+                      الفئات<span class="text-danger">*</span>
                     </label>
 
                     <div class="input-group custom-input-group">
@@ -142,8 +208,70 @@
   </div>
 </div>
 
+
+
+
+
+
+
+
+
+
+
+
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-orange">
+          <i class="bi bi-plus-circle-fill me-2"></i> إضافة فئة جديدة
+        </h5>
+        <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="custom-add-card p-3 rounded-3 border-0 shadow-none">
+          <div class="mb-4">
+            <label class="form-label fw-bold text-dark small">اسم الفئة *</label>
+            <div class="input-group custom-input-group shadow-sm rounded-3 overflow-hidden">
+              <span class="input-group-text bg-white border-end-0">
+                <i class="bi bi-grid text-orange"></i>
+              </span>
+              <input type="text" class="form-control border-start-0"
+                     [(ngModel)]="newCategoryName"
+                     placeholder="مثلاً: تلميع، حماية نانو...">
+            </div>
+          </div>
+
+          <button class="btn add-service-btn w-100 py-2 fw-bold"
+                  (click)="saveNewCategory()"
+                  [disabled]="!newCategoryName || isSavingCat">
+            <span *ngIf="!isSavingCat">إضافة الفئة الآن</span>
+            <span *ngIf="isSavingCat" class="spinner-border spinner-border-sm"></span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <!-- Rates Modal -->
-<div class="modal fade" id="ratesModal" tabindex="-1" aria-hidden="true" dir="rtl">
+<!-- <div class="modal fade" id="ratesModal" tabindex="-1" aria-hidden="true" dir="rtl">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content border-0 shadow rounded-4">
       <div class="modal-header border-0 pb-0">
@@ -209,7 +337,103 @@
       </div>
     </div>
   </div>
+</div> -->
+
+<div class="modal fade" id="ratesModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-orange">تعديل بيانات الخدمة الشامل</h5>
+        <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4 text-end" *ngIf="selectedService">
+
+        <div class="section-container mb-4 p-3 rounded-3 bg-light">
+          <label class="fw-bold mb-2">اسم الخدمة</label>
+          <div class="d-flex gap-2">
+            <input type="text" class="form-control custom-modal-input"
+                   [(ngModel)]="selectedService.name"
+                   placeholder="أدخل اسم الخدمة">
+
+            <button class="btn btn-orange px-3" (click)="updateServiceName()" [disabled]="isSavingName">
+              <i class="bi bi-check2-circle" *ngIf="!isSavingName"></i>
+              <span class="spinner-border spinner-border-sm" *ngIf="isSavingName"></span>
+              حفظ الاسم
+            </button>
+          </div>
+          <div class="text-muted small mt-1">النوع الحالي: {{ categoryName(selectedService.categoryId) }}</div>
+        </div>
+
+        <hr class="my-4 opacity-25">
+
+        <div class="section-container">
+          <label class="fw-bold mb-3 d-block">إعدادات الأسعار حسب نوع السيارة (Body Type)</label>
+
+          <form [formGroup]="ratesForm">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle text-center border">
+                <thead class="bg-light">
+                  <tr class="text-muted small">
+                    <th class="text-end py-3">نوع السيارة</th>
+                    <th>تفعيل</th>
+                    <th>السعر (ج.م)</th>
+                    <th>المدة (دقيقة)</th>
+                  </tr>
+                </thead>
+
+                <tbody formArrayName="rates">
+                  <tr *ngFor="let rg of ratesArr.controls; let i = index" [formGroupName]="i">
+                    <td class="text-end fw-bold">
+                      {{ bodyTypeLabel(rg.value.bodyType) }}
+                    </td>
+
+                    <td>
+                      <div class="form-check form-switch d-inline-block">
+                        <input class="form-check-input ms-0" type="checkbox" formControlName="enabled">
+                      </div>
+                    </td>
+
+                    <td>
+                      <div class="input-group input-group-sm mx-auto" style="max-width: 120px;">
+                        <input type="number" class="form-control text-center"
+                               formControlName="price" [disabled]="!rg.value.enabled">
+                      </div>
+                    </td>
+
+                    <td>
+                      <div class="input-group input-group-sm mx-auto" style="max-width: 100px;">
+                        <input type="number" class="form-control text-center"
+                               formControlName="durationMinutes" [disabled]="!rg.value.enabled">
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </form>
+        </div>
+
+      </div>
+
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-dark px-4 py-2 fw-bold rounded-3"
+                (click)="saveRates()" [disabled]="isSaving">
+          {{ isSaving ? 'جارٍ حفظ الأسعار...' : 'حفظ جميع الأسعار' }}
+        </button>
+
+        <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-bold rounded-3"
+                data-bs-dismiss="modal">
+          إغلاق
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
+
+
+
 
 <!-- Recipe Modal - وصفة الخدمة (المواد والكميات لكل نوع سيارة) -->
 <div class="modal fade" id="recipeModal" tabindex="-1" aria-hidden="true" dir="rtl">
@@ -234,7 +458,7 @@
         </div>
 
         <div *ngIf="isLoadingRecipe" class="text-muted small">جاري التحميل...</div>
-        
+
         <div *ngIf="!isLoadingRecipe" class="recipe-materials">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <h6 class="mb-0">المواد المطلوبة</h6>
