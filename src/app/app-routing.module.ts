@@ -23,8 +23,7 @@ import { MaterialsComponent } from './components/admin/materials/materials.compo
 import { ShiftsComponent } from './components/admin/shifts/shifts.component';
 import { EmployeesReportComponent } from './components/admin/employees-report/employees-report.component';
 import { TestComponent } from './components/cashier/test/test.component';
-
-
+import { CategoriesComponent } from './components/admin/categories/categories.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent, data: { title: 'تسجيل الدخول' } },
@@ -38,6 +37,7 @@ const routes: Routes = [
       { path: 'workers', component: WorkersComponent, data: { title: 'العمال' } },
       { path: 'requests', component: RequestsComponent, data: { title: 'الطلبات' } },
       { path: 'services', component: ServicesComponent, data: { title: 'الخدمات' } },
+      { path: 'categories', component: CategoriesComponent, data: { title: 'الفئات' } },
       { path: 'materials', component: MaterialsComponent, data: { title: 'المواد' } },
       { path: 'shifts', component: ShiftsComponent, data: { title: 'الشيفتات' } },
       { path: 'dashboard', component: DashboardComponent, data: { title: 'لوحة التحكم' } },

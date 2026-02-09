@@ -432,7 +432,7 @@ button{
 
 /* تنسيق القائمة لتظهر فوق الكل */
 .custom-dropdown {
-  z-index: 9999 !important; /* رقم عالي جداً لضمان الظهور فوق أي عنصر */
+  // z-index: 9999 !important; /* رقم عالي جداً لضمان الظهور فوق أي عنصر */
   position: absolute;
   background-color: white !important;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important; /* ظل أقوى لتبرز فوق الخلفية */

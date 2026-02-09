@@ -481,10 +481,19 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/api/invoices/${invoiceId}`);
   }
 
-  payInvoiceCash(invoiceId: number, cashierId: number) {
+  /** 1 = cash, 2 = visa, 3 = custom (split) */
+  payInvoiceCash(
+    invoiceId: number,
+    body: {
+      cashierId: number;
+      paymentMethod?: number;
+      cashAmount?: number;
+      visaAmount?: number;
+    }
+  ) {
     return this.http.post(
       `${this.baseUrl}/api/invoices/${invoiceId}/pay-cash`,
-      { cashierId }
+      body
     );
   }
 
@@ -765,24 +774,27 @@ export class ApiService {
 
 
 
-updateCatalogService(id: number, payload: any) {
-  return this.http.put(`${this.baseUrl}/Catalog/UpdateService/${id}`, payload);
+updateCatalogService(
+  id: number,
+  payload: { categoryId: number; name: string; description: string; isActive: boolean }
+) {
+  return this.http.put(`${this.baseUrl}/api/catalog/services/Update/${id}`, payload);
 }
 
 
-// إضافة فئة جديدة
-createCategory(payload: any) {
-  return this.http.post(`${this.baseUrl}/Catalog/CreateCategory`, payload);
+// إضافة فئة جديدة — POST /api/catalog/categories/Create
+createCategory(payload: { name: string }) {
+  return this.http.post(`${this.baseUrl}/api/catalog/categories/Create`, payload);
 }
 
-// تحديث فئة موجودة
-updateCategory(id: number, payload: any) {
-  return this.http.put(`${this.baseUrl}/Catalog/UpdateCategory/${id}`, payload);
+// تحديث فئة — PUT /api/catalog/categories/Update/{id}
+updateCategory(id: number, payload: { name: string; isActive?: boolean }) {
+  return this.http.put(`${this.baseUrl}/api/catalog/categories/Update/${id}`, payload);
 }
 
-// حذف فئة
+// حذف فئة — DELETE /api/catalog/categories/Delete/{id}
 deleteCategory(id: number) {
-  return this.http.delete(`${this.baseUrl}/Catalog/DeleteCategory/${id}`);
+  return this.http.delete(`${this.baseUrl}/api/catalog/categories/Delete/${id}`);
 }
 
 // ملاحظة: تأكد من أن المسارات (Endpoints) تطابق ما هو موجود في الـ Backend لديك

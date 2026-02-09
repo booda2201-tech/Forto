@@ -303,12 +303,11 @@ export class InvoicesComponent {
 
   // ---------- Payment label ----------
   paymentLabel(method: number): string {
-    // you told me: 1 = cash
-    return method === 1 ? 'كاش' : 'فيزا';
+    return method === 1 ? 'كاش' : method === 2 ? 'فيزا' : 'مخصص';
   }
 
   paymentIcon(method: number): string {
-    return method === 1 ? 'bi bi-cash' : 'bi bi-credit-card';
+    return method === 1 ? 'bi bi-cash' : method === 2 ? 'bi bi-credit-card' : 'bi bi-cash-stack';
   }
 
   /** 1 = Unpaid, 2 = Paid, 3 = Cancelled */
@@ -318,16 +317,71 @@ export class InvoicesComponent {
 
   // ---------- دفع فاتورة (status = 1 غير مدفوعة) ----------
   payingInvoiceId: number | null = null;
+  invoiceToPay: InvoiceUi | null = null;
+  payMethod: 'cash' | 'visa' | 'custom' = 'cash';
+  payCustomCashAmount = 0;
 
-  payInvoice(invoice: InvoiceUi): void {
-    if (invoice.status !== 1) return; // غير مدفوعة فقط
-    const id = invoice.invoiceId;
+  get payModalTotal(): number {
+    return Number(this.invoiceToPay?.total ?? 0);
+  }
+  get payModalVisaAmount(): number {
+    if (this.payMethod !== 'custom') return 0;
+    const cash = Number(this.payCustomCashAmount) || 0;
+    return Math.max(0, this.payModalTotal - cash);
+  }
+
+  openPayModal(invoice: InvoiceUi): void {
+    if (invoice.status !== 1) return;
+    this.invoiceToPay = invoice;
+    this.payMethod = 'cash';
+    this.payCustomCashAmount = 0;
+    const el = document.getElementById('payMethodModal');
+    if (el) {
+      const modal = new (window as any).bootstrap.Modal(el);
+      modal.show();
+    }
+  }
+
+  closePayModal(): void {
+    this.invoiceToPay = null;
+    const el = document.getElementById('payMethodModal');
+    if (el) {
+      const inst = (window as any).bootstrap?.Modal?.getInstance(el);
+      if (inst) inst.hide();
+    }
+  }
+
+  confirmPay(): void {
+    const inv = this.invoiceToPay;
+    if (!inv || inv.status !== 1) return;
+    const id = inv.invoiceId;
     if (!id) return;
+
+    const total = this.payModalTotal;
+    const cashAmt = this.payMethod === 'cash' ? total
+      : this.payMethod === 'visa' ? 0
+      : (Number(this.payCustomCashAmount) || 0);
+    const visaAmt = this.payMethod === 'visa' ? total
+      : this.payMethod === 'cash' ? 0
+      : this.payModalVisaAmount;
+    const paymentMethod = this.payMethod === 'cash' ? 1 : this.payMethod === 'visa' ? 2 : 3;
+
+    if (this.payMethod === 'custom' && (cashAmt <= 0 || cashAmt > total)) {
+      alert('أدخل مبلغ كاش صحيح (أقل من أو يساوي الإجمالي).');
+      return;
+    }
+
     this.payingInvoiceId = id;
-    this.api.payInvoiceCash(id, this.cashierId).subscribe({
+    this.api.payInvoiceCash(id, {
+      cashierId: this.cashierId,
+      paymentMethod,
+      cashAmount: cashAmt,
+      visaAmount: visaAmt,
+    }).subscribe({
       next: () => {
         this.payingInvoiceId = null;
-        this.page$.next(this.currentPage); // إعادة تحميل الصفحة الحالية
+        this.closePayModal();
+        this.page$.next(this.currentPage);
       },
       error: (err) => {
         this.payingInvoiceId = null;
@@ -335,6 +389,10 @@ export class InvoicesComponent {
         alert(err?.error?.message || 'فشل تنفيذ الدفع');
       },
     });
+  }
+
+  payInvoice(invoice: InvoiceUi): void {
+    this.openPayModal(invoice);
   }
 
   // ---------- Excel ----------
@@ -391,7 +449,7 @@ export class InvoicesComponent {
         التاريخ: inv.date,
         'اسم العميل': inv.customerName || 'Walk-in',
         الهاتف: inv.phone || '-',
-        'طريقة الدفع': inv.paymentMethod === 1 ? 'كاش' : 'فيزا',
+        'طريقة الدفع': this.paymentLabel(inv.paymentMethod),
         'حالة الدفع': this.statusLabel(inv.status),
         البنود:
           inv.itemsText ||

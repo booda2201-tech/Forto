@@ -316,28 +316,59 @@
 
         <div class="form-footer">
           <div class="form-footer-inner">
-            <div class="total-price">
-              <span>الإجمالي المتوقع:</span>
-              <strong>{{ totalPrice }} ج.م</strong>
-            </div>
-            <div class="adjust-total-section">
-              <span class="adjust-label">المبلغ النهائي:</span>
-              <div class="adjust-options">
-                <button type="button" class="adjust-opt" [class.active]="adjustTotalMode === 'normal'" (click)="adjustTotalMode = 'normal'">
-                  <i class="bi bi-receipt"></i> العادي
-                </button>
-                <button type="button" class="adjust-opt adjust-opt-free" [class.active]="adjustTotalMode === 'free'" (click)="adjustTotalMode = 'free'">
-                  <i class="bi bi-gift"></i> مجاني
-                </button>
-                <div class="adjust-opt-custom" [class.active]="adjustTotalMode === 'custom'">
-                  <button type="button" class="btn-trigger-edit" (click)="adjustTotalMode = 'custom'">
-                    <i class="bi bi-pencil-square"></i> تعديل
+            <!-- ١) السعر والمبلغ النهائي -->
+            <div class="price-block">
+              <div class="total-price">
+                <span>الإجمالي المتوقع:</span>
+                <strong>{{ totalPrice }} ج.م</strong>
+              </div>
+              <div class="adjust-total-section">
+                <span class="adjust-label">المبلغ النهائي:</span>
+                <div class="adjust-options">
+                  <button type="button" class="adjust-opt" [class.active]="adjustTotalMode === 'normal'" (click)="adjustTotalMode = 'normal'">
+                    <i class="bi bi-receipt"></i> العادي
                   </button>
-                  <input type="number" class="adjust-input" [(ngModel)]="adjustCustomAmount" [disabled]="adjustTotalMode !== 'custom'">
-                  <span class="adjust-currency">ج.م</span>
+                  <button type="button" class="adjust-opt adjust-opt-free" [class.active]="adjustTotalMode === 'free'" (click)="adjustTotalMode = 'free'">
+                    <i class="bi bi-gift"></i> مجاني
+                  </button>
+                  <div class="adjust-opt-custom" [class.active]="adjustTotalMode === 'custom'">
+                    <button type="button" class="btn-trigger-edit" (click)="adjustTotalMode = 'custom'">
+                      <i class="bi bi-pencil-square"></i> تعديل
+                    </button>
+                    <input type="number" class="adjust-input" [(ngModel)]="adjustCustomAmount" [disabled]="adjustTotalMode !== 'custom'">
+                    <span class="adjust-currency">ج.م</span>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <!-- ٢) طريقة الدفع تحت السعر -->
+            <div class="payment-method-block">
+              <div class="payment-method-title">
+                <i class="bi bi-wallet2"></i>
+                <span>طريقة الدفع</span>
+              </div>
+              <div class="payment-method-cards">
+                <button type="button" class="payment-card" [class.payment-card-active]="paymentType === 'cash'" (click)="paymentType = 'cash'">
+                  <i class="bi bi-cash-coin payment-card-icon"></i>
+                  <span class="payment-card-label">كاش</span>
+                </button>
+                <button type="button" class="payment-card" [class.payment-card-active]="paymentType === 'visa'" (click)="paymentType = 'visa'">
+                  <i class="bi bi-credit-card payment-card-icon"></i>
+                  <span class="payment-card-label">فيزا</span>
+                </button>
+                <button type="button" class="payment-card" [class.payment-card-active]="paymentType === 'custom'" (click)="paymentType = 'custom'">
+                  <i class="bi bi-cash-stack payment-card-icon"></i>
+                  <span class="payment-card-label">مخصص</span>
+                </button>
+              </div>
+              <div class="custom-cash-box" *ngIf="paymentType === 'custom'">
+                <label>مبلغ الكاش (ج.م)</label>
+                <input type="number" class="custom-cash-input" [(ngModel)]="customCashAmount" [ngModelOptions]="{standalone: true}" min="0" [max]="finalTotalForPayment" step="0.01" placeholder="0" />
+                <div class="custom-cash-visa">الباقي فيزا: <strong>{{ computedVisaAmount | number:'1.2-2' }} ج.م</strong></div>
+              </div>
+            </div>
+
             <div class="actions">
               <button type="button" class="btn-cancel" (click)="resetQuickBookingForm()">إلغاء</button>
               <button type="submit" class="btn-save" [disabled]="isSubmitting">

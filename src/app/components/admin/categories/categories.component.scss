@@ -1,0 +1,43 @@
+:host {
+  display: block;
+  padding: 0 0 2rem;
+}
+
+.categories-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.page-title {
+  font-weight: 800;
+  color: #1f2a37;
+}
+
+.text-orange {
+  color: #ffa500;
+}
+
+.btn-orange {
+  background: #ffa500;
+  color: #fff;
+  border: none;
+  &:hover:not(:disabled) {
+    background: #e59400;
+    color: #fff;
+  }
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.add-card .card-title,
+.list-card .card-title {
+  font-weight: 700;
+  color: #1f2a37;
+}
+
+.table th {
+  font-weight: 700;
+  font-size: 0.9rem;
+}

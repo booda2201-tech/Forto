@@ -40,6 +40,7 @@ import { MaterialsComponent } from './components/admin/materials/materials.compo
 import { ShiftsComponent } from './components/admin/shifts/shifts.component';
 import { EmployeesReportComponent } from './components/admin/employees-report/employees-report.component';
 import { TestComponent } from './components/cashier/test/test.component';
+import { CategoriesComponent } from './components/admin/categories/categories.component';
 
 @NgModule({
   declarations: [
@@ -62,7 +63,7 @@ import { TestComponent } from './components/cashier/test/test.component';
     MaterialsComponent,
     ShiftsComponent,
     EmployeesReportComponent,
-
+    CategoriesComponent,
   ],
   imports: [
     BrowserModule,

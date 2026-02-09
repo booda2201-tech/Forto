@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ApiService } from 'src/app/services/api.service';
@@ -91,7 +92,7 @@ isSavingCat: boolean = false;
   isLoading = false;
   isSaving = false;
 
-  constructor(private api: ApiService, private fb: FormBuilder) {}
+  constructor(private api: ApiService, private fb: FormBuilder, private toastr: ToastrService) {}
 
   ngOnInit(): void {
     this.initRatesForm();
@@ -514,27 +515,29 @@ isSavingCat: boolean = false;
   }
 
 
-updateServiceName() {
+  updateCatalogService(): void {
   if (!this.selectedService || !this.selectedService.name.trim()) return;
 
   this.isSavingName = true;
   const payload = {
     categoryId: this.selectedService.categoryId,
-    name: this.selectedService.name,
-    description: this.selectedService.description // نرسل الوصف القديم
+    name: this.selectedService.name.trim(),
+    description: (this.selectedService.description ?? '').trim(),
+    isActive: (this.selectedService.raw as any)?.isActive ?? true,
   };
 
   this.api.updateCatalogService(this.selectedService.id, payload).subscribe({
     next: () => {
       this.isSavingName = false;
-      alert('تم تحديث اسم الخدمة بنجاح');
-      this.loadServicesForActiveCategory(); // لتحديث البيانات في الخلفية
+      // alert('تم تحديث بيانات الخدمة بنجاح');
+      this.toastr.success('تم تحديث بيانات الخدمة بنجاح');
+      this.loadServicesForActiveCategory();
     },
     error: (err) => {
       console.error(err);
       this.isSavingName = false;
-      alert('فشل تحديث الاسم');
-    }
+      alert(err?.error?.message || 'فشل تحديث البيانات');
+    },
   });
 }
 
@@ -553,43 +556,38 @@ updateServiceName() {
 //   modal.show();
 // }
 
-// حذف فئة
-deleteCategory(id: number) {
-  if(confirm('هل أنت متأكد من حذف هذه الفئة؟ سيتم حذف جميع الخدمات التابعة لها.')) {
-    this.api.deleteCategory(id).subscribe({
-      next: () => {
-        this.loadCategories(); // تحديث القائمة بعد الحذف
-        alert('تم الحذف بنجاح');
-      },
-      error: (err: any) => console.error(err)
-    });
-  }
-}
-
-
-
-// دالة إضافة فئة جديدة (مثال مبسط)
-addNewCategory(name: string) {
-  const payload = { name: name, isActive: true };
-  this.api.createCategory(payload).subscribe({
+deleteCategory(id: number): void {
+  if (!confirm('هل أنت متأكد من حذف هذه الفئة؟')) return;
+  this.api.deleteCategory(id).subscribe({
     next: () => {
       this.loadCategories();
-      alert('تم إضافة الفئة بنجاح');
+      alert('تم الحذف بنجاح');
     },
-    error: (err: any) => console.error(err)
+    error: (err: any) => {
+      console.error(err);
+      alert(err?.error?.message || 'فشل حذف الفئة');
+    },
   });
 }
 
-editCategory(cat: any) {
+
+
+editCategory(cat: CategoryDto): void {
   const newName = prompt('أدخل الاسم الجديد للفئة:', cat.name);
-  if (newName && newName.trim() !== cat.name) {
-    const payload = { ...cat, name: newName.trim() };
+  if (newName != null && newName.trim() !== '') {
+    const payload = {
+      name: newName.trim(),
+      isActive: cat.isActive ?? true,
+    };
     this.api.updateCategory(cat.id, payload).subscribe({
       next: () => {
         this.loadCategories();
         alert('تم تحديث الفئة');
       },
-      error: (err: any) => console.error(err)
+      error: (err: any) => {
+        console.error(err);
+        alert(err?.error?.message || 'فشل تحديث الفئة');
+      },
     });
   }
 }
@@ -601,29 +599,31 @@ saveNewCategory() {
   if (!this.newCategoryName.trim()) return;
 
   this.isSavingCat = true;
-  const payload = {
-    name: this.newCategoryName.trim(),
-    isActive: true
-  };
+  const payload = { name: this.newCategoryName.trim() };
 
   this.api.createCategory(payload).subscribe({
     next: () => {
       this.isSavingCat = false;
-      this.newCategoryName = ''; // تصفير الحقل
-      this.loadCategories(); // تحديث القائمة في الصفحة الرئيسية
+      this.newCategoryName = '';
+      this.loadCategories();
 
-      // إغلاق المودال برمجياً
       const el = document.getElementById('addCategoryModal');
       const modal = (window as any).bootstrap.Modal.getInstance(el);
       modal?.hide();
 
+      const manageEl = document.getElementById('manageCategoriesModal');
+      const manageModal = (window as any).bootstrap.Modal.getInstance(manageEl);
+      if (manageModal) {
+        // لو المودال مفتوح نحدّث القائمة فقط بدون إغلاق
+      }
+
       alert('تم إضافة الفئة بنجاح');
     },
-    error: (err: any) => { // تحديد النوع : any لإصلاح خطأ TypeScript
+    error: (err: any) => {
       console.error(err);
       this.isSavingCat = false;
-      alert('فشل في إضافة الفئة');
-    }
+      alert(err?.error?.message || 'فشل في إضافة الفئة');
+    },
   });
 }
 
@@ -635,12 +635,6 @@ openAddCategoryModal() {
   modal.show();
 }
 
-// فتح مودال إدارة وتعديل الفئات (القلم)
-openManageCategoriesModal() {
-  const el = document.getElementById('manageCategoriesModal');
-  const modal = new (window as any).bootstrap.Modal(el);
-  modal.show();
-}
 
 
 

@@ -1,0 +1,86 @@
+<div class="categories-page" dir="rtl">
+  <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+    <h2 class="page-title mb-0">
+      <i class="bi bi-grid-3x3-gap text-orange me-2"></i>
+      إدارة الفئات
+    </h2>
+    <a routerLink="/admin/services" class="btn btn-outline-secondary rounded-3">
+      <i class="bi bi-arrow-right me-1"></i> العودة للخدمات
+    </a>
+  </div>
+
+  <!-- إضافة فئة -->
+  <div class="card add-card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body p-4">
+      <h5 class="card-title mb-3">
+        <i class="bi bi-plus-circle-fill text-orange me-2"></i>
+        إضافة فئة جديدة
+      </h5>
+      <div class="row g-3 align-items-end">
+        <div class="col-md-8">
+          <label class="form-label fw-bold small">اسم الفئة</label>
+          <input type="text" class="form-control form-control-lg rounded-3"
+                 [(ngModel)]="newCategoryName"
+                 placeholder="مثلاً: تلميع، حماية نانو..."
+                 (keyup.enter)="addCategory()">
+        </div>
+        <div class="col-md-4">
+          <button type="button" class="btn btn-orange w-100 py-2 rounded-3 fw-bold"
+                  (click)="addCategory()"
+                  [disabled]="!newCategoryName?.trim() || isSavingCat">
+            <span *ngIf="!isSavingCat"><i class="bi bi-plus-lg me-1"></i> إضافة</span>
+            <span *ngIf="isSavingCat" class="spinner-border spinner-border-sm"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- قائمة الفئات -->
+  <div class="card list-card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4">
+      <h5 class="card-title mb-4">
+        <i class="bi bi-list-ul text-orange me-2"></i>
+        الفئات ({{ categories.length }})
+      </h5>
+
+      <div *ngIf="isLoading" class="text-center text-muted py-5">
+        <div class="spinner-border text-orange" role="status"></div>
+        <p class="mt-2 mb-0">جاري التحميل...</p>
+      </div>
+
+      <div *ngIf="!isLoading && categories.length === 0" class="text-center text-muted py-5">
+        <i class="bi bi-grid-3x3-gap display-4 opacity-50"></i>
+        <p class="mt-2 mb-0">لا توجد فئات. أضف فئة من الأعلى.</p>
+      </div>
+
+      <div *ngIf="!isLoading && categories.length > 0" class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="text-end">#</th>
+              <th class="text-end">اسم الفئة</th>
+              <th class="text-center" style="width: 200px;">إجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cat of categories; let i = index">
+              <td class="text-end text-muted">{{ i + 1 }}</td>
+              <td class="text-end fw-bold">{{ cat.name }}</td>
+              <td class="text-center">
+                <button type="button" class="btn btn-sm btn-outline-primary rounded-3 me-2"
+                        (click)="updateCategory(cat)" title="تحديث">
+                  <i class="bi bi-pencil-square me-1"></i> تحديث
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger rounded-3"
+                        (click)="deleteCategory(cat.id)" title="حذف">
+                  <i class="bi bi-trash me-1"></i> حذف
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

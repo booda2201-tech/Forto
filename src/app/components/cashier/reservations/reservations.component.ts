@@ -722,6 +722,77 @@ export class ReservationsComponent implements OnInit {
     });
   }
 
+  /** بيانات نافذة اختيار طريقة الدفع (من الحجوزات) */
+  payInvoiceId: number | null = null;
+  payInvoiceTotal = 0;
+  payMethod: 'cash' | 'visa' | 'custom' = 'cash';
+  payCustomCashAmount = 0;
+  bookingForPay: BookingCard | null = null;
+  payInvoiceInv: any = null;
+  isPayingInvoice = false;
+
+  get payModalVisaAmount(): number {
+    if (this.payMethod !== 'custom') return 0;
+    const cash = Number(this.payCustomCashAmount) || 0;
+    return Math.max(0, this.payInvoiceTotal - cash);
+  }
+
+  closePayMethodModal(): void {
+    this.payInvoiceId = null;
+    this.payInvoiceTotal = 0;
+    this.bookingForPay = null;
+    this.payInvoiceInv = null;
+    const el = document.getElementById('reservationsPayMethodModal');
+    if (el) {
+      const inst = (window as any).bootstrap?.Modal?.getInstance(el);
+      if (inst) inst.hide();
+    }
+  }
+
+  confirmPayFromReservations(): void {
+    const id = this.payInvoiceId;
+    const booking = this.bookingForPay;
+    const inv = this.payInvoiceInv;
+    if (!id || !booking) return;
+    const total = this.payInvoiceTotal;
+    const cashAmt = this.payMethod === 'cash' ? total
+      : this.payMethod === 'visa' ? 0
+      : (Number(this.payCustomCashAmount) || 0);
+    const visaAmt = this.payMethod === 'visa' ? total
+      : this.payMethod === 'cash' ? 0
+      : this.payModalVisaAmount;
+    const paymentMethod = this.payMethod === 'cash' ? 1 : this.payMethod === 'visa' ? 2 : 3;
+    if (this.payMethod === 'custom' && (cashAmt <= 0 || cashAmt > total)) {
+      Swal.fire('تنبيه', 'أدخل مبلغ كاش صحيح (أقل من أو يساوي الإجمالي).', 'warning');
+      return;
+    }
+    this.isPayingInvoice = true;
+    this.api.payInvoiceCash(id, {
+      cashierId: this.cashierId,
+      paymentMethod,
+      cashAmount: cashAmt,
+      visaAmount: visaAmt,
+    }).subscribe({
+      next: (payRes: any) => {
+        this.isPayingInvoice = false;
+        const invoiceFromApi = payRes?.data;
+        this.selectedInvoice = this.mapInvoiceToSelected(invoiceFromApi ?? inv, booking, id);
+        this.closePayMethodModal();
+        this.refresh();
+        this.showInvoiceModal();
+      },
+      error: (err: any) => {
+        this.isPayingInvoice = false;
+        console.error(err);
+        Swal.fire({
+          icon: 'error',
+          title: 'فشل تأكيد الدفع',
+          text: err?.error?.message ?? 'تعذر تأكيد دفع الفاتورة.',
+        });
+      },
+    });
+  }
+
   /** زر الدفع (أو يظهر مدفوع إذا كانت مدفوعة) */
   openPayInvoice(booking: BookingCard) {
     this.api.getInvoiceByBooking(booking.id).subscribe({
@@ -746,24 +817,18 @@ export class ReservationsComponent implements OnInit {
           return;
         }
 
-        Swal.fire({ title: 'جاري تأكيد الدفع...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-        this.api.payInvoiceCash(id, this.cashierId).subscribe({
-          next: (payRes: any) => {
-            const invoiceFromApi = payRes?.data;
-            this.selectedInvoice = this.mapInvoiceToSelected(invoiceFromApi ?? inv, booking, id);
-            Swal.close();
-            this.refresh(); // تحديث القائمة عشان isInvoicePaid يتحدث من الـ API
-            this.showInvoiceModal();
-          },
-          error: (err: any) => {
-            console.error(err);
-            Swal.fire({
-              icon: 'error',
-              title: 'فشل تأكيد الدفع',
-              text: err?.error?.message ?? 'تعذر تأكيد دفع الفاتورة.',
-            });
-          },
-        });
+        const total = Number(inv?.total ?? 0);
+        this.payInvoiceId = id;
+        this.payInvoiceTotal = total;
+        this.payMethod = 'cash';
+        this.payCustomCashAmount = 0;
+        this.bookingForPay = booking;
+        this.payInvoiceInv = inv;
+        const el = document.getElementById('reservationsPayMethodModal');
+        if (el) {
+          const modal = new (window as any).bootstrap.Modal(el);
+          modal.show();
+        }
       },
       error: () => {
         Swal.fire({

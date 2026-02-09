@@ -58,6 +58,7 @@
             <option value="">كل طرق الدفع</option>
             <option value="1">كاش</option>
             <option value="2">فيزا / ماستر كارد</option>
+            <option value="3">مخصص</option>
           </select>
         </div>
 
@@ -309,6 +310,44 @@
       <div class="modal-footer no-print justify-content-center bg-light">
         <button type="button" class="btn btn-warning text-white px-5 rounded-pill shadow-sm fw-bold print-btn" (click)="downloadInvoice()">
           <i class="bi bi-printer me-2"></i> طباعة الفاتورة
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Payment method modal (عند الضغط على دفع) -->
+<div class="modal fade" id="testPayMethodModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold"><i class="bi bi-wallet2 me-2"></i> طريقة الدفع</h5>
+        <button type="button" class="btn-close" (click)="closePayModal()"></button>
+      </div>
+      <div class="modal-body" *ngIf="invoiceToPay">
+        <p class="mb-3">الإجمالي: <strong class="text-success">{{ payModalTotal | number:'1.2-2' }} ج.م</strong></p>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <button type="button" class="btn rounded-3" [class.btn-primary]="payMethod === 'cash'" [class.btn-outline-primary]="payMethod !== 'cash'" (click)="payMethod = 'cash'">
+            <i class="bi bi-cash-coin me-1"></i> كاش
+          </button>
+          <button type="button" class="btn rounded-3" [class.btn-primary]="payMethod === 'visa'" [class.btn-outline-secondary]="payMethod !== 'visa'" (click)="payMethod = 'visa'">
+            <i class="bi bi-credit-card me-1"></i> فيزا
+          </button>
+          <button type="button" class="btn rounded-3" [class.btn-primary]="payMethod === 'custom'" [class.btn-outline-secondary]="payMethod !== 'custom'" (click)="payMethod = 'custom'">
+            <i class="bi bi-cash-stack me-1"></i> مخصص
+          </button>
+        </div>
+        <div class="mb-3" *ngIf="payMethod === 'custom'">
+          <label class="form-label">مبلغ الكاش (ج.م)</label>
+          <input type="number" class="form-control" [(ngModel)]="payCustomCashAmount" min="0" [max]="payModalTotal" step="0.01" />
+          <small class="text-muted">الباقي فيزا: <strong>{{ payModalVisaAmount | number:'1.2-2' }} ج.م</strong></small>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-outline-secondary rounded-3" (click)="closePayModal()">إلغاء</button>
+        <button type="button" class="btn btn-success rounded-3" (click)="confirmPay()" [disabled]="payingInvoiceId !== null">
+          <span *ngIf="payingInvoiceId !== invoiceToPay?.invoiceId">تأكيد الدفع</span>
+          <span *ngIf="payingInvoiceId === invoiceToPay?.invoiceId">جاري...</span>
         </button>
       </div>
     </div>

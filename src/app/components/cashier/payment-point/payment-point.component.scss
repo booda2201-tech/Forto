@@ -846,12 +846,120 @@
 
   .form-footer-inner {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
     width: 100%;
   }
 
+  .price-block {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    flex-wrap: wrap;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .payment-method-block {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .payment-method-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #e5e7eb;
+    margin-bottom: 14px;
+    i { font-size: 1.2rem; color: #ffa500; }
+  }
+
+  .payment-method-cards {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .payment-card {
+    flex: 1;
+    min-width: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    color: #d1d5db;
+    cursor: pointer;
+    transition: all 0.25s ease;
+
+    .payment-card-icon {
+      font-size: 1.6rem;
+      opacity: 0.9;
+    }
+    .payment-card-label {
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.25);
+      color: #fff;
+    }
+    &.payment-card-active {
+      background: rgba(255, 165, 0, 0.25);
+      border-color: #ffa500;
+      color: #fff;
+      .payment-card-icon { color: #ffa500; }
+    }
+  }
+
+  .custom-cash-box {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+
+    label {
+      font-size: 0.9rem;
+      color: #d1d5db;
+      font-weight: 600;
+      min-width: 120px;
+    }
+    .custom-cash-input {
+      width: 120px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.2);
+      color: #fff;
+      font-weight: 700;
+      text-align: center;
+      font-size: 1rem;
+      &::placeholder { color: rgba(255,255,255,0.4); }
+      &:focus {
+        outline: none;
+        border-color: #ffa500;
+        box-shadow: 0 0 0 3px rgba(255, 165, 0, 0.2);
+      }
+    }
+    .custom-cash-visa {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      strong { color: #ffa500; }
+    }
+  }
 
   .total-price {
     display: flex;
@@ -998,8 +1106,6 @@
 
 @media (max-width: 992px) {
   .form-footer {
-
-
     padding: 20px !important;
 
     .form-footer-inner {
@@ -1007,14 +1113,16 @@
       gap: 18px;
     }
 
+    .price-block {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
 
     .total-price {
       width: 100%;
       justify-content: center;
-      padding-bottom: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
-
 
     .adjust-total-section {
       width: 100%;
@@ -1034,6 +1142,18 @@
       }
     }
 
+    .payment-method-cards {
+      justify-content: center;
+    }
+
+    .payment-card {
+      min-width: 80px;
+    }
+
+    .custom-cash-box {
+      flex-direction: column;
+      align-items: stretch;
+    }
 
     .actions {
       width: 100%;

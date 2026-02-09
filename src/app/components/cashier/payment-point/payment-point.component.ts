@@ -50,6 +50,10 @@ export class PaymentPointComponent implements OnInit {
   adjustTotalMode: 'normal' | 'free' | 'custom' = 'normal';
   adjustCustomAmount = 0;
 
+  // Payment method: 1 = cash, 2 = visa, 3 = custom (split)
+  paymentType: 'cash' | 'visa' | 'custom' = 'cash';
+  customCashAmount = 0;
+
   // Pricing & Invoice Data
   totalPrice = 0; // عرض السعر المباشر
   subTotal = 0;
@@ -376,6 +380,18 @@ submitBooking() {
     return;
   }
 
+  if (this.paymentType === 'custom') {
+    const cash = Number(this.customCashAmount) || 0;
+    if (cash <= 0) {
+      this.toastr.warning('أدخل مبلغ الكاش في الدفع المخصص', 'تنبيه');
+      return;
+    }
+    if (cash > this.finalTotalForPayment) {
+      this.toastr.warning('مبلغ الكاش لا يمكن أن يتجاوز الإجمالي النهائي', 'تنبيه');
+      return;
+    }
+  }
+
   this.showSupervisorError = false;
   const v = this.customerForm.value;
 
@@ -434,6 +450,18 @@ submitBooking() {
     : this.totalPrice;
   payload.adjustedTotal = adjTotal;
 
+  // طريقة الدفع: 1 = كاش، 2 = فيزا، 3 = مخصص (كاش + فيزا)
+  const finalTotal = adjTotal * 1.14;
+  const cashAmt = this.paymentType === 'cash' ? finalTotal
+    : this.paymentType === 'visa' ? 0
+    : (Number(this.customCashAmount) || 0);
+  const visaAmt = this.paymentType === 'visa' ? finalTotal
+    : this.paymentType === 'cash' ? 0
+    : Math.max(0, finalTotal - cashAmt);
+  payload.paymentMethod = this.paymentType === 'cash' ? 1 : this.paymentType === 'visa' ? 2 : 3;
+  payload.cashAmount = cashAmt;
+  payload.visaAmount = visaAmt;
+
   // Save customer data before submitting
   this.customerFormData = {
     name: String(v.name ?? '').trim(),
@@ -473,6 +501,8 @@ submitBooking() {
       this.showSupervisorError = false;
       this.adjustTotalMode = 'normal';
       this.adjustCustomAmount = 0;
+      this.paymentType = 'cash';
+      this.customCashAmount = 0;
       this.customerForm.reset({ appointmentDate: this.todayYYYYMMDD() });
       this.customerFormData = null;
     },
@@ -493,6 +523,21 @@ submitBooking() {
   }
 
   get totalAmount() { return this.totalPrice; } // لتوحيد العرض في الـ HTML
+
+  /** الإجمالي النهائي للدفع (المجموع + 14% ضريبة) */
+  get finalTotalForPayment(): number {
+    const base = this.adjustTotalMode === 'free' ? 0
+      : this.adjustTotalMode === 'custom' ? (Number(this.adjustCustomAmount) || 0)
+      : this.totalPrice;
+    return base * 1.14;
+  }
+
+  /** في وضع مخصص: الباقي فيزا = الإجمالي النهائي - الكاش المدخل */
+  get computedVisaAmount(): number {
+    if (this.paymentType !== 'custom') return 0;
+    const cash = Number(this.customCashAmount) || 0;
+    return Math.max(0, this.finalTotalForPayment - cash);
+  }
 
   loadAvailableSlots() {
     const date = this.customerForm.value.appointmentDate;

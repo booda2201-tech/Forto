@@ -72,7 +72,7 @@ export class WorkersComponent implements OnInit {
     { id: 3, label: 'مشرف (Supervisor)' },
   ];
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   ngOnInit(): void {
     this.loadWorkers();
@@ -88,7 +88,7 @@ export class WorkersComponent implements OnInit {
           age: Number(e.age ?? 0),
           phoneNumber: e.phoneNumber ?? '',
           isActive: !!e.isActive,
-          role: Number(e.role ?? 1),
+          role: Number(e.role),
           monthlySalary: 0, // UI-only
         }));
       },
@@ -106,7 +106,7 @@ export class WorkersComponent implements OnInit {
     const name = (this.newWorker.name || '').trim();
     const phone = (this.newWorker.phoneNumber || '').trim();
     const age = Number(this.newWorker.age ?? 0);
-    const role = Number(this.newWorker.role ?? 1);
+    const role = Number(this.newWorker.role);
     const password = (this.newWorker.password || '').trim();
 
     if (!name || !phone) {
@@ -136,6 +136,8 @@ export class WorkersComponent implements OnInit {
     };
 
     if (role === 2) {
+      console.log(name, age, phone, role);
+
       // Cashier: create-user (يتطلب password)
       const roleStr = 'Cashier';
       this.api.createEmployeeUser({ name, age, phoneNumber: phone, password, role: roleStr }).subscribe({
@@ -150,7 +152,9 @@ export class WorkersComponent implements OnInit {
         },
       });
     } else {
-      // Worker أو Supervisor: Create API
+      // Worker أو Supervisor: Create API 
+      console.log(name, age, phone, role);
+
       this.api.createEmployee({ name, age, phoneNumber: phone, role }).subscribe({
         next: () => {
           alert(role === 3 ? 'تم إضافة المشرف بنجاح' : 'تم إضافة العامل بنجاح');
@@ -194,7 +198,7 @@ export class WorkersComponent implements OnInit {
       phoneNumber: (this.selectedWorker.phoneNumber || '').trim(),
       age: Number(this.selectedWorker.age ?? 0),
       isActive: !!this.selectedWorker.isActive,
-      role: Number(this.selectedWorker.role ?? 1),
+      role: Number(this.selectedWorker.role),
     };
 
     this.api.updateEmployee(this.selectedWorker.id, payload).subscribe({
@@ -211,7 +215,10 @@ export class WorkersComponent implements OnInit {
 
   // optional display
   roleLabel(role: number): string {
-    return role === 2 ? 'Cashier' : 'Worker';
+    // return role === 2 ? 'Cashier' : 'Worker';
+    if (role === 2) return 'كاشير';
+    if (role === 3) return 'مشرف';
+    return 'عامل';
   }
 
   loadAllCatalogServices(): void {
@@ -239,7 +246,7 @@ export class WorkersComponent implements OnInit {
 
             forkJoin(calls).subscribe({
               next: (results: any) => {
-                const merged = results.flatMap((r:any) => r?.data ?? []);
+                const merged = results.flatMap((r: any) => r?.data ?? []);
 
                 // unique by id
                 const mapById = new Map<number, any>();
@@ -287,26 +294,26 @@ export class WorkersComponent implements OnInit {
 
 
   saveAssignedServices() {
-  if (!this.assignEmployeeId) return;
+    if (!this.assignEmployeeId) return;
 
-  this.isSavingServices = true;
+    this.isSavingServices = true;
 
-  this.api.updateEmployeeServices(this.assignEmployeeId, this.selectedServiceIds).subscribe({
-    next: () => {
-      this.isSavingServices = false;
-      alert('تم حفظ خدمات العامل بنجاح');
+    this.api.updateEmployeeServices(this.assignEmployeeId, this.selectedServiceIds).subscribe({
+      next: () => {
+        this.isSavingServices = false;
+        alert('تم حفظ خدمات العامل بنجاح');
 
-      const el = document.getElementById('assignServicesModal');
-      const modal = (window as any).bootstrap.Modal.getInstance(el);
-      modal?.hide();
-    },
-    error: (err: any) => {
+        const el = document.getElementById('assignServicesModal');
+        const modal = (window as any).bootstrap.Modal.getInstance(el);
+        modal?.hide();
+      },
+      error: (err: any) => {
         console.error(err);
         this.isSavingServices = false;
         alert(err?.error?.message || 'فشل حفظ خدمات العامل');
-    }
-  });
-}
+      }
+    });
+  }
 
   // ---------- Schedule / Shift ----------
   openScheduleModal(worker: EmployeeUi) {
