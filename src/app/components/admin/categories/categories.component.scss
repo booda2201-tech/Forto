@@ -1,43 +1,118 @@
-:host {
-  display: block;
-  padding: 0 0 2rem;
-}
+// :host {
+//   display: block;
+//   padding: 0 0 2rem;
+// }
 
-.categories-page {
-  max-width: 900px;
+// .categories-page {
+//   max-width: 900px;
+//   margin: 0 auto;
+// }
+
+// .page-title {
+//   font-weight: 800;
+//   color: #1f2a37;
+// }
+
+// .text-orange {
+//   color: #ffa500;
+// }
+
+// .btn-orange {
+//   background: #ffa500;
+//   color: #fff;
+//   border: none;
+//   &:hover:not(:disabled) {
+//     background: #e59400;
+//     color: #fff;
+//   }
+//   &:disabled {
+//     opacity: 0.7;
+//     cursor: not-allowed;
+//   }
+// }
+
+// .add-card .card-title,
+// .list-card .card-title {
+//   font-weight: 700;
+//   color: #1f2a37;
+// }
+
+// .table th {
+//   font-weight: 700;
+//   font-size: 0.9rem;
+// }
+
+
+.categories-container {
+  max-width: 1200px;
   margin: 0 auto;
-}
+  height: 100vh;
+  padding: 20px;
+  background-color: transparent;
 
-.page-title {
-  font-weight: 800;
-  color: #1f2a37;
-}
 
-.text-orange {
-  color: #ffa500;
-}
 
-.btn-orange {
-  background: #ffa500;
-  color: #fff;
-  border: none;
-  &:hover:not(:disabled) {
-    background: #e59400;
-    color: #fff;
+$orange-color: #ff9a27;
+  $dark-text: #1f2a37;
+  $bg-gray: #f8f9fa;
+
+  .bg-orange { background-color: $orange-color; }
+  .text-orange { color: $orange-color; }
+
+  // كارت الإضافة
+  .add-category-card {
+    position: sticky;
+    top: 20px;
+    .custom-input {
+      border: 1px solid #eee;
+      padding: 12px;
+      border-radius: 10px;
+      &:focus {
+        border-color: $orange-color;
+        box-shadow: 0 0 0 0.25rem rgba($orange-color, 0.1);
+      }
+    }
   }
-  &:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+
+  .btn-orange-action {
+    background-color: $orange-color;
+    color: white;
+    border: none;
+    transition: transform 0.2s;
+    &:hover {
+      background-color: darken($orange-color, 5%);
+      transform: translateY(-2px);
+    }
   }
-}
 
-.add-card .card-title,
-.list-card .card-title {
-  font-weight: 700;
-  color: #1f2a37;
-}
+  // كروت الفئات (Grid style زي المنتجات)
+  .category-item-card {
+    transition: all 0.3s ease;
+    border-bottom: 4px solid transparent !important;
 
-.table th {
-  font-weight: 700;
-  font-size: 0.9rem;
+    &:hover {
+      transform: translateY(-5px);
+      border-bottom-color: $orange-color !important;
+    }
+
+    .index-badge {
+      background: #f0f2f5;
+      color: #888;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    .btn-icon {
+      padding: 2px 6px;
+      font-size: 1.1rem;
+      &:hover { background: #f8f9fa; border-radius: 8px; }
+    }
+  }
+
+  .list-header {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 25px !important;
+  }
 }

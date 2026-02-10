@@ -1,4 +1,4 @@
-<div class="categories-page" dir="rtl">
+<!-- <div class="categories-page" dir="rtl">
   <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
     <h2 class="page-title mb-0">
       <i class="bi bi-grid-3x3-gap text-orange me-2"></i>
@@ -9,7 +9,7 @@
     </a>
   </div>
 
-  <!-- إضافة فئة -->
+
   <div class="card add-card border-0 shadow-sm rounded-4 mb-4">
     <div class="card-body p-4">
       <h5 class="card-title mb-3">
@@ -20,9 +20,9 @@
         <div class="col-md-8">
           <label class="form-label fw-bold small">اسم الفئة</label>
           <input type="text" class="form-control form-control-lg rounded-3"
-                 [(ngModel)]="newCategoryName"
-                 placeholder="مثلاً: تلميع، حماية نانو..."
-                 (keyup.enter)="addCategory()">
+                  [(ngModel)]="newCategoryName"
+                  placeholder="مثلاً: تلميع، حماية نانو..."
+                  (keyup.enter)="addCategory()">
         </div>
         <div class="col-md-4">
           <button type="button" class="btn btn-orange w-100 py-2 rounded-3 fw-bold"
@@ -36,7 +36,7 @@
     </div>
   </div>
 
-  <!-- قائمة الفئات -->
+
   <div class="card list-card border-0 shadow-sm rounded-4">
     <div class="card-body p-4">
       <h5 class="card-title mb-4">
@@ -83,4 +83,78 @@
       </div>
     </div>
   </div>
+</div> -->
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="contt">
+<div class="categories-container" dir="rtl">
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="list-header d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0 text-dark">
+          <i class="bi bi-grid-3x3-gap text-orange me-2"></i> قائمة الفئات
+        </h4>
+        <span class="badge bg-orange text-white rounded-3 px-3 py-2 border">عدد الفئات: {{ categories.length }}</span>
+      </div>
+
+      <div class="row g-3">
+        <div *ngIf="isLoading" class="col-12 text-center py-5">
+          <div class="spinner-border text-orange"></div>
+        </div>
+
+        <div *ngIf="!isLoading && categories.length === 0" class="col-12 text-center py-5 text-muted">
+          <i class="bi bi-folder-x display-1 opacity-25"></i>
+          <p class="mt-3">لا توجد فئات حالياً</p>
+        </div>
+
+        <div *ngFor="let cat of categories; let i = index" class="col-md-6 col-xl-4">
+          <div class="category-item-card bg-white shadow-sm rounded-4 p-3 border-0 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="index-badge">#{{ i + 1 }}</span>
+              <div class="actions">
+                <button (click)="updateCategory(cat)" class="btn btn-icon text-primary"><i class="bi bi-pencil-square"></i></button>
+                <button (click)="deleteCategory(cat.id)" class="btn btn-icon text-danger"><i class="bi bi-trash"></i></button>
+              </div>
+            </div>
+            <h6 class="text-center fw-bold py-3 text-dark mb-0">{{ cat.name }}</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="col-lg-4">
+      <div class="card add-category-card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-orange text-white text-center py-3 rounded-top-4">
+          <h5 class="mb-0 fw-bold">إضافة فئة جديدة</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-bold small text-muted">اسم الفئة *</label>
+            <input type="text" class="form-control custom-input"
+                    [(ngModel)]="newCategoryName"
+                    placeholder="مثلاً: تلميع، حماية نانو..."
+                    (keyup.enter)="addCategory()">
+          </div>
+          <button class="btn btn-orange-action w-100 py-2 rounded-3 fw-bold mt-2"
+                  (click)="addCategory()"
+                  [disabled]="!newCategoryName?.trim() || isSavingCat">
+            <span *ngIf="!isSavingCat"><i class="bi bi-plus-lg me-1"></i> إضافة للقائمة +</span>
+            <span *ngIf="isSavingCat" class="spinner-border spinner-border-sm"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 </div>
