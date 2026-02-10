@@ -667,13 +667,25 @@ export class ReservationsComponent implements OnInit {
   }
 
   private mapInvoiceToSelected(inv: any, booking: BookingCard, id: number) {
+    const dateStr = inv?.date ?? inv?.appointmentDate ?? booking.appointmentDate ?? '';
+    const onlyDate = dateStr ? String(dateStr).slice(0, 10) : (booking.appointmentDate ?? '');
+    let timeStr = inv?.time ?? inv?.appointmentTime ?? booking.appointmentTime ?? '';
+    if (!timeStr && dateStr && String(dateStr).indexOf('T') !== -1) {
+      const t = String(dateStr).split('T')[1] || '';
+      timeStr = t.slice(0, 5); // HH:mm
+    }
+    const plate = inv?.plateNumber ?? booking.cars?.[0]?.plateNumber ?? inv?.cars?.[0]?.plateNumber ?? '';
     return {
       id: inv?.id ?? id,
       invoiceNumber: inv?.invoiceNumber ?? inv?.invoiceId ?? inv?.id ?? id,
       customerName: inv?.clientName ?? inv?.customerName ?? booking.customerName,
       phone: inv?.clientNumber ?? inv?.phone ?? inv?.customerPhone ?? booking.phone,
+      plateNumber: plate || undefined,
+      paymentMethod: inv?.paymentMethod,
+      paidAt: inv?.paidAt ?? null,
+      appointmentDate: onlyDate,
+      appointmentTime: timeStr,
       cars: inv?.cars ?? booking.cars,
-      appointmentDate: inv?.date ?? inv?.appointmentDate ?? booking.appointmentDate,
       subTotal: inv?.subTotal,
       adjustedTotal: inv?.adjustedTotal,
       taxAmount: inv?.taxAmount,
@@ -683,6 +695,15 @@ export class ReservationsComponent implements OnInit {
         price: Number(l.unitPrice ?? l.total ?? l.price ?? (l as any).unitPrice ?? 0),
       })),
     };
+  }
+
+  /** طريقة الدفع للعرض في الفاتورة (1=كاش، 2=فيزا، 3=مخصص) */
+  get invoicePaymentMethodLabel(): string {
+    const m = this.selectedInvoice?.paymentMethod;
+    if (m === 1) return 'كاش';
+    if (m === 2) return 'فيزا';
+    if (m === 3) return 'مخصص';
+    return '-';
   }
 
   private showInvoiceModal() {

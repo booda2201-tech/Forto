@@ -174,7 +174,8 @@
         <div class="form-group mb-3">
           <label><i class="bi bi-person-badge mx-1"></i> المشرف <span class="text-danger">*</span></label>
           <select class="form-select custom-select" [class.is-invalid]="showSupervisorError && !selectedSupervisorId"
-            [(ngModel)]="selectedSupervisorId" (ngModelChange)="showSupervisorError = false" [ngModelOptions]="{standalone: true}">
+            [(ngModel)]="selectedSupervisorId" (ngModelChange)="showSupervisorError = false"
+            [ngModelOptions]="{standalone: true}">
             <option [ngValue]="null" disabled>-- اختر المشرف (اجباري) --</option>
             <option *ngFor="let sup of supervisors" [ngValue]="sup.id">{{ sup.name }}</option>
           </select>
@@ -248,7 +249,8 @@
                   </option>
                 </select>
 
-                <small class="text-muted d-block mt-1" *ngIf="(serviceEmployees[service.id] || []).length === 0 && !isEmployeesLoading">
+                <small class="text-muted d-block mt-1"
+                  *ngIf="(serviceEmployees[service.id] || []).length === 0 && !isEmployeesLoading">
                   لا يوجد عمال متاحين لهذه الخدمة
                 </small>
                 <small class="text-muted d-block mt-1" *ngIf="isEmployeesLoading">
@@ -271,8 +273,8 @@
           </div>
 
           <div class="services-grid mt-4" *ngIf="giftOptions.length > 0">
-            <div *ngFor="let g of giftOptions" class="service-card" [class.selected-active]="isGiftSelected(g.productId)"
-              (click)="toggleGift(g.productId)">
+            <div *ngFor="let g of giftOptions" class="service-card"
+              [class.selected-active]="isGiftSelected(g.productId)" (click)="toggleGift(g.productId)">
               <div class="service-name">{{ g.productName }}</div>
               <small class="text-muted" *ngIf="g.availableQty != null">متاح: {{ g.availableQty }}</small>
               <div class="check-mark" *ngIf="isGiftSelected(g.productId)">
@@ -314,72 +316,81 @@
       </div>
 
 
-        <div class="form-footer">
-          <div class="form-footer-inner">
-            <!-- ١) السعر والمبلغ النهائي -->
-            <div class="price-block">
-              <div class="total-price">
-                <span>الإجمالي المتوقع:</span>
-                <strong>{{ totalPrice }} ج.م</strong>
-              </div>
-              <div class="adjust-total-section">
-                <span class="adjust-label">المبلغ النهائي:</span>
-                <div class="adjust-options">
-                  <button type="button" class="adjust-opt" [class.active]="adjustTotalMode === 'normal'" (click)="adjustTotalMode = 'normal'">
-                    <i class="bi bi-receipt"></i> العادي
+      <div class="form-footer">
+        <div class="form-footer-inner">
+          <!-- ١) السعر والمبلغ النهائي -->
+          <div class="price-block">
+            <div class="total-price">
+              <span>الإجمالي المتوقع:</span>
+              <strong>{{ totalPrice }} ج.م</strong>
+            </div>
+            <div class="adjust-total-section">
+              <span class="adjust-label">المبلغ النهائي:</span>
+              <div class="adjust-options">
+                <button type="button" class="adjust-opt" [class.active]="adjustTotalMode === 'normal'"
+                  (click)="adjustTotalMode = 'normal'">
+                  <i class="bi bi-receipt"></i> العادي
+                </button>
+                <button type="button" class="adjust-opt adjust-opt-free" [class.active]="adjustTotalMode === 'free'"
+                  (click)="adjustTotalMode = 'free'">
+                  <i class="bi bi-gift"></i> مجاني
+                </button>
+                <div class="adjust-opt-custom" [class.active]="adjustTotalMode === 'custom'">
+                  <button type="button" class="btn-trigger-edit" (click)="adjustTotalMode = 'custom'">
+                    <i class="bi bi-pencil-square"></i> تعديل
                   </button>
-                  <button type="button" class="adjust-opt adjust-opt-free" [class.active]="adjustTotalMode === 'free'" (click)="adjustTotalMode = 'free'">
-                    <i class="bi bi-gift"></i> مجاني
-                  </button>
-                  <div class="adjust-opt-custom" [class.active]="adjustTotalMode === 'custom'">
-                    <button type="button" class="btn-trigger-edit" (click)="adjustTotalMode = 'custom'">
-                      <i class="bi bi-pencil-square"></i> تعديل
-                    </button>
-                    <input type="number" class="adjust-input" [(ngModel)]="adjustCustomAmount" [disabled]="adjustTotalMode !== 'custom'">
-                    <span class="adjust-currency">ج.م</span>
-                  </div>
+                  <input type="number" class="adjust-input" [(ngModel)]="adjustCustomAmount"
+                    [disabled]="adjustTotalMode !== 'custom'">
+                  <span class="adjust-currency">ج.م</span>
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- ٢) طريقة الدفع تحت السعر -->
-            <div class="payment-method-block">
-              <div class="payment-method-title">
-                <i class="bi bi-wallet2"></i>
-                <span>طريقة الدفع</span>
-              </div>
-              <div class="payment-method-cards">
-                <button type="button" class="payment-card" [class.payment-card-active]="paymentType === 'cash'" (click)="paymentType = 'cash'">
-                  <i class="bi bi-cash-coin payment-card-icon"></i>
-                  <span class="payment-card-label">كاش</span>
-                </button>
-                <button type="button" class="payment-card" [class.payment-card-active]="paymentType === 'visa'" (click)="paymentType = 'visa'">
-                  <i class="bi bi-credit-card payment-card-icon"></i>
-                  <span class="payment-card-label">فيزا</span>
-                </button>
-                <button type="button" class="payment-card" [class.payment-card-active]="paymentType === 'custom'" (click)="paymentType = 'custom'">
-                  <i class="bi bi-cash-stack payment-card-icon"></i>
-                  <span class="payment-card-label">مخصص</span>
-                </button>
-              </div>
-              <div class="custom-cash-box" *ngIf="paymentType === 'custom'">
-                <label>مبلغ الكاش (ج.م)</label>
-                <input type="number" class="custom-cash-input" [(ngModel)]="customCashAmount" [ngModelOptions]="{standalone: true}" min="0" [max]="finalTotalForPayment" step="0.01" placeholder="0" />
-                <div class="custom-cash-visa">الباقي فيزا: <strong>{{ computedVisaAmount | number:'1.2-2' }} ج.م</strong></div>
-              </div>
+          <!-- ٢) طريقة الدفع تحت السعر -->
+          <div class="payment-method-block">
+            <div class="payment-method-title">
+              <i class="bi bi-wallet2"></i>
+              <span>طريقة الدفع</span>
             </div>
-
-            <div class="actions">
-              <button type="button" class="btn-cancel" (click)="resetQuickBookingForm()">إلغاء</button>
-              <button type="submit" class="btn-save" [disabled]="isSubmitting">
-                {{ isSubmitting ? 'جاري...' : 'تأكيد الدفع' }}
+            <div class="payment-method-cards">
+              <button type="button" class="payment-card" [class.payment-card-active]="paymentType === 'cash'"
+                (click)="paymentType = 'cash'">
+                <i class="bi bi-cash-coin payment-card-icon"></i>
+                <span class="payment-card-label">كاش</span>
+              </button>
+              <button type="button" class="payment-card" [class.payment-card-active]="paymentType === 'visa'"
+                (click)="paymentType = 'visa'">
+                <i class="bi bi-credit-card payment-card-icon"></i>
+                <span class="payment-card-label">فيزا</span>
+              </button>
+              <button type="button" class="payment-card" [class.payment-card-active]="paymentType === 'custom'"
+                (click)="paymentType = 'custom'">
+                <i class="bi bi-cash-stack payment-card-icon"></i>
+                <span class="payment-card-label">مخصص</span>
               </button>
             </div>
+            <div class="custom-cash-box" *ngIf="paymentType === 'custom'">
+              <label>مبلغ الكاش (ج.م)</label>
+              <input type="number" class="custom-cash-input" [(ngModel)]="customCashAmount"
+                [ngModelOptions]="{standalone: true}" min="0" [max]="finalTotalForPayment" step="0.01"
+                placeholder="0" />
+              <div class="custom-cash-visa">الباقي فيزا: <strong>{{ computedVisaAmount | number:'1.2-2' }} ج.م</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn-cancel" (click)="resetQuickBookingForm()">إلغاء</button>
+            <button type="submit" class="btn-save" [disabled]="isSubmitting">
+              {{ isSubmitting ? 'جاري...' : 'تأكيد الدفع' }}
+            </button>
           </div>
         </div>
-            </form>
-          </div>
-        </section>
+      </div>
+    </form>
+  </div>
+</section>
 
 
 
@@ -396,25 +407,29 @@
   <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
     <div class="modal-content border-0 shadow-lg">
 
-      <div class="text-end p-2 no-print">
+      <!-- <div class="text-end p-2 no-print">
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
+      </div> -->
 
       <div class="modal-body p-4 forto-invoice-container" id="printableInvoice" *ngIf="invoiceData">
 
         <div class="text-center mb-2">
-          <img src="../../../../assets/imeg/logo forto.png" class="brand-logo  mb-1" style="max-width: 150px;">
+          <img src="../../../../assets/imeg/logoforto.jpeg" class="brand-logo  mb-1" style="max-width: 150px;">
 
-          <h5 class="fw-bold m-0">فاتورة POS</h5>
+          <h5 class="fw-bold m-0">FORTO CAR CARE CENTER</h5>
           <div class="small text-muted">#{{ invoiceData.invoiceNumber }}</div>
         </div>
 
         <hr class="my-2" style="border-top: 1px dashed #000;">
 
         <div class="mb-3 fw-bold" style="font-size: 12px;">
-          <div><strong>العميل:</strong> {{ invoiceData.clientName || invoiceData.customerName || customerFormData?.name || '-' }}</div>
-          <div><strong>الهاتف:</strong> {{ invoiceData.clientNumber || invoiceData.phoneNumber || invoiceData.phone || customerFormData?.phone || '-' }}</div>
-          <div><strong>التاريخ:</strong> {{ invoiceData.paidAt | date:'dd/MM/yyyy - hh:mm a' }}</div>
+          <div><strong>العميل:</strong> {{ invoiceData.clientName || invoiceData.customerName || customerFormData?.name
+            || '-' }}</div>
+          <div><strong>الهاتف:</strong> {{ invoiceData.clientNumber || invoiceData.phoneNumber || invoiceData.phone ||
+            customerFormData?.phone || '-' }}</div>
+          <div><strong>رقم العربية:</strong> {{ invoiceData.plateNumber || '-' }}</div>
+          <div><strong>التاريخ:</strong> {{ invoiceData.paidAt | date:'yyyy/M/d - h:mm a' }}</div>
+          <div><strong>طريقة الدفع:</strong> {{ invoicePaymentMethodLabel }}</div>
         </div>
 
         <table class="table table-sm mb-2" style="font-size: 12px;">
@@ -455,7 +470,7 @@
           </div>
         </div>
 
-        <div class="text-center mt-3 small text-muted">
+        <div class="text-center mt-3 mb-4 small text-muted">
           شكراً لزيارتكم فورتو
         </div>
       </div>
@@ -495,10 +510,8 @@
         </div>
 
         <div class="cars-list">
-          <div
-            *ngFor="let car of getCarsToDisplay(); let i = index"
-            class="car-card p-3 mb-2 border rounded-3 car-card-hover"
-            (click)="selectCar(car)">
+          <div *ngFor="let car of getCarsToDisplay(); let i = index"
+            class="car-card p-3 mb-2 border rounded-3 car-card-hover" (click)="selectCar(car)">
 
             <div class="d-flex justify-content-between align-items-center">
               <div>

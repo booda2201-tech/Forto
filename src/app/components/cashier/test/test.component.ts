@@ -73,13 +73,13 @@ export class TestComponent {
   filterSearch = '';
   filterFrom = this.todayStr;
   filterTo = this.todayStr;
-  filterMethod = '';
+  filterMethod = 'all';
   filterStatus = '';
 
   private searchTerm$ = new BehaviorSubject<string>('');
   private from$ = new BehaviorSubject<string>(this.todayStr);
   private to$ = new BehaviorSubject<string>(this.todayStr);
-  private paymentMethod$ = new BehaviorSubject<string>('');
+  private paymentMethod$ = new BehaviorSubject<string>('all');
   private statusFilter$ = new BehaviorSubject<string>(''); // "" | "unpaid" | "paid" | "cancelled"
 
   private page$ = new BehaviorSubject<number>(1);
@@ -127,11 +127,12 @@ export class TestComponent {
   ]).pipe(
     switchMap(([term, from, to, method, statusVal, page, pageSize]) => {
       const status = statusVal === '' ? undefined : statusVal;
+      const paymentMethod = (method && method.trim()) || 'all';
       return this.api.getInvoicesList({
         branchId: this.branchId,
         from: from || undefined,
         to: to || undefined,
-        paymentMethod: method || undefined,
+        paymentMethod,
         status,
         q: term || undefined,
         page,
@@ -188,12 +189,12 @@ export class TestComponent {
     this.filterSearch = '';
     this.filterFrom = today;
     this.filterTo = today;
-    this.filterMethod = '';
+    this.filterMethod = 'all';
     this.filterStatus = '';
     this.searchTerm$.next('');
     this.from$.next(today);
     this.to$.next(today);
-    this.paymentMethod$.next('');
+    this.paymentMethod$.next('all');
     this.statusFilter$.next('');
     this.page$.next(1);
   }

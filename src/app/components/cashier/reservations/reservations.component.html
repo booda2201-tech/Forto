@@ -410,14 +410,15 @@
   <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
     <div class="modal-content border-0 shadow-lg">
 
-      <div class="text-end p-2 no-print">
+      <!-- <div class="text-end p-2 no-print">
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
+      </div> -->
 
       <div class="modal-body p-4 forto-invoice-container" id="printableInvoice">
         <div class="text-center mb-3">
-          <img src="assets/imeg/logo forto.png" class="brand-logo mb-1" style="max-width: 70px;" />
-          <div class="small">#{{ invoiceDisplayNumber }}</div>
+          <img src="assets/imeg/logoforto.jpeg" class="brand-logo mb-1" style="max-width: 150px;" />
+          <h5 class="fw-bold m-0">FORTO CAR CARE CENTER</h5>
+          <div class="">#{{ invoiceDisplayNumber }}</div>
         </div>
 
         <hr class="my-2" style="border-top: 1px dashed #000;">
@@ -425,8 +426,9 @@
         <div class="client-data mb-3 fw-bold" style="font-size: 12px;">
           <div><strong>العميل:</strong> {{ selectedInvoice?.customerName }}</div>
           <div><strong>الهاتف:</strong> {{ selectedInvoice?.phone }}</div>
-          <div><strong>السيارة:</strong> {{ selectedInvoice?.cars?.[0]?.carModel }}</div>
-          <div><strong>التاريخ:</strong> {{ selectedInvoice?.appointmentDate }}</div>
+          <div><strong>رقم العربية:</strong> {{ selectedInvoice?.plateNumber || '-' }}</div>
+          <div><strong>وقت الدفع:</strong> {{ selectedInvoice?.paidAt ? (selectedInvoice.paidAt | date:'yyyy/M/d - h:mm a') : '-' }}</div>
+          <div><strong>طريقة الدفع:</strong> {{ invoicePaymentMethodLabel }}</div>
         </div>
 
         <table class="table table-sm invoice-table mb-2" style="font-size: 12px;">

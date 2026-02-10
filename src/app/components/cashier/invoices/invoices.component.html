@@ -3,17 +3,31 @@
 
     <!-- Stats -->
     <div class="row g-3 mb-4 no-print">
-      <div class="col-md-3">
+      <div class="col-6 col-md-3">
         <div class="card stat-card border-0 shadow-sm p-3">
           <span class="text-muted small">عدد العمليات</span>
           <h4 class="fw-bold mb-0">{{ totalInvoicesCount }}</h4>
         </div>
       </div>
 
-      <div class="col-md-3">
+      <div class="col-6 col-md-3">
         <div class="card stat-card border-0 shadow-sm p-3 bg-orange-light text-orange">
           <span class="small">إجمالي الدخل المفلتر</span>
           <h4 class="fw-bold mb-0">{{ totalDailyAmount | number:'1.0-0' }} ج.م</h4>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="card stat-card border-0 shadow-sm p-3">
+          <span class="text-muted small">إجمالي الكاش</span>
+          <h4 class="fw-bold mb-0 text-success">{{ totalCashAmount | number:'1.0-0' }} ج.م</h4>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="card stat-card border-0 shadow-sm p-3">
+          <span class="text-muted small">إجمالي الفيزا</span>
+          <h4 class="fw-bold mb-0 text-primary">{{ totalVisaAmount | number:'1.0-0' }} ج.م</h4>
         </div>
       </div>
     </div>
@@ -55,10 +69,10 @@
             [(ngModel)]="filterMethod"
             (ngModelChange)="onMethodChange($event)"
           >
-            <option value="">كل طرق الدفع</option>
-            <option value="1">كاش</option>
-            <option value="2">فيزا / ماستر كارد</option>
-            <option value="3">مخصص</option>
+            <option value="all">كل طرق الدفع</option>
+            <option value="cash">كاش</option>
+            <option value="visa">فيزا / ماستر كارد</option>
+            <option value="custom">مخصص</option>
           </select>
         </div>
 
@@ -236,14 +250,15 @@
   <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
     <div class="modal-content border-0 shadow-lg">
 
-      <div class="text-end p-2 no-print">
+      <!-- <div class="text-end p-2 no-print">
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
+      </div> -->
 
       <div class="modal-body p-4 forto-invoice-container" id="printableInvoice">
         <div class="text-center mb-3">
-          <img src="../../../../assets/imeg/logo forto.png" class="brand-logo mb-1" style="max-width: 70px;">
-          <div class="small">#{{ selectedInvoice?.id }}</div>
+          <img src="../../../../assets/imeg/logoforto.jpeg" class="brand-logo mb-1" style="max-width: 150px;">
+          <h5 class="fw-bold m-0">FORTO CAR CARE CENTER</h5>
+          <div class="">#{{ selectedInvoice?.id }}</div>
         </div>
 
         <hr class="my-2" style="border-top: 1px dashed #000;">
@@ -251,8 +266,10 @@
         <div class="client-data mb-3 fw-bold" style="font-size: 12px;">
           <div><strong>العميل:</strong> {{ selectedInvoice?.customerName || 'Walk-in' }}</div>
           <div><strong>الهاتف:</strong> {{ selectedInvoice?.phone || '-' }}</div>
-          <div><strong>التاريخ:</strong> {{ selectedInvoice?.date }}</div>
-          <div><strong>حالة الدفع:</strong> {{ selectedInvoice ? statusLabel(selectedInvoice.status) : '' }}</div>
+          <div><strong>رقم العربية:</strong> {{ selectedInvoice?.plateNumber || '-' }}</div>
+          <!-- <div><strong>التاريخ:</strong> {{ selectedInvoice?.date }}</div> -->
+          <div><strong>التاريخ : </strong> {{ (selectedInvoice?.paidAt | date:'yyyy/M/d - h:mm a') || '-' }}</div>
+          <div><strong>طريقة الدفع:</strong> {{ selectedInvoice ? paymentLabel(selectedInvoice.paymentMethod) : '' }}</div>
         </div>
 
         <!-- Lines table (REAL prices + qty) -->

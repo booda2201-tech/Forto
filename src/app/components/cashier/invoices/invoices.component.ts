@@ -30,11 +30,12 @@ type InvoiceUi = {
   invoiceId: number; // للـ API (payInvoiceCash)
   customerName: string;
   phone: string;
+  plateNumber?: string; // رقم لوحة السيارة
   paymentMethod: number; // 1 = cash, 2 = visa
   status: 1 | 2 | 3; // 1 غير مدفوعة، 2 مدفوعة، 3 ملغاة
   date: string; // YYYY-MM-DD
   createdAt: string;
-
+  paidAt: string;
   subTotal: number;
   discount: number;
   total: number;
@@ -67,13 +68,13 @@ export class InvoicesComponent {
   filterSearch = '';
   filterFrom = this.todayStr;
   filterTo = this.todayStr;
-  filterMethod = '';
+  filterMethod = 'all';
   filterStatus = '';
 
   private searchTerm$ = new BehaviorSubject<string>('');
   private from$ = new BehaviorSubject<string>(this.todayStr);
   private to$ = new BehaviorSubject<string>(this.todayStr);
-  private paymentMethod$ = new BehaviorSubject<string>('');
+  private paymentMethod$ = new BehaviorSubject<string>('all');
   private statusFilter$ = new BehaviorSubject<string>(''); // "" | "unpaid" | "paid" | "cancelled"
 
   private page$ = new BehaviorSubject<number>(1);
@@ -83,9 +84,13 @@ export class InvoicesComponent {
   currentPage$ = this.page$.asObservable();
   pageSizeObservable$ = this.pageSize$.asObservable();
 
-  // keep last summary
-  private lastSummary: { totalCount: number; totalRevenue: number } | null =
-    null;
+  // keep last summary (from API data.summary)
+  private lastSummary: {
+    totalCount?: number;
+    totalRevenue?: number;
+    totalCashAmount?: number;
+    totalVisaAmount?: number;
+  } | null = null;
   
   // pagination computed values
   get currentPage(): number {
@@ -110,6 +115,14 @@ export class InvoicesComponent {
     return Math.min(end, this.totalInvoicesCount);
   }
 
+  get totalCashAmount(): number {
+    return this.lastSummary?.totalCashAmount ?? 0;
+  }
+
+  get totalVisaAmount(): number {
+    return this.lastSummary?.totalVisaAmount ?? 0;
+  }
+
   invoices$: Observable<InvoiceUi[]> = combineLatest([
     this.searchTerm$,
     this.from$,
@@ -121,11 +134,12 @@ export class InvoicesComponent {
   ]).pipe(
     switchMap(([term, from, to, method, statusVal, page, pageSize]) => {
       const status = statusVal === '' ? undefined : statusVal;
+      const paymentMethod = (method && method.trim()) || 'all';
       return this.api.getInvoicesList({
         branchId: this.branchId,
         from: from || undefined,
         to: to || undefined,
-        paymentMethod: method || undefined,
+        paymentMethod,
         status,
         q: term || undefined,
         page,
@@ -182,12 +196,12 @@ export class InvoicesComponent {
     this.filterSearch = '';
     this.filterFrom = today;
     this.filterTo = today;
-    this.filterMethod = '';
+    this.filterMethod = 'all';
     this.filterStatus = '';
     this.searchTerm$.next('');
     this.from$.next(today);
     this.to$.next(today);
-    this.paymentMethod$.next('');
+    this.paymentMethod$.next('all');
     this.statusFilter$.next('');
     this.page$.next(1);
   }
@@ -286,6 +300,7 @@ export class InvoicesComponent {
         invoiceId: Number(x.invoiceId ?? 0),
         date: onlyDate,
         createdAt: dateStr,
+        paidAt: x.paidAt ?? '',
         paymentMethod: Number(x.paymentMethod ?? 0),
         status,
 
@@ -295,6 +310,7 @@ export class InvoicesComponent {
 
         customerName: String(x.customerName ?? ''),
         phone: String(x.customerPhone ?? ''),
+        plateNumber: x.plateNumber != null ? String(x.plateNumber) : undefined,
         itemsText: String(x.itemsText ?? ''),
         lines,
       } as InvoiceUi;
@@ -408,7 +424,7 @@ export class InvoicesComponent {
         'طريقة الدفع': this.paymentLabel(invoice.paymentMethod),
         'حالة الدفع': this.statusLabel(invoice.status),
         الإجمالي: invoice.total.toFixed(2),
-        التاريخ: invoice.date,
+        التاريخ: invoice.paidAt,
       },
     ];
 
