@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -7,6 +7,7 @@ import {
   map,
   Observable,
   shareReplay,
+  Subscription,
   switchMap,
   take,
   tap,
@@ -14,6 +15,7 @@ import {
 import { ApiService } from 'src/app/services/api.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
+import { InvoiceDeletionHubService } from 'src/app/services/invoice-deletion-hub.service';
 import * as XLSX from 'xlsx';
 
 type InvoiceLineUi = {
@@ -51,8 +53,10 @@ type InvoiceUi = {
   templateUrl: './invoices.component.html',
   styleUrls: ['./invoices.component.scss'],
 })
-export class InvoicesComponent {
+export class InvoicesComponent implements OnInit, OnDestroy {
   selectedInvoice: InvoiceUi | null = null;
+
+  private deletionHubSub: Subscription | null = null;
 
   branchId = 1;
   get cashierId(): number {
@@ -162,8 +166,26 @@ export class InvoicesComponent {
   constructor(
     private api: ApiService,
     private auth: AuthService,
-    private printInvoice: PrintInvoiceService
+    private printInvoice: PrintInvoiceService,
+    private invoiceDeletionHub: InvoiceDeletionHubService
   ) {}
+
+  ngOnInit(): void {
+    this.invoiceDeletionHub.startConnection();
+    this.deletionHubSub = this.invoiceDeletionHub.onDeletionProcessed.subscribe(() => {
+      this.refreshInvoiceList();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.deletionHubSub?.unsubscribe();
+    this.invoiceDeletionHub.stopConnection();
+  }
+
+  /** إعادة جلب قائمة الفواتير (بعد تأكيد/رفض الحذف من SignalR أو بعد دفع) */
+  refreshInvoiceList(): void {
+    this.page$.next(this.currentPage);
+  }
 
   // ---------- UI Handlers (تحديث الـ Subject وإرجاع الصفحة لـ 1) ----------
   onSearch(val: string): void {

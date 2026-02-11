@@ -6,10 +6,16 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ApiService {
-  private baseUrl = 'https://api.fortolaundry.com';
-  // private baseUrl = 'https://localhost:7179';
+  /** استخدم server أو local حسب أين شغّال الباك — الـ API و SignalR هيستخدموا نفس الـ base */
+  private baseUrl = 'https://api.fortolaundry.com';   // سيرفر
+  // private baseUrl = 'https://localhost:7179';      // local (للتطوير لو الباك على نفس الجهاز)
 
   constructor(private http: HttpClient) {}
+
+  /** يستخدم مع SignalR (نفس الـ host للـ hubs) */
+  getBaseUrl(): string {
+    return this.baseUrl;
+  }
 
   signin(payload: { phoneNumber: string; password: string }) {
     return this.http.post<{
