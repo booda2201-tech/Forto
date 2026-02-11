@@ -630,6 +630,41 @@
     }
 }
 
+.car-card-btn {
+    border: 1px solid #dee2e6;
+    background: white;
+    &:hover { background-color: #f8f9fa !important; }
+    &:focus { outline: none; box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.3); }
+}
+
+/* مودال اختيار السيارة - overlay نتحكم فيه بالكامل */
+.car-selection-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.car-selection-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+.car-selection-dialog {
+  position: relative;
+  z-index: 1;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.car-selection-content {
+  background: #fff;
+  border-radius: 0.5rem;
+}
+
 
 
 

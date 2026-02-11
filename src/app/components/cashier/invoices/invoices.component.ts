@@ -24,7 +24,7 @@ type InvoiceLineUi = {
   total: number;
 };
 
-/** status: 1 = Unpaid, 2 = Paid, 3 = Cancelled */
+/** status: 1 = Unpaid, 2 = Paid, 3 = Cancelled, 4 = Pending deletion, 5 = Deleted */
 type InvoiceUi = {
   id: string; // invoiceNumber للعرض (مثل for-2026-110)
   invoiceId: number; // للـ API (payInvoiceCash)
@@ -32,7 +32,7 @@ type InvoiceUi = {
   phone: string;
   plateNumber?: string; // رقم لوحة السيارة
   paymentMethod: number; // 1 = cash, 2 = visa
-  status: 1 | 2 | 3; // 1 غير مدفوعة، 2 مدفوعة، 3 ملغاة
+  status: 1 | 2 | 3 | 4 | 5; // 1 غير مدفوعة، 2 مدفوعة، 3 ملغاة، 4 منتظر تأكيد الحذف، 5 محذوفة
   date: string; // YYYY-MM-DD
   createdAt: string;
   paidAt: string;
@@ -291,9 +291,12 @@ export class InvoicesComponent {
       const dateStr = String(x.date ?? '');
       const onlyDate = dateStr ? dateStr.slice(0, 10) : '';
 
-      // status: 1 = Unpaid, 2 = Paid, 3 = Cancelled
+      // status: 1 = Unpaid, 2 = Paid, 3 = Cancelled, 4 = Pending deletion, 5 = Deleted
       const rawStatus = Number(x.status ?? 1);
-      const status: 1 | 2 | 3 = (rawStatus === 1 || rawStatus === 2 || rawStatus === 3) ? rawStatus : 1;
+      const status: 1 | 2 | 3 | 4 | 5 =
+        rawStatus === 1 || rawStatus === 2 || rawStatus === 3 || rawStatus === 4 || rawStatus === 5
+          ? rawStatus
+          : 1;
 
       return {
         id: String(x.invoiceNumber ?? ''),
@@ -326,13 +329,22 @@ export class InvoicesComponent {
     return method === 1 ? 'bi bi-cash' : method === 2 ? 'bi bi-credit-card' : 'bi bi-cash-stack';
   }
 
-  /** 1 = Unpaid, 2 = Paid, 3 = Cancelled */
-  statusLabel(status: 1 | 2 | 3): string {
-    return status === 1 ? 'غير مدفوعة' : status === 2 ? 'مدفوعة' : 'ملغاة';
+  /** 1 = Unpaid, 2 = Paid, 3 = Cancelled, 4 = Pending deletion, 5 = Deleted */
+  statusLabel(status: 1 | 2 | 3 | 4 | 5): string {
+    if (status === 1) return 'غير مدفوعة';
+    if (status === 2) return 'مدفوعة';
+    if (status === 4) return 'منتظر تأكيد الحذف';
+    if (status === 5) return 'محذوفة';
+    return 'ملغاة'; // 3
   }
 
   // ---------- دفع فاتورة (status = 1 غير مدفوعة) ----------
   payingInvoiceId: number | null = null;
+
+  // طلب حذف فاتورة
+  invoiceToDelete: InvoiceUi | null = null;
+  deletionReason = '';
+  deletingInvoiceId: number | null = null;
   invoiceToPay: InvoiceUi | null = null;
   payMethod: 'cash' | 'visa' | 'custom' = 'cash';
   payCustomCashAmount = 0;
@@ -409,6 +421,52 @@ export class InvoicesComponent {
 
   payInvoice(invoice: InvoiceUi): void {
     this.openPayModal(invoice);
+  }
+
+  openDeleteModal(invoice: InvoiceUi): void {
+    this.invoiceToDelete = invoice;
+    this.deletionReason = '';
+    const el = document.getElementById('deleteInvoiceModal');
+    if (el) {
+      const modal = new (window as any).bootstrap.Modal(el);
+      modal.show();
+    }
+  }
+
+  closeDeleteModal(): void {
+    this.invoiceToDelete = null;
+    this.deletionReason = '';
+    const el = document.getElementById('deleteInvoiceModal');
+    if (el) {
+      const inst = (window as any).bootstrap?.Modal?.getInstance(el);
+      if (inst) inst.hide();
+    }
+  }
+
+  confirmRequestDeletion(): void {
+    const inv = this.invoiceToDelete;
+    if (!inv?.invoiceId) return;
+    const reason = (this.deletionReason || '').trim();
+    if (!reason) {
+      alert('يرجى إدخال سبب طلب الحذف.');
+      return;
+    }
+    this.deletingInvoiceId = inv.invoiceId;
+    this.api.requestInvoiceDeletion(inv.invoiceId, {
+      reason,
+      cashierEmployeeId: this.cashierId,
+    }).subscribe({
+      next: () => {
+        this.deletingInvoiceId = null;
+        this.closeDeleteModal();
+        this.page$.next(this.currentPage);
+      },
+      error: (err) => {
+        this.deletingInvoiceId = null;
+        console.error(err);
+        alert(err?.error?.message || 'فشل طلب حذف الفاتورة');
+      },
+    });
   }
 
   // ---------- Excel ----------

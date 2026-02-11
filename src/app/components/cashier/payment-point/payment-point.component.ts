@@ -726,13 +726,6 @@ export class PaymentPointComponent implements OnInit {
           this.handleClientFound(client);
         } else {
           this.showCarSelectionModal = true;
-          setTimeout(() => {
-            const modalElement = document.getElementById('carSelectionModal');
-            if (modalElement) {
-              const modalInstance = new (window as any).bootstrap.Modal(modalElement);
-              modalInstance.show();
-            }
-          }, 100);
         }
       },
       error: (err) => {
@@ -762,13 +755,6 @@ export class PaymentPointComponent implements OnInit {
     } else {
       this.selectedClient = client;
       this.showCarSelectionModal = true;
-      setTimeout(() => {
-        const modalElement = document.getElementById('carSelectionModal');
-        if (modalElement) {
-          const modalInstance = new (window as any).bootstrap.Modal(modalElement);
-          modalInstance.show();
-        }
-      }, 100);
     }
   }
 
@@ -782,8 +768,18 @@ export class PaymentPointComponent implements OnInit {
     });
   }
 
+  /** استدعاء من القالب مع منع انتشار النقر حتى لا يُغلق المودال */
+  onCarCardClick(event: Event, car: any) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.selectCar(car);
+  }
+
   selectCar(car: any) {
     if (car?.clientIsPremium != null) this.currentClientIsPremium = car.clientIsPremium;
+    if (car?.clientName != null) {
+      this.customerForm.patchValue({ name: car.clientName });
+    }
     this.fillCarData(car);
     this.closeCarSelectionModal();
   }
@@ -798,13 +794,6 @@ export class PaymentPointComponent implements OnInit {
   closeCarSelectionModal() {
     this.showCarSelectionModal = false;
     this.selectedClient = null;
-    const modalElement = document.getElementById('carSelectionModal');
-    if (modalElement) {
-      const modalInstance = (window as any).bootstrap?.Modal?.getInstance(modalElement);
-      if (modalInstance) {
-        modalInstance.hide();
-      }
-    }
   }
 
   getCarsToDisplay(): any[] {

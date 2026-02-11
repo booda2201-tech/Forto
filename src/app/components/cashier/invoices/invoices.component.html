@@ -86,6 +86,8 @@
             <option value="unpaid">غير مدفوعة</option>
             <option value="paid">مدفوعة</option>
             <option value="cancelled">ملغاة</option>
+            <option value="pending_deletion">منتظر تأكيد الحذف</option>
+            <option value="deleted">محذوفة</option>
           </select>
         </div>
 
@@ -148,6 +150,8 @@
                 <span *ngIf="invoice.status === 1" class="badge bg-warning text-dark">غير مدفوعة</span>
                 <span *ngIf="invoice.status === 2" class="badge bg-success">مدفوعة</span>
                 <span *ngIf="invoice.status === 3" class="badge bg-secondary">ملغاة</span>
+                <span *ngIf="invoice.status === 4" class="badge bg-info">منتظر تأكيد الحذف</span>
+                <span *ngIf="invoice.status === 5" class="badge bg-danger">محذوفة</span>
               </td>
 
               <td class="small text-muted d-none d-lg-table-cell">
@@ -175,6 +179,16 @@
                     data-bs-target="#invoiceModal"
                   >
                     <i class="bi bi-printer"></i>
+                  </button>
+                  <button
+                    *ngIf="invoice.status !== 4 && invoice.status !== 5"
+                    class="btn btn-sm btn-outline-danger rounded-3"
+                    (click)="openDeleteModal(invoice)"
+                    [disabled]="deletingInvoiceId !== null"
+                    title="طلب حذف الفاتورة"
+                  >
+                    <span *ngIf="deletingInvoiceId !== invoice.invoiceId"><i class="bi bi-trash"></i> حذف</span>
+                    <span *ngIf="deletingInvoiceId === invoice.invoiceId">جاري...</span>
                   </button>
                 </div>
               </td>
@@ -356,6 +370,35 @@
         <button type="button" class="btn btn-success rounded-3" (click)="confirmPay()" [disabled]="payingInvoiceId !== null">
           <span *ngIf="payingInvoiceId !== invoiceToPay?.invoiceId">تأكيد الدفع</span>
           <span *ngIf="payingInvoiceId === invoiceToPay?.invoiceId">جاري...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- طلب حذف الفاتورة -->
+<div class="modal fade" id="deleteInvoiceModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold text-danger"><i class="bi bi-trash me-2"></i> طلب حذف الفاتورة</h5>
+        <!-- <button type="button" class="btn-close" (click)="closeDeleteModal()"></button> -->
+      </div>
+      <div class="modal-body" *ngIf="invoiceToDelete">
+        <p class="mb-2">فاتورة: <strong>{{ invoiceToDelete.id }}</strong></p>
+        <label class="form-label">سبب طلب الحذف <span class="text-danger">*</span></label>
+        <textarea
+          class="form-control"
+          [(ngModel)]="deletionReason"
+          rows="3"
+          placeholder="مثال: خطأ في الإدخال، طلب العميل..."
+        ></textarea>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-outline-secondary rounded-3" (click)="closeDeleteModal()">إلغاء</button>
+        <button type="button" class="btn btn-danger rounded-3" (click)="confirmRequestDeletion()" [disabled]="deletingInvoiceId !== null || !deletionReason.trim()">
+          <span *ngIf="deletingInvoiceId === null">إرسال طلب الحذف</span>
+          <span *ngIf="deletingInvoiceId !== null">جاري...</span>
         </button>
       </div>
     </div>

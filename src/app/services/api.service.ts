@@ -504,6 +504,17 @@ export class ApiService {
     );
   }
 
+  /** طلب حذف فاتورة — POST /api/invoices/{invoiceId}/request-deletion */
+  requestInvoiceDeletion(
+    invoiceId: number,
+    body: { reason: string; cashierEmployeeId: number }
+  ) {
+    return this.http.post(
+      `${this.baseUrl}/api/invoices/${invoiceId}/request-deletion`,
+      body
+    );
+  }
+
   createMaterial(payload: {
     name: string;
     unit: number;
