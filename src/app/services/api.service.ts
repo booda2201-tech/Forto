@@ -641,6 +641,20 @@ export class ApiService {
     );
   }
 
+  /** تحديث كميات المواد المستخدمة لصنف حجز (من الكاشير) */
+  updateBookingItemMaterialsByCashier(
+    bookingItemId: number,
+    payload: {
+      cashierId: number;
+      materials: { materialId: number; actualQty: number }[];
+    }
+  ) {
+    return this.http.put(
+      `${this.baseUrl}/api/booking-items/${bookingItemId}/materials/by-cashier`,
+      payload
+    );
+  }
+
   getPendingMaterialRequests(branchId: number, date: string) {
     return this.http.get(`${this.baseUrl}/api/booking-items/pending`, {
       params: { branchId: String(branchId), date },

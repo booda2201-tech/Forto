@@ -41,6 +41,10 @@ type InvoiceUi = {
   subTotal: number;
   discount: number;
   total: number;
+  /** تكلفة الفاتورة (من الـ API إن وُجدت) */
+  cost?: number;
+  /** ربح الفاتورة (من الـ API إن وُجد، وإلا يُحسب من total - cost) */
+  profit?: number;
 
   itemsText: string;
   lines: InvoiceLineUi[];
@@ -320,6 +324,11 @@ export class InvoicesComponent implements OnInit, OnDestroy {
           ? rawStatus
           : 1;
 
+      const total = Number(x.total ?? 0);
+      // الـ API بيرجع totalCost و profit لكل فاتورة
+      const cost = Number(x.totalCost ?? x.cost ?? 0);
+      const profit = Number(x.profit ?? (total - cost));
+
       return {
         id: String(x.invoiceNumber ?? ''),
         invoiceId: Number(x.invoiceId ?? 0),
@@ -331,7 +340,9 @@ export class InvoicesComponent implements OnInit, OnDestroy {
 
         subTotal: Number(x.subTotal ?? 0),
         discount: Number(x.discount ?? 0),
-        total: Number(x.total ?? 0),
+        total,
+        cost,
+        profit,
 
         customerName: String(x.customerName ?? ''),
         phone: String(x.customerPhone ?? ''),
@@ -362,6 +373,11 @@ export class InvoicesComponent implements OnInit, OnDestroy {
 
   // ---------- دفع فاتورة (status = 1 غير مدفوعة) ----------
   payingInvoiceId: number | null = null;
+
+  // زيادة السعر (تعديل المبلغ المعاد حسابه)
+  invoiceToAdjust: InvoiceUi | null = null;
+  adjustTotalValue = 0;
+  isSavingAdjust = false;
 
   // طلب حذف فاتورة
   invoiceToDelete: InvoiceUi | null = null;
@@ -445,6 +461,49 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     this.openPayModal(invoice);
   }
 
+  openAdjustPriceModal(invoice: InvoiceUi): void {
+    this.invoiceToAdjust = invoice;
+    this.adjustTotalValue = Number(invoice.total ?? 0);
+    const el = document.getElementById('adjustPriceModal');
+    if (el) {
+      const modal = new (window as any).bootstrap.Modal(el);
+      modal.show();
+    }
+  }
+
+  closeAdjustPriceModal(): void {
+    this.invoiceToAdjust = null;
+    this.adjustTotalValue = 0;
+    const el = document.getElementById('adjustPriceModal');
+    if (el) {
+      const inst = (window as any).bootstrap.Modal.getInstance(el);
+      if (inst) inst.hide();
+    }
+  }
+
+  confirmAdjustPrice(): void {
+    const inv = this.invoiceToAdjust;
+    if (!inv?.invoiceId) return;
+    const value = Number(this.adjustTotalValue);
+    if (value < 0) {
+      alert('أدخل مبلغاً صحيحاً.');
+      return;
+    }
+    this.isSavingAdjust = true;
+    this.api.patchInvoiceAdjustedTotal(inv.invoiceId, value).subscribe({
+      next: () => {
+        this.isSavingAdjust = false;
+        this.closeAdjustPriceModal();
+        this.page$.next(this.currentPage);
+      },
+      error: (err) => {
+        this.isSavingAdjust = false;
+        console.error(err);
+        alert(err?.error?.message ?? 'فشل تحديث المبلغ');
+      },
+    });
+  }
+
   openDeleteModal(invoice: InvoiceUi): void {
     this.invoiceToDelete = invoice;
     this.deletionReason = '';
@@ -491,26 +550,36 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ---------- Excel ----------
+  // ---------- Excel (شيتين: بيانات الفواتير + التكلفة والربح) ----------
   exportToExcel(invoice: InvoiceUi): void {
-    const dataToExport = [
+    const cost = Number(invoice.cost ?? 0);
+    const profit = Number(invoice.profit ?? (invoice.total - cost));
+    const amountPaid = invoice.status === 2 ? invoice.total : 0;
+
+    const sheet1 = [
       {
         'رقم الفاتورة': invoice.id,
         'اسم العميل': invoice.customerName || 'Walk-in',
-        'رقم الهاتف': invoice.phone || '-',
-        البنود: invoice.lines
-          .map((l) => `${l.description} x${l.qty}`)
-          .join(' | '),
-        'طريقة الدفع': this.paymentLabel(invoice.paymentMethod),
-        'حالة الدفع': this.statusLabel(invoice.status),
-        الإجمالي: invoice.total.toFixed(2),
-        التاريخ: invoice.paidAt,
+        التاريخ: invoice.date,
+        'رقم السيارة': invoice.plateNumber ?? '-',
+        'رقم التليفون': invoice.phone || '-',
+        'المبلغ المدفوع': amountPaid,
+      },
+    ];
+    const sheet2 = [
+      {
+        التكلفة: cost,
+        'سعر البيع': Number(invoice.total ?? 0),
+        الربح: profit,
+        'رقم الفاتورة': invoice.id,
       },
     ];
 
-    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(dataToExport);
+    const ws1: XLSX.WorkSheet = XLSX.utils.json_to_sheet(sheet1);
+    const ws2: XLSX.WorkSheet = XLSX.utils.json_to_sheet(sheet2);
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Invoice');
+    XLSX.utils.book_append_sheet(wb, ws1, 'الفواتير');
+    XLSX.utils.book_append_sheet(wb, ws2, 'التكلفة والربح');
     XLSX.writeFile(wb, `Invoice_${invoice.id}.xlsx`);
   }
 
@@ -540,29 +609,37 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     this.invoices$.pipe(take(1)).subscribe((list) => {
       if (!list || list.length === 0) return;
 
-      const rows = list.map((inv) => ({
+      // شيت 1: رقم الفاتورة، اسم العميل، التاريخ، رقم السيارة، رقم التليفون، المبلغ المدفوع
+      const rows1 = list.map((inv) => ({
         'رقم الفاتورة': inv.id,
-        التاريخ: inv.date,
         'اسم العميل': inv.customerName || 'Walk-in',
-        الهاتف: inv.phone || '-',
-        'طريقة الدفع': this.paymentLabel(inv.paymentMethod),
-        'حالة الدفع': this.statusLabel(inv.status),
-        البنود:
-          inv.itemsText ||
-          inv.lines?.map((l) => l.description).join(' | ') ||
-          '',
-        الإجمالي: inv.total,
+        التاريخ: inv.date,
+        'رقم السيارة': inv.plateNumber ?? '-',
+        'رقم التليفون': inv.phone || '-',
+        'المبلغ المدفوع': inv.status === 2 ? inv.total : 0,
       }));
 
-      const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(rows);
-      const wb: XLSX.WorkBook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Invoices');
+      // شيت 2: التكلفة، سعر البيع، الربح، رقم الفاتورة (من الـ API: totalCost و profit)
+      const rows2 = list.map((inv) => {
+        const cost = Number(inv.cost ?? 0);
+        const profit = Number(inv.profit ?? (inv.total - cost));
+        return {
+          التكلفة: cost,
+          'سعر البيع': Number(inv.total ?? 0),
+          الربح: profit,
+          'رقم الفاتورة': inv.id,
+        };
+      });
 
-      // filename includes filters (optional)
+      const ws1: XLSX.WorkSheet = XLSX.utils.json_to_sheet(rows1);
+      const ws2: XLSX.WorkSheet = XLSX.utils.json_to_sheet(rows2);
+      const wb: XLSX.WorkBook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws1, 'الفواتير');
+      XLSX.utils.book_append_sheet(wb, ws2, 'التكلفة والربح');
+
       const from = (this.from$ as any).value || '';
       const to = (this.to$ as any).value || '';
       const fileName = `Invoices_${from || 'all'}_to_${to || 'all'}.xlsx`;
-
       XLSX.writeFile(wb, fileName);
     });
   }

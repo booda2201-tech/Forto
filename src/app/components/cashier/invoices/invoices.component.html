@@ -108,6 +108,7 @@
             <tr class="text-muted small">
               <th>رقم الفاتورة</th>
               <th class="text-end">العميل</th>
+              <th>رقم العربية</th>
               <th class="d-none d-md-table-cell">البنود</th>
               <th>المبلغ</th>
               <th>طريقة الدفع</th>
@@ -126,6 +127,10 @@
                   {{ invoice.customerName || 'Walk-in' }}
                 </div>
                 <small class="text-muted d-none d-sm-block">{{ invoice.phone || '-' }}</small>
+              </td>
+
+              <td class="small">
+                {{ invoice.plateNumber || '-' }}
               </td>
 
               <td class="d-none d-md-table-cell">
@@ -169,8 +174,14 @@
                     <span *ngIf="payingInvoiceId !== invoice.invoiceId"><i class="bi bi-cash-coin"></i> دفع</span>
                     <span *ngIf="payingInvoiceId === invoice.invoiceId">جاري...</span>
                   </button>
-                  <button class="btn btn-sm btn-outline-success rounded-3" (click)="exportToExcel(invoice)">
-                    <i class="bi bi-file-earmark-excel"></i>
+                  <button
+                    *ngIf="invoice.status !== 3 && invoice.status !== 4 && invoice.status !== 5"
+                    class="btn btn-sm btn-outline-warning rounded-3"
+                    (click)="openAdjustPriceModal(invoice)"
+                    [disabled]="isSavingAdjust"
+                    title="زيادة السعر / تعديل المبلغ"
+                  >
+                    <i class="bi bi-currency-exchange"></i> زيادة السعر
                   </button>
                   <button
                     class="btn btn-sm btn-orange text-white rounded-3 shadow-sm"
@@ -187,7 +198,7 @@
                     [disabled]="deletingInvoiceId !== null"
                     title="طلب حذف الفاتورة"
                   >
-                    <span *ngIf="deletingInvoiceId !== invoice.invoiceId"><i class="bi bi-trash"></i> حذف</span>
+                    <span *ngIf="deletingInvoiceId !== invoice.invoiceId"><i class="bi bi-trash"></i> </span>
                     <span *ngIf="deletingInvoiceId === invoice.invoiceId">جاري...</span>
                   </button>
                 </div>
@@ -195,7 +206,7 @@
             </tr>
 
             <tr *ngIf="((invoices$ | async)?.length || 0) === 0">
-              <td colspan="8" class="py-5 text-muted">
+              <td colspan="9" class="py-5 text-muted">
                 <i class="bi bi-inbox h1 d-block mb-2"></i>
                 لا توجد فواتير مطابقة للبحث
               </td>
@@ -399,6 +410,39 @@
         <button type="button" class="btn btn-danger rounded-3" (click)="confirmRequestDeletion()" [disabled]="deletingInvoiceId !== null || !deletionReason.trim()">
           <span *ngIf="deletingInvoiceId === null">إرسال طلب الحذف</span>
           <span *ngIf="deletingInvoiceId !== null">جاري...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- زيادة السعر / تعديل المبلغ المعاد حسابه -->
+<div class="modal fade" id="adjustPriceModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold text-warning"><i class="bi bi-currency-exchange me-2"></i> زيادة السعر</h5>
+        <button type="button" class="btn-close" (click)="closeAdjustPriceModal()"></button>
+      </div>
+      <div class="modal-body" *ngIf="invoiceToAdjust">
+        <p class="mb-2">رقم الفاتورة: <strong>#{{ invoiceToAdjust.id }}</strong></p>
+        <p class="text-muted small mb-2">المبلغ الحالي: <strong>{{ invoiceToAdjust.total | number:'1.2-2' }} ج.م</strong></p>
+        <label class="form-label fw-bold">المبلغ الجديد (بعد الزيادة)</label>
+        <input
+          type="number"
+          class="form-control"
+          min="0"
+          step="0.01"
+          [(ngModel)]="adjustTotalValue"
+          placeholder="0"
+        />
+        <small class="text-muted">يتم إرسال هذا المبلغ إلى الفاتورة كـ adjusted total.</small>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-outline-secondary rounded-3" (click)="closeAdjustPriceModal()">إلغاء</button>
+        <button type="button" class="btn btn-warning text-dark rounded-3 fw-bold" (click)="confirmAdjustPrice()" [disabled]="isSavingAdjust || adjustTotalValue < 0">
+          <span *ngIf="!isSavingAdjust">تأكيد</span>
+          <span *ngIf="isSavingAdjust">جاري الحفظ...</span>
         </button>
       </div>
     </div>

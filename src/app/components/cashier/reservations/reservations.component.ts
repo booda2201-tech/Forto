@@ -63,13 +63,13 @@ type EmployeeDto = {
   role: number;
 };
 
-type BookingItemUi = {    
+type BookingItemUi = {
   bookingItemId: number;
   serviceId: number;
   serviceName: string;
   status: number;
   assignedEmployeeId?: number | null;
-}; 
+};
 
 type MaterialDto = {
   id: number;
@@ -112,6 +112,13 @@ export class ReservationsComponent implements OnInit {
   }
   selectedCancelBookingId: number | null = null;
   usedOverride: { materialId: number; actualQty: number }[] = [];
+  cancelBookingRef: BookingCard | null = null;
+  cancelBookingMaterials: {
+    serviceName: string;
+    bookingItemId: number;
+    materials: { materialId: number; materialName: string; defaultQty: number; actualQty: number }[];
+  }[] = [];
+  isLoadingCancelMaterials = false;
   assignments: {
     [bookingItemId: number]: { workerId: number; workerName: string };
   } = {};
@@ -176,7 +183,7 @@ export class ReservationsComponent implements OnInit {
     private printInvoice: PrintInvoiceService
   ) { }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   setTab(tab: BookingStatusUi) {
     this.currentTab = tab;
@@ -321,21 +328,99 @@ export class ReservationsComponent implements OnInit {
   }
 
   onCancel(customer: any) {
-    this.selectedCancelBookingId = customer.id; // bookingId
+    this.selectedCancelBookingId = customer.id;
     this.cancelReason = '';
-
+    this.cancelBookingRef = customer;
+    this.cancelBookingMaterials = [];
+    const bodyType = Number(
+      customer.bodyType ??
+      customer.raw?.bodyType ??
+      customer.cars?.[0]?.bodyType ??
+      1
+    );
+    const items = customer.serviceItem ?? [];
+    if (customer.status === 'active' && items.length > 0) {
+      this.isLoadingCancelMaterials = true;
+      this.loadMaterialsForCancelBooking(items, bodyType);
+    }
     const modalElement = document.getElementById('cancelModal');
     const modalInstance = new (window as any).bootstrap.Modal(modalElement);
     modalInstance.show();
   }
 
+  private loadMaterialsForCancelBooking(
+    items: { bookingItemId: number; serviceId: number; name: string }[],
+    bodyType: number
+  ) {
+    const results: { serviceName: string; bookingItemId: number; materials: { materialId: number; materialName: string; defaultQty: number; actualQty: number }[] }[] = [];
+    const orderedTypes = [bodyType, ...this.bodyTypesToTry.filter((bt) => bt !== bodyType)];
+    let done = 0;
+    const total = items.length;
+    if (total === 0) {
+      this.cancelBookingMaterials = [];
+      this.isLoadingCancelMaterials = false;
+      return;
+    }
+    items.forEach((item) => {
+      let attempted = 0;
+      const tryNext = () => {
+        if (attempted >= orderedTypes.length) {
+          results.push({ serviceName: item.name, bookingItemId: item.bookingItemId, materials: [] });
+          done++;
+          if (done === total) {
+            this.cancelBookingMaterials = results;
+            this.isLoadingCancelMaterials = false;
+          }
+          return;
+        }
+        const bt = orderedTypes[attempted++];
+        this.api.getServiceRecipes(item.serviceId, bt).subscribe({
+          next: (res: any) => {
+            const materials = res?.data?.materials ?? [];
+            if (materials.length > 0) {
+              results.push({
+                serviceName: item.name,
+                bookingItemId: item.bookingItemId,
+                materials: materials.map((m: RecipeMaterialDto) => ({
+                  materialId: m.materialId,
+                  materialName: m.materialName ?? '',
+                  defaultQty: m.defaultQty ?? 0,
+                  actualQty: m.defaultQty ?? 0,
+                })),
+              });
+            } else {
+              tryNext();
+              return;
+            }
+            done++;
+            if (done === total) {
+              this.cancelBookingMaterials = results;
+              this.isLoadingCancelMaterials = false;
+            }
+          },
+          error: () => tryNext(),
+        });
+      };
+      tryNext();
+    });
+  }
+
   confirmCancel() {
     if (!this.selectedCancelBookingId) return;
+
+    const usedOverride: { materialId: number; actualQty: number }[] = [];
+    this.cancelBookingMaterials.forEach((s) => {
+      s.materials.forEach((m) => {
+        if (m.materialId > 0 && m.actualQty >= 0) {
+          usedOverride.push({ materialId: m.materialId, actualQty: m.actualQty });
+        }
+      });
+    });
 
     const payload = {
       cashierId: this.cashierId,
       reason: this.cancelReason || '',
-      usedOverride: [] as { materialId: number; actualQty: number }[],
+      usedOverride,
     };
 
     this.api.cancelBooking(this.selectedCancelBookingId, payload).subscribe({
@@ -349,6 +434,8 @@ export class ReservationsComponent implements OnInit {
 
         this.selectedCancelBookingId = null;
         this.cancelReason = '';
+        this.cancelBookingRef = null;
+        this.cancelBookingMaterials = [];
         this.refresh();
       },
       error: (err) => {
@@ -633,7 +720,7 @@ export class ReservationsComponent implements OnInit {
   }
 
 
-  
+
   /** المجموع: من adjustedTotal إن وُجد، وإلا من subTotal */
   get subTotal(): number {
     if (this.selectedInvoice?.adjustedTotal != null) return Number(this.selectedInvoice.adjustedTotal);
@@ -778,10 +865,10 @@ export class ReservationsComponent implements OnInit {
     const total = this.payInvoiceTotal;
     const cashAmt = this.payMethod === 'cash' ? total
       : this.payMethod === 'visa' ? 0
-      : (Number(this.payCustomCashAmount) || 0);
+        : (Number(this.payCustomCashAmount) || 0);
     const visaAmt = this.payMethod === 'visa' ? total
       : this.payMethod === 'cash' ? 0
-      : this.payModalVisaAmount;
+        : this.payModalVisaAmount;
     const paymentMethod = this.payMethod === 'cash' ? 1 : this.payMethod === 'visa' ? 2 : 3;
     if (this.payMethod === 'custom' && (cashAmt <= 0 || cashAmt > total)) {
       Swal.fire('تنبيه', 'أدخل مبلغ كاش صحيح (أقل من أو يساوي الإجمالي).', 'warning');
@@ -964,7 +1051,7 @@ export class ReservationsComponent implements OnInit {
   notInBooking: any[] = [];   // from API
 
   isLoadingOptions = false;
-  
+
   // Materials for cancel service
   allMaterials: (MaterialDto | RecipeMaterialDto)[] = [];
   isLoadingMaterials = false;
@@ -972,6 +1059,12 @@ export class ReservationsComponent implements OnInit {
   usedMaterials: UsedMaterial[] = [];
   cancelServiceReason: string = '';
   bookingBodyType: number = 1; // من الحجز عند فتح modal التعديل
+
+  // تعديل كميات الخدمات المستخدمة (لصنف واحد في الحجوزات النشطة)
+  editMaterialsBookingItem: { bookingItemId: number; serviceName: string; serviceId: number } | null = null;
+  editMaterialsList: { materialId: number; materialName: string; unit: string; defaultQty: number; actualQty: number }[] = [];
+  isLoadingEditMaterials = false;
+  isSavingEditMaterials = false;
 
   toggleServiceSelection(svc: any) {
     const id = svc.serviceId;
@@ -1057,7 +1150,7 @@ export class ReservationsComponent implements OnInit {
     this.selectedItemForCancel = item;
     this.usedMaterials = [];
     this.cancelServiceReason = '';
-    
+
     // لو الحجز في قائمة الانتظار: إلغاء مباشر بدون modal المواد
     if (this.selectedReservationStatus === 'waiting') {
       const bookingItemId = item.bookingItemId;
@@ -1091,15 +1184,15 @@ export class ReservationsComponent implements OnInit {
       });
       return;
     }
-    
+
     // لو الحجز نشط: فتح modal وتحميل مواد الخدمة فقط
     this.loadServiceMaterials(item.serviceId, this.bookingBodyType);
-    
+
     const modalElement = document.getElementById('cancelServiceModal');
     const modalInstance = new (window as any).bootstrap.Modal(modalElement);
     modalInstance.show();
   }
-  
+
   /** قيم bodyType للمحاولة بالترتيب (لو الحجز مافيهاش bodyType أو الوصفة فاضية) */
   private readonly bodyTypesToTry = [2, 1, 3, 4, 5, 6, 7, 99];
 
@@ -1144,33 +1237,33 @@ export class ReservationsComponent implements OnInit {
 
     tryNext();
   }
-  
+
   addMaterialRow() {
     this.usedMaterials.push({
       materialId: 0,
       actualQty: 0
     });
   }
-  
+
   removeMaterialRow(index: number) {
     this.usedMaterials.splice(index, 1);
   }
-  
+
   getMaterialName(materialId: number): string {
     const material = this.allMaterials.find(m => (m as any).materialId === materialId || (m as any).id === materialId);
     return (material as any)?.materialName || (material as any)?.name || '';
   }
-  
+
   confirmCancelService() {
     if (!this.selectedItemForCancel) return;
-    
+
     const bookingItemId = this.selectedItemForCancel.bookingItemId;
-    
+
     // Filter out materials with no selection or zero quantity
     const validMaterials = this.usedMaterials.filter(
       m => m.materialId > 0 && m.actualQty > 0
     );
-    
+
     const payload = {
       cashierId: this.cashierId,
       reason: this.cancelServiceReason || '',
@@ -1296,22 +1389,22 @@ export class ReservationsComponent implements OnInit {
       serviceIds,
       assignedEmployeeId
     }).subscribe({
-        next: () => {
-          this.isSavingEdit = false;
-          alert('تم إضافة الخدمات');
+      next: () => {
+        this.isSavingEdit = false;
+        alert('تم إضافة الخدمات');
 
-          // close modal
-          const el = document.getElementById('editServicesModal');
-          const modal = (window as any).bootstrap.Modal.getInstance(el);
-          modal?.hide();
+        // close modal
+        const el = document.getElementById('editServicesModal');
+        const modal = (window as any).bootstrap.Modal.getInstance(el);
+        modal?.hide();
 
-          this.refresh();
-        },
-        error: (err: any) => {
-          console.error(err);
-          this.isSavingEdit = false;
-          alert(err?.error?.message || 'فشل إضافة الخدمات');
-        }
+        this.refresh();
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.isSavingEdit = false;
+        alert(err?.error?.message || 'فشل إضافة الخدمات');
+      }
     });
   }
 
@@ -1365,6 +1458,146 @@ export class ReservationsComponent implements OnInit {
         alert(err?.error?.message || 'فشل تحميل خدمات الحجز');
       }
     });
+  }
+
+
+
+
+  // openEditMaterialModal(booking: any) {
+  //   this.selectedReservationStatus = booking.status;
+  //   this.selectedBookingId = booking.id;
+  //   this.selectedReservationId = booking.id;
+  //   this.bookingBodyType = Number(
+  //     booking.bodyType ??
+  //     booking.raw?.bodyType ??
+  //     booking.raw?.car?.bodyType ??
+  //     booking.cars?.[0]?.bodyType ??
+  //     1
+  //   );
+
+  //   this.selectedBookingScheduledStart =
+  //     booking.raw?.scheduledStart ??
+  //     booking.scheduledStart ??
+  //     booking.raw?.slotHourStart ??
+  //     booking.slotHourStart ??
+  //     null;
+
+  //   console.log('OPEN EDIT MODAL', {
+  //     selectedBookingId: this.selectedBookingId,
+  //     selectedReservationId: this.selectedReservationId,
+  //     selectedBookingScheduledStart: this.selectedBookingScheduledStart
+  //   });
+
+  //   // reset selections
+  //   this.addSelection.clear();
+  //   this.serviceEmployeeMap = {};
+
+  //   // load options API
+  //   this.isLoadingOptions = true;
+  //   this.api.getBookingServiceOptions(booking.id).subscribe({
+  //     next: (res: any) => {
+  //       this.inBooking = res?.data?.inBooking ?? [];
+  //       this.notInBooking = res?.data?.notInBooking ?? [];
+  //       this.isLoadingOptions = false;
+
+  //       const el = document.getElementById('editServicesModal');
+  //       const modal = new (window as any).bootstrap.Modal(el);
+  //       modal.show();
+  //     },
+  //     error: (err: any) => {
+  //       console.error(err);
+  //       this.isLoadingOptions = false;
+  //       alert(err?.error?.message || 'فشل تحميل خدمات الحجز');
+  //     }
+  //   });
+  // }
+
+
+
+
+  openEditMaterialsModal(bi: { bookingItemId: number; serviceId: number; serviceName: string }) {
+    this.editMaterialsBookingItem = {
+      bookingItemId: bi.bookingItemId,
+      serviceName: bi.serviceName,
+      serviceId: bi.serviceId,
+    };
+    this.editMaterialsList = [];
+    this.isLoadingEditMaterials = true;
+    const bodyType = this.bookingBodyType;
+    const orderedTypes = [bodyType, ...this.bodyTypesToTry.filter((bt) => bt !== bodyType)];
+    let attempted = 0;
+    const tryNext = () => {
+      if (attempted >= orderedTypes.length) {
+        this.isLoadingEditMaterials = false;
+        if (this.editMaterialsList.length === 0) {
+          Swal.fire({
+            icon: 'info',
+            title: 'لا توجد وصفة',
+            text: 'لم يتم العثور على مواد لهذه الخدمة.',
+          });
+        }
+        const el = document.getElementById('editMaterialsModal');
+        const modal = new (window as any).bootstrap.Modal(el);
+        modal.show();
+        return;
+      }
+      const bt = orderedTypes[attempted++];
+      this.api.getServiceRecipes(bi.serviceId, bt).subscribe({
+        next: (res: any) => {
+          const materials = res?.data?.materials ?? [];
+          if (materials.length > 0) {
+            this.editMaterialsList = materials.map((m: RecipeMaterialDto) => ({
+              materialId: m.materialId,
+              materialName: m.materialName ?? '',
+              unit: m.unit ?? '',
+              defaultQty: m.defaultQty ?? 0,
+              actualQty: m.defaultQty ?? 0,
+            }));
+            this.isLoadingEditMaterials = false;
+            const el = document.getElementById('editMaterialsModal');
+            const modal = new (window as any).bootstrap.Modal(el);
+            modal.show();
+            return;
+          }
+          tryNext();
+        },
+        error: () => tryNext(),
+      });
+    };
+    tryNext();
+  }
+
+  saveEditMaterials() {
+    if (!this.editMaterialsBookingItem || this.editMaterialsList.length === 0) return;
+    const materials = this.editMaterialsList
+      .filter((m) => m.materialId > 0)
+      .map((m) => ({ materialId: m.materialId, actualQty: m.actualQty }));
+    if (materials.length === 0) {
+      Swal.fire('تنبيه', 'أدخل كميات للمواد', 'warning');
+      return;
+    }
+    this.isSavingEditMaterials = true;
+    this.api
+      .updateBookingItemMaterialsByCashier(this.editMaterialsBookingItem.bookingItemId, {
+        cashierId: this.cashierId,
+        materials,
+      })
+      .subscribe({
+        next: (res) => {
+          this.isSavingEditMaterials = false;
+          const el = document.getElementById('editMaterialsModal');
+          const modal = (window as any).bootstrap.Modal.getInstance(el);
+          modal?.hide();
+          this.editMaterialsBookingItem = null;
+          this.editMaterialsList = [];
+          Swal.fire({ icon: 'success', title: 'تم تحديث الكميات', timer: 1500, showConfirmButton: false });
+          this.refresh();
+        },
+        error: (err) => {
+          this.isSavingEditMaterials = false;
+          Swal.fire('خطأ', err?.error?.message || 'فشل تحديث الكميات', 'error');
+        },
+      });
   }
 
   reloadEditServicesOptions() {
