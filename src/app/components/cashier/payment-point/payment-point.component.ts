@@ -22,7 +22,7 @@ export class PaymentPointComponent implements OnInit {
   activeTab: 'new-order' | 'quick-booking' = 'quick-booking';
   branchId = 1;
   get cashierId(): number {
-    return this.auth.getEmployeeId() ?? 5;
+    return this.auth.getEmployeeId() ?? 0;
   }
   supervisors: { id: number; name: string }[] = [];
   selectedSupervisorId: number | null = null;

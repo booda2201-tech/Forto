@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { ApiService } from 'src/app/services/api.service';
+import { AuthService } from 'src/app/services/auth.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 type ServiceRateDto = {
@@ -41,8 +42,8 @@ type SlotDto = {
 export class NewReservationComponent implements OnInit {
   // ===== Config =====
   branchId = 1;            // ✅ set correct branchId
-  createdByType = 1;
-  createdByEmployeeId = 5;
+  createdByType = 2;
+  createdByEmployeeId = 0; // يُحدَّث من الموظف المسجل دخوله في ngOnInit
 
   // ===== Services =====
   servicesRaw: ServiceApiDto[] = [];
@@ -91,11 +92,14 @@ export class NewReservationComponent implements OnInit {
 
   constructor(
     private api: ApiService,
+    private auth: AuthService,
     private router: Router,
     private toastr: ToastrService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
+    this.createdByEmployeeId = this.auth.getEmployeeId() ?? 0;
+
     // 1) Load services (IMPORTANT: pass categoryId if your ApiService supports it)
     this.api.getServices().subscribe({
       next: (res: any) => {

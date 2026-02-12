@@ -42,6 +42,7 @@ import { EmployeesReportComponent } from './components/admin/employees-report/em
 import { TestComponent } from './components/cashier/test/test.component';
 import { StartShiftComponent } from './components/cashier/start-shift/start-shift.component';
 import { CategoriesComponent } from './components/admin/categories/categories.component';
+import { AdminInvoicesComponent } from './components/admin/invoices/invoices.component';
 
 @NgModule({
   declarations: [
@@ -66,6 +67,7 @@ import { CategoriesComponent } from './components/admin/categories/categories.co
     EmployeesReportComponent,
     CategoriesComponent,
     StartShiftComponent,
+    AdminInvoicesComponent,
   ],
   imports: [
     BrowserModule,

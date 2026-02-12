@@ -2,9 +2,10 @@
 .container-fluid{
   background-color: #f8f9fa;
   max-width: 1200px;
-  height: 100vh;
+  min-height: 100vh;
   margin: 0 auto;
   padding: 0 20px;
+  padding-bottom: 25px;
 }
 
 

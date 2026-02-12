@@ -26,6 +26,7 @@ import { EmployeesReportComponent } from './components/admin/employees-report/em
 import { TestComponent } from './components/cashier/test/test.component';
 import { StartShiftComponent } from './components/cashier/start-shift/start-shift.component';
 import { CategoriesComponent } from './components/admin/categories/categories.component';
+import { AdminInvoicesComponent } from './components/admin/invoices/invoices.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent, data: { title: 'تسجيل الدخول' } },
@@ -44,6 +45,7 @@ const routes: Routes = [
       { path: 'shifts', component: ShiftsComponent, data: { title: 'الشيفتات' } },
       { path: 'dashboard', component: DashboardComponent, data: { title: 'لوحة التحكم' } },
       { path: 'employees-report', component: EmployeesReportComponent, data: { title: 'تقرير الموظفين' } },
+      { path: 'invoices', component: AdminInvoicesComponent, data: { title: 'الفواتير' } },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
     ],
   },
