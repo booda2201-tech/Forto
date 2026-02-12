@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { RoleGuard } from './guards/role.guard';
+import { CashierShiftGuard } from './guards/cashier-shift.guard';
 
 import { LoginComponent } from './components/login/login.component';
 import { HomeComponent } from './components/admin/home/home.component';
@@ -23,6 +24,7 @@ import { MaterialsComponent } from './components/admin/materials/materials.compo
 import { ShiftsComponent } from './components/admin/shifts/shifts.component';
 import { EmployeesReportComponent } from './components/admin/employees-report/employees-report.component';
 import { TestComponent } from './components/cashier/test/test.component';
+import { StartShiftComponent } from './components/cashier/start-shift/start-shift.component';
 import { CategoriesComponent } from './components/admin/categories/categories.component';
 
 const routes: Routes = [
@@ -51,16 +53,17 @@ const routes: Routes = [
     canActivate: [RoleGuard],
     data: { title: 'الكاشير', expectedRole: 'cashier' },
     children: [
-      { path: 'order-info', component: OrderInformationComponent, data: { title: 'معلومات الطلب' } },
-      { path: 'pay-point', component: PaymentPointComponent, data: { title: 'نقطة الدفع' } },
-      { path: 'add-client', component: AddClientComponent, data: { title: 'إضافة عميل' } },
-      { path: 'reservations', component: ReservationsComponent, data: { title: 'الحجوزات' } },
-      { path: 'customers', component: CustomersComponent, data: { title: 'العملاء' } },
-      { path: 'new-reservation', component: NewReservationComponent, data: { title: 'حجز جديد' } },
-      { path: 'invoices', component: InvoicesComponent, data: { title: 'الفواتير' } },
-      { path: 'messages', component: MessagesComponent, data: { title: 'الرسائل' } },
-      { path: 'test', component: TestComponent, data: { title: 'اختبار' } },
-      { path: '', redirectTo: 'cashier', pathMatch: 'full' },
+      { path: 'start-shift', component: StartShiftComponent, data: { title: 'بدء الوردية' } },
+      { path: 'order-info', component: OrderInformationComponent, canActivate: [CashierShiftGuard], data: { title: 'معلومات الطلب' } },
+      { path: 'pay-point', component: PaymentPointComponent, canActivate: [CashierShiftGuard], data: { title: 'نقطة الدفع' } },
+      { path: 'add-client', component: AddClientComponent, canActivate: [CashierShiftGuard], data: { title: 'إضافة عميل' } },
+      { path: 'reservations', component: ReservationsComponent, canActivate: [CashierShiftGuard], data: { title: 'الحجوزات' } },
+      { path: 'customers', component: CustomersComponent, canActivate: [CashierShiftGuard], data: { title: 'العملاء' } },
+      { path: 'new-reservation', component: NewReservationComponent, canActivate: [CashierShiftGuard], data: { title: 'حجز جديد' } },
+      { path: 'invoices', component: InvoicesComponent, canActivate: [CashierShiftGuard], data: { title: 'الفواتير' } },
+      { path: 'messages', component: MessagesComponent, canActivate: [CashierShiftGuard], data: { title: 'الرسائل' } },
+      { path: 'test', component: TestComponent, canActivate: [CashierShiftGuard], data: { title: 'اختبار' } },
+      { path: '', redirectTo: 'reservations', pathMatch: 'full' },
     ],
   },
 

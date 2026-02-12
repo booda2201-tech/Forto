@@ -7,8 +7,8 @@ import { Observable } from 'rxjs';
 })
 export class ApiService {
   /** استخدم server أو local حسب أين شغّال الباك — الـ API و SignalR هيستخدموا نفس الـ base */
-  private baseUrl = 'https://api.fortolaundry.com';   // سيرفر
-  // private baseUrl = 'https://localhost:7179';      // local (للتطوير لو الباك على نفس الجهاز)
+  // private baseUrl = 'https://api.fortolaundry.com';   // سيرفر
+  private baseUrl = 'https://localhost:7179';      // local (للتطوير لو الباك على نفس الجهاز)
 
   constructor(private http: HttpClient) {}
 
@@ -426,6 +426,24 @@ export class ApiService {
     );
   }
 
+  // Cashier shifts (ورديات الكاشير)
+  getActiveCashierShift(branchId: number) {
+    return this.http.get<{ success: boolean; data?: { id: number; branchId: number; shiftId: number; shiftName: string; openedByEmployeeId: number; openedAt: string; isActive: boolean } | null }>(
+      `${this.baseUrl}/api/cashier-shifts/active`,
+      { params: { branchId: String(branchId) } }
+    );
+  }
+
+  startCashierShift(payload: { branchId: number; cashierEmployeeId: number; shiftId: number }) {
+    return this.http.post(`${this.baseUrl}/api/cashier-shifts/start`, payload);
+  }
+
+  closeCashierShift(shiftId: number, payload: { closedByEmployeeId: number }) {
+    return this.http.post(`${this.baseUrl}/api/cashier-shifts/${shiftId}/close`, payload, {
+      responseType: 'text',
+    });
+  }
+
   // Shifts
   getShiftsAll() {
     return this.http.get(`${this.baseUrl}/api/shifts/GetAll`);
@@ -583,6 +601,13 @@ export class ApiService {
     return this.http.put(
       `${this.baseUrl}/api/catalog/services/UpsertRates/${serviceId}/rates`,
       payload
+    );
+  }
+
+  /** جلب الخدمات المرتبطة بالموظف GET /api/employees/{employeeId}/services */
+  getEmployeeServices(employeeId: number) {
+    return this.http.get<{ success: boolean; data?: { employeeId: number; serviceIds: number[] } }>(
+      `${this.baseUrl}/api/employees/${employeeId}/services`
     );
   }
 

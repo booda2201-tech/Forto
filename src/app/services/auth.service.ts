@@ -42,7 +42,7 @@ export class AuthService {
     return this.api.signin({ phoneNumber, password });
   }
 
-  /** حفظ بيانات المستخدم بعد نجاح تسجيل الدخول */
+  /** حفظ بيانات المستخدم بعد نجاح تسجيل الدخول (الكاشير: التوجيه يتم من صفحة اللوجن بعد التحقق من الوردية) */
   setUser(data: { token: string; role: string; fullName: string; employeeId: number }) {
     localStorage.setItem('token', data.token);
     localStorage.setItem('userRole', data.role);
@@ -56,7 +56,7 @@ export class AuthService {
     if (role === 'admin') {
       this.router.navigate(['/admin/services']);
     } else if (role === 'cashier') {
-      this.router.navigate(['/cashier/reservations']);
+      // التوجيه يتم من LoginComponent بعد التحقق من وجود وردية نشطة
     } else if (role === 'worker') {
       this.router.navigate(['/worker-page']);
     } else {
@@ -71,6 +71,7 @@ export class AuthService {
     localStorage.removeItem('employeeId');
     this.userRoleSubject.next(null);
     this.fullNameSubject.next(null);
+    // إنهاء حالة الوردية للكاشير (يُستدعى من Navbar إن لزم)
     this.router.navigate(['/login']);
   }
 }

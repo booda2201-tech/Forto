@@ -1,0 +1,47 @@
+<div class="start-shift-wrapper" dir="rtl">
+  <div class="start-shift-card">
+    <div class="start-shift-header">
+      <i class="bi bi-clock-history"></i>
+      <h2 class="start-shift-title">بدء الوردية</h2>
+      <p class="start-shift-subtitle">يجب بدء وردية قبل استخدام النظام</p>
+    </div>
+
+    <div class="start-shift-body">
+      <div *ngIf="loading" class="start-shift-loading">
+        <span class="start-shift-spinner" role="status"></span>
+        <p class="start-shift-loading-text">جاري تحميل الورديات...</p>
+      </div>
+
+      <div *ngIf="!loading && shifts.length === 0" class="start-shift-empty">
+        <i class="bi bi-inbox"></i>
+        <p>لا توجد ورديات متاحة. تواصل مع المدير.</p>
+      </div>
+
+      <div *ngIf="!loading && shifts.length > 0" class="start-shift-form">
+        <label class="start-shift-label">اختر الوردية</label>
+        <select
+          class="start-shift-select"
+          [(ngModel)]="selectedShiftId"
+          (ngModelChange)="selectedShiftId = $event">
+          <option [ngValue]="s.id" *ngFor="let s of shifts">
+            {{ s.name }} ({{ s.startTime }} – {{ s.endTime }})
+          </option>
+        </select>
+
+        <p *ngIf="errorMessage" class="start-shift-error">{{ errorMessage }}</p>
+
+        <button
+          type="button"
+          class="start-shift-btn"
+          (click)="startShift()"
+          [disabled]="starting || selectedShiftId == null">
+          <span *ngIf="!starting">بدء الوردية</span>
+          <span *ngIf="starting" class="d-flex align-items-center justify-content-center gap-2">
+            <span class="start-shift-btn-spinner"></span>
+            جاري بدء الوردية...
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

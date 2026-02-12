@@ -272,7 +272,17 @@ export class WorkersComponent implements OnInit {
 
   openAssignServicesModal(worker: any) {
     this.assignEmployeeId = worker.id;
-    this.selectedServiceIds = []; // start empty (until we have GET employee services)
+    this.selectedServiceIds = [];
+
+    this.api.getEmployeeServices(worker.id).subscribe({
+      next: (res: any) => {
+        const data = res?.data ?? res;
+        this.selectedServiceIds = Array.isArray(data?.serviceIds) ? [...data.serviceIds] : [];
+      },
+      error: () => {
+        this.selectedServiceIds = [];
+      },
+    });
 
     this.loadAllCatalogServices();
 

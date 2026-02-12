@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
+import { CashierShiftService } from '../../services/cashier-shift.service';
 import { Observable } from 'rxjs';
-import { Subject } from 'rxjs';
 import { Router } from '@angular/router';
 
 @Component({
@@ -12,11 +12,15 @@ import { Router } from '@angular/router';
 export class NavbarComponent implements OnInit {
   isMenuOpen = false;
   userRole$: Observable<string | null>;
+  activeShift$ = this.cashierShift.activeShift$;
   data: any;
+  endingShift = false;
 
-
-
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(
+    private authService: AuthService,
+    private cashierShift: CashierShiftService,
+    private router: Router
+  ) {
     this.userRole$ = this.authService.userRole$;
   }
 
@@ -49,7 +53,25 @@ export class NavbarComponent implements OnInit {
 
 
   logout() {
+    this.cashierShift.clearActiveShift();
     this.authService.logout();
+  }
+
+  endShift($event?: Event) {
+    $event?.preventDefault();
+    if (this.endingShift) return;
+    this.endingShift = true;
+    this.cashierShift.closeShift().subscribe({
+      next: () => {
+        this.endingShift = false;
+        this.isMenuOpen = false;
+        this.cashierShift.clearActiveShift();
+        this.authService.logout();
+      },
+      error: () => {
+        this.endingShift = false;
+      },
+    });
   }
 
 

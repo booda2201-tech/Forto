@@ -40,6 +40,7 @@ import { MaterialsComponent } from './components/admin/materials/materials.compo
 import { ShiftsComponent } from './components/admin/shifts/shifts.component';
 import { EmployeesReportComponent } from './components/admin/employees-report/employees-report.component';
 import { TestComponent } from './components/cashier/test/test.component';
+import { StartShiftComponent } from './components/cashier/start-shift/start-shift.component';
 import { CategoriesComponent } from './components/admin/categories/categories.component';
 
 @NgModule({
@@ -64,6 +65,7 @@ import { CategoriesComponent } from './components/admin/categories/categories.co
     ShiftsComponent,
     EmployeesReportComponent,
     CategoriesComponent,
+    StartShiftComponent,
   ],
   imports: [
     BrowserModule,

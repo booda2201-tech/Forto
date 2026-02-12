@@ -58,7 +58,7 @@
 
     <div class="overlay" *ngIf="isMenuOpen" (click)="toggleMenu()"></div>
 
-    <ul class="nav-links" [class.active]="isMenuOpen" *ngIf="{ role: userRole$ | async } as data">
+    <ul class="nav-links" [class.active]="isMenuOpen" *ngIf="{ role: userRole$ | async, activeShift: activeShift$ | async } as data">
 
       <li class="welcome-msg" style="color: #4a4a4a; padding: 0 15px; font-weight: bold;">
           مرحباً، {{ getDisplayName() }}
@@ -81,12 +81,11 @@
               [routerLinkActiveOptions]="{exact: true}"
               (click)="isMenuOpen = false"> الرئيسية </a>
         </li>
-<!-- 
-        <li>
-          <a routerLink="/cashier/messages"
-              routerLinkActive="active-link"
-              (click)="isMenuOpen = false"> الرسائل </a>
-        </li> -->
+        <li *ngIf="data.activeShift">
+          <a href="#" (click)="endShift($event)" style="cursor: pointer; color: #e65100; font-weight: bold;" [class.disabled]="endingShift">
+            {{ endingShift ? 'جاري إنهاء الوردية...' : 'إنهاء الوردية' }}
+          </a>
+        </li>
       </ng-container>
 
 

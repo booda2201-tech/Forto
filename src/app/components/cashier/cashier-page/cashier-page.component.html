@@ -1,4 +1,4 @@
-<div class="tabs-wrapper pt-5" dir="rtl" *ngIf="router.url !== '/cashier/messages'">
+<div class="tabs-wrapper pt-5" dir="rtl" *ngIf="router.url !== '/cashier/messages' && !router.url.includes('/cashier/start-shift')">
     <div class="tabs-container">
         <a routerLink="/cashier/pay-point" routerLinkActive="active" class="tab-item">نقطة دفع</a>
         <a routerLink="/cashier/new-reservation" routerLinkActive="active" class="tab-item">حجز جديد</a>
