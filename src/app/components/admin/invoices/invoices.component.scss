@@ -1,4 +1,66 @@
+// تقرير تفاصيل اليوم - مصدر الـ PDF (مخفي عن الشاشة)
+.daily-summary-pdf-source {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  width: 210mm;
+  background: #fff;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  color: #000;
+  z-index: -1;
 
+  .daily-summary-inner {
+    padding: 15px;
+  }
+
+  .daily-summary-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-align: center;
+    margin: 0 0 1rem 0;
+  }
+
+  .daily-summary-meta {
+    margin: 0.25rem 0;
+    font-size: 0.95rem;
+  }
+
+  .daily-summary-table {
+    width: 100%;
+    margin: 1rem 0;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .daily-summary-label {
+      text-align: right;
+      font-weight: 500;
+    }
+
+    .daily-summary-value {
+      text-align: left;
+      font-weight: 600;
+    }
+  }
+
+  .daily-summary-hr {
+    border: none;
+    border-top: 1px dashed #333;
+    margin: 1rem 0;
+  }
+
+  .daily-summary-footer {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #555;
+    margin: 0;
+  }
+}
 
 .invoices-page{
   background-color: #f8f9fa;

@@ -444,6 +444,39 @@ export class ApiService {
     });
   }
 
+  /** ملخص ورديات الكاشير لليوم - لتقرير تفاصيل اليوم PDF */
+  getCashierShiftsSummary(date: string) {
+    const d = date ? date.slice(0, 10) : '';
+    return this.http.get<{
+      success: boolean;
+      data?: {
+        date: string;
+        shifts: Array<{
+          shiftNumber: number;
+          shiftName: string;
+          cashierShiftId: number;
+          branchId: number;
+          branchName: string;
+          openedAt: string;
+          closedAt: string | null;
+          responsibleEmployeeId: number;
+          responsibleEmployeeName: string;
+          totalSales: number;
+          cashAmount: number;
+          visaAmount: number;
+          totalDiscounts: number;
+          isActive: boolean;
+          receivedPledge?: number;
+        }>;
+        totalSalesForDay: number;
+        totalCashForDay: number;
+        totalVisaForDay: number;
+        totalDiscountsForDay: number;
+        totalReceivedPledgeForDay?: number;
+      };
+    }>(`${this.baseUrl}/api/cashier-shifts/summary`, { params: { date: d } });
+  }
+
   // Shifts
   getShiftsAll() {
     return this.http.get(`${this.baseUrl}/api/shifts/GetAll`);

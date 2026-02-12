@@ -15,6 +15,8 @@ import { AuthService } from 'src/app/services/auth.service';
 import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
 import { InvoiceDeletionHubService } from 'src/app/services/invoice-deletion-hub.service';
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 type InvoiceLineUi = {
   lineId: number;
@@ -509,6 +511,56 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
 
   openInvoice(invoice: InvoiceUi): void {
     this.selectedInvoice = invoice;
+  }
+
+  // تفاصيل اليوم PDF
+  dailySummaryForPdf: any = null;
+  isLoadingDailyPdf = false;
+
+  downloadDailyDetailsPdf(): void {
+    const dateStr = (this.from$ as any).value || this.filterFrom || new Date().toISOString().slice(0, 10);
+    if (!dateStr) {
+      alert('اختر تاريخ "من" أولاً');
+      return;
+    }
+    this.isLoadingDailyPdf = true;
+    this.api.getCashierShiftsSummary(dateStr).subscribe({
+      next: (res: any) => {
+        const data = res?.data;
+        if (!data) {
+          this.isLoadingDailyPdf = false;
+          alert('لا توجد بيانات لهذا التاريخ');
+          return;
+        }
+        this.dailySummaryForPdf = data;
+        setTimeout(() => {
+          const el = document.getElementById('dailySummaryPdfContent');
+          if (!el) {
+            this.dailySummaryForPdf = null;
+            this.isLoadingDailyPdf = false;
+            return;
+          }
+          html2canvas(el, { scale: 2, useCORS: true }).then((canvas) => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfW = pdf.internal.pageSize.getWidth();
+            const pdfH = (canvas.height * pdfW) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+            const fileName = `تفاصيل_اليوم_${dateStr}.pdf`;
+            pdf.save(fileName);
+            this.dailySummaryForPdf = null;
+            this.isLoadingDailyPdf = false;
+          }).catch(() => {
+            this.dailySummaryForPdf = null;
+            this.isLoadingDailyPdf = false;
+          });
+        }, 400);
+      },
+      error: (err) => {
+        this.isLoadingDailyPdf = false;
+        alert(err?.error?.message || 'فشل تحميل بيانات اليوم');
+      },
+    });
   }
 
   get subTotal(): number {

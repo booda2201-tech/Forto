@@ -76,6 +76,14 @@
             تصدير الفواتير (Excel)
           </button>
         </div>
+
+        <div class="col-lg-2 col-md-6">
+          <button type="button" class="btn btn-orange text-white w-100 fw-bold" (click)="downloadDailyDetailsPdf()"
+            [disabled]="isLoadingDailyPdf">
+            <span *ngIf="!isLoadingDailyPdf"><i class="bi bi-file-earmark-pdf me-1"></i> تفاصيل اليوم PDF</span>
+            <span *ngIf="isLoadingDailyPdf">جاري التحميل...</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -414,5 +422,42 @@
         </button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- محتوى تقرير تفاصيل اليوم للـ PDF (مخفي، يُلتقط بـ html2canvas) -->
+<div id="dailySummaryPdfContent" class="daily-summary-pdf-source" *ngIf="dailySummaryForPdf" dir="rtl">
+  <div class="daily-summary-inner">
+    <h2 class="daily-summary-title">سجل المعاملات والمدفوعات</h2>
+    <p class="daily-summary-meta">كاشير مسؤول: {{ dailySummaryForPdf.shifts?.[0]?.responsibleEmployeeName || 'ملخص اليوم' }}</p>
+    <p class="daily-summary-meta">وردية رقم: {{ dailySummaryForPdf.shifts?.[0]?.cashierShiftId ?? '-' }}</p>
+    <p class="daily-summary-meta">وردية بدأت: {{ dailySummaryForPdf.shifts?.[0]?.openedAt ? (dailySummaryForPdf.shifts[0].openedAt | date:'yyyy-MM-dd h:mm a') : '-' }}</p>
+    <p class="daily-summary-meta">وردية انتهت: {{ dailySummaryForPdf.shifts?.[0]?.closedAt ? (dailySummaryForPdf.shifts[0].closedAt | date:'yyyy-MM-dd h:mm a') : 'لم تنتهِ' }}</p>
+    <p class="daily-summary-meta">التاريخ: {{ (dailySummaryForPdf.date | date:'yyyy-MM-dd') || '-' }}</p>
+    <table class="daily-summary-table">
+      <!-- <tr>
+        <td class="daily-summary-label">نقد في اليد (عهدة + كاش)</td>
+        <td class="daily-summary-value">{{ ((dailySummaryForPdf.totalCashForDay || 0) + (dailySummaryForPdf.totalReceivedPledgeForDay || 0)) | number:'1.2-2' }}</td>
+      </tr> -->
+      <tr>
+        <td class="daily-summary-label">إجمالي مبيعات اليوم</td>
+        <td class="daily-summary-value">{{ (dailySummaryForPdf.totalSalesForDay || 0) | number:'1.2-2' }}</td>
+      </tr>
+      <tr>
+        <td class="daily-summary-label">دفع نقداً (Cash)</td>
+        <td class="daily-summary-value">{{ (dailySummaryForPdf.totalCashForDay || 0) | number:'1.2-2' }}</td>
+      </tr>
+      <!-- <tr>
+        <td class="daily-summary-label">العهدة المستلمة</td>
+        <td class="daily-summary-value">{{ (dailySummaryForPdf.totalReceivedPledgeForDay || 0) | number:'1.2-2' }}</td>
+      </tr> -->
+      <tr>
+        <td class="daily-summary-label">دفع فيزا (Visa)</td>
+        <td class="daily-summary-value">{{ (dailySummaryForPdf.totalVisaForDay || 0) | number:'1.2-2' }}</td>
+      </tr>
+
+    </table>
+    <hr class="daily-summary-hr" />
+    <p class="daily-summary-footer">نظام فورتو - مراجعة الخزينة</p>
   </div>
 </div>
