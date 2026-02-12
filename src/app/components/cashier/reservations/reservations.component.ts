@@ -61,6 +61,7 @@ type EmployeeDto = {
   phoneNumber: string;
   isActive: boolean;
   role: number;
+  isAvailable?: boolean;
 };
 
 type BookingItemUi = {
