@@ -7,8 +7,8 @@ import { Observable } from 'rxjs';
 })
 export class ApiService {
   /** استخدم server أو local حسب أين شغّال الباك — الـ API و SignalR هيستخدموا نفس الـ base */
-  private baseUrl = 'https://api.fortolaundry.com';   // سيرفر
-  // private baseUrl = 'https://localhost:7179';      // local (للتطوير لو الباك على نفس الجهاز)
+  // private baseUrl = 'https://api.fortolaundry.com';   // سيرفر
+  private baseUrl = 'https://localhost:7179';      // local (للتطوير لو الباك على نفس الجهاز)
 
   constructor(private http: HttpClient) {}
 
