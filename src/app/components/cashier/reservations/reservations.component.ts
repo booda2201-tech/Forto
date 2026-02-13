@@ -1127,7 +1127,7 @@ export class ReservationsComponent implements OnInit {
 
     this.api.getServiceEmployees(serviceId, bookingId, scheduledStart).subscribe({
       next: (res: any) => {
-        console.log(res);
+        console.log("emp ",res);
 
         // ✅ الصح: العمال في availableEmployees
         const list = res?.data?.availableEmployees ?? [];

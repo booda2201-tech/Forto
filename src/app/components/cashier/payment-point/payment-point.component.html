@@ -438,17 +438,17 @@
           <thead class="border-bottom">
             <tr>
               <th class="text-end">البند</th>
-              <th class="text-center">الكمية</th>
+              <!-- <th class="text-center">الكمية</th> -->
               <th class="text-center">السعر</th>
-              <th class="text-center">الإجمالي</th>
+              <!-- <th class="text-center">الإجمالي</th> -->
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let it of invoiceData.lines">
               <td class="text-end">{{ it.description }}</td>
-              <td class="text-center">{{ it.qty }}</td>
+              <!-- <td class="text-center">{{ it.qty }}</td> -->
               <td class="text-center fw-bold">{{ it.unitPrice | number:'1.2-2' }}</td>
-              <td class="text-center fw-bold">{{ it.total | number:'1.2-2' }}</td>
+              <!-- <td class="text-center fw-bold">{{ it.total | number:'1.2-2' }}</td> -->
             </tr>
           </tbody>
         </table>
