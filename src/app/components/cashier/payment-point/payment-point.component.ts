@@ -8,14 +8,19 @@ import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 // --- Types Definitions ---
-type ProductVm = { id: number; name: string; price: number; isActive: boolean; };
-type CartItemVm = { product: ProductVm; qty: number; };
-type ServiceCardVm = { id: number; name: string; price: number; durationMinutes: number; };
+type ProductVm = { id: number; name: string; price: number; isActive: boolean };
+type CartItemVm = { product: ProductVm; qty: number };
+type ServiceCardVm = {
+  id: number;
+  name: string;
+  price: number;
+  durationMinutes: number;
+};
 
 @Component({
   selector: 'app-payment-point',
   templateUrl: './payment-point.component.html',
-  styleUrls: ['./payment-point.component.scss']
+  styleUrls: ['./payment-point.component.scss'],
 })
 export class PaymentPointComponent implements OnInit {
   // Config
@@ -42,7 +47,12 @@ export class PaymentPointComponent implements OnInit {
   isSlotsLoading = false;
 
   // Gifts (هدايا)
-  giftOptions: { productId: number; productName: string; sku?: string; availableQty?: number }[] = [];
+  giftOptions: {
+    productId: number;
+    productName: string;
+    sku?: string;
+    availableQty?: number;
+  }[] = [];
   selectedGiftIds: number[] = [];
   isLoadingGifts = false;
 
@@ -93,11 +103,10 @@ export class PaymentPointComponent implements OnInit {
     private router: Router,
     private toastr: ToastrService,
     private auth: AuthService,
-    private printInvoiceSvc: PrintInvoiceService
-  ) { }
+    private printInvoiceSvc: PrintInvoiceService,
+  ) {}
 
   ngOnInit(): void {
-
     const today = this.todayYYYYMMDD();
     this.customerForm.patchValue({ appointmentDate: today });
 
@@ -113,10 +122,10 @@ export class PaymentPointComponent implements OnInit {
         const data = res?.data ?? res ?? [];
         this.supervisors = (Array.isArray(data) ? data : []).map((s: any) => ({
           id: s.id,
-          name: s.name ?? ''
+          name: s.name ?? '',
         }));
       },
-      error: () => this.supervisors = []
+      error: () => (this.supervisors = []),
     });
   }
 
@@ -125,11 +134,16 @@ export class PaymentPointComponent implements OnInit {
     this.api.getProducts().subscribe({
       next: (res: any) => {
         const data = res?.data ?? [];
-        this.products = data.filter((p: any) => p.isActive).map((p: any) => ({
-          id: p.id, name: p.name, price: Number(p.salePrice ?? 0), isActive: p.isActive
-        }));
+        this.products = data
+          .filter((p: any) => p.isActive)
+          .map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            price: Number(p.salePrice ?? 0),
+            isActive: p.isActive,
+          }));
       },
-      error: () => this.toastr.error('فشل تحميل المنتجات')
+      error: () => this.toastr.error('فشل تحميل المنتجات'),
     });
   }
 
@@ -137,9 +151,11 @@ export class PaymentPointComponent implements OnInit {
     this.api.getServices().subscribe({
       next: (res: any) => {
         this.servicesRaw = res?.data ?? [];
-        this.rebuildServicesForBodyType(Number(this.customerForm.value.carCategory));
+        this.rebuildServicesForBodyType(
+          Number(this.customerForm.value.carCategory),
+        );
       },
-      error: () => this.toastr.error('فشل تحميل الخدمات')
+      error: () => this.toastr.error('فشل تحميل الخدمات'),
     });
   }
 
@@ -163,42 +179,60 @@ export class PaymentPointComponent implements OnInit {
     });
 
     // Client lookup when phone changes
-    this.customerForm.get('phone')!.valueChanges.pipe(
-      debounceTime(300),
-      distinctUntilChanged()
-    ).subscribe((phone) => {
-      const phoneStr = String(phone || '').trim();
-      if (phoneStr.length >= 10) {
-        this.lookupClient(phoneStr);
-      } else {
-        this.foundClients = [];
-        this.isLookingUpClient = false;
-      }
-    });
+    this.customerForm
+      .get('phone')!
+      .valueChanges.pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe((phone) => {
+        const phoneStr = String(phone || '').trim();
+        if (phoneStr.length >= 10) {
+          this.lookupClient(phoneStr);
+        } else {
+          this.foundClients = [];
+          this.isLookingUpClient = false;
+        }
+      });
   }
 
   // --- Cart Helpers ---
-  getItem(productId: number) { return this.cart.find(x => x.product.id === productId); }
+  getItem(productId: number) {
+    return this.cart.find((x) => x.product.id === productId);
+  }
 
-  isProductSelected(productId: number) { return !!this.getItem(productId); }
+  isProductSelected(productId: number) {
+    return !!this.getItem(productId);
+  }
 
   toggleProduct(product: ProductVm) {
     const item = this.getItem(product.id);
-    item ? this.cart = this.cart.filter(x => x.product.id !== product.id) : this.cart.push({ product, qty: 1 });
+    item
+      ? (this.cart = this.cart.filter((x) => x.product.id !== product.id))
+      : this.cart.push({ product, qty: 1 });
     this.calculateBookingTotal();
   }
 
-  increaseQty(p: ProductVm) { this.getItem(p.id) ? this.getItem(p.id)!.qty++ : this.cart.push({ product: p, qty: 1 }); this.calculateBookingTotal(); }
+  increaseQty(p: ProductVm) {
+    this.getItem(p.id)
+      ? this.getItem(p.id)!.qty++
+      : this.cart.push({ product: p, qty: 1 });
+    this.calculateBookingTotal();
+  }
   decreaseQty(p: ProductVm) {
     const item = this.getItem(p.id);
-    if (item) { item.qty--; if (item.qty <= 0) this.cart = this.cart.filter(x => x.product.id !== p.id); }
+    if (item) {
+      item.qty--;
+      if (item.qty <= 0)
+        this.cart = this.cart.filter((x) => x.product.id !== p.id);
+    }
     this.calculateBookingTotal();
   }
 
   setQty(p: ProductVm, val: any) {
     const qty = Number(val);
-    if (qty <= 0) this.cart = this.cart.filter(x => x.product.id !== p.id);
-    else { const item = this.getItem(p.id); item ? item.qty = qty : this.cart.push({ product: p, qty }); }
+    if (qty <= 0) this.cart = this.cart.filter((x) => x.product.id !== p.id);
+    else {
+      const item = this.getItem(p.id);
+      item ? (item.qty = qty) : this.cart.push({ product: p, qty });
+    }
     this.calculateBookingTotal();
   }
 
@@ -224,21 +258,25 @@ export class PaymentPointComponent implements OnInit {
       .filter(Boolean) as ServiceCardVm[];
 
     if (this.services.length === 0) {
-      this.toastr.warning(`لا توجد أسعار خدمات لهذا النوع (bodyType=${bodyType}).`, 'تنبيه');
+      this.toastr.warning(
+        `لا توجد أسعار خدمات لهذا النوع (bodyType=${bodyType}).`,
+        'تنبيه',
+      );
     }
   }
-
 
   toggleService(service: ServiceCardVm, event: any) {
     const checked = !!event.target.checked;
 
     if (checked) {
-      if (!this.selectedServices.some(s => s.id === service.id)) {
+      if (!this.selectedServices.some((s) => s.id === service.id)) {
         this.selectedServices.push(service);
         this.loadEmployeesForService(service.id);
       }
     } else {
-      this.selectedServices = this.selectedServices.filter(s => s.id !== service.id);
+      this.selectedServices = this.selectedServices.filter(
+        (s) => s.id !== service.id,
+      );
       delete this.serviceEmployeeMap[service.id];
       delete this.serviceEmployees[service.id];
     }
@@ -248,7 +286,7 @@ export class PaymentPointComponent implements OnInit {
   }
 
   private loadGiftOptions() {
-    const ids = this.selectedServices.map(s => s.id);
+    const ids = this.selectedServices.map((s) => s.id);
     if (ids.length === 0) {
       this.giftOptions = [];
       this.selectedGiftIds = [];
@@ -263,7 +301,7 @@ export class PaymentPointComponent implements OnInit {
           productId: o.productId ?? o.product_id ?? 0,
           productName: o.productName ?? o.name ?? '',
           sku: o.sku,
-          availableQty: o.availableQty
+          availableQty: o.availableQty,
         }));
         this.selectedGiftIds = [];
         this.isLoadingGifts = false;
@@ -271,7 +309,7 @@ export class PaymentPointComponent implements OnInit {
       error: () => {
         this.giftOptions = [];
         this.isLoadingGifts = false;
-      }
+      },
     });
   }
 
@@ -288,28 +326,21 @@ export class PaymentPointComponent implements OnInit {
     return this.selectedGiftIds.includes(productId);
   }
 
-
-
-
-
-
-
-
-
   calculateTotal() {
     // if you have services + products:
-    const servicesTotal = (this.selectedServices ?? []).reduce((sum: number, s: any) => sum + (Number(s.price) || 0), 0);
+    const servicesTotal = (this.selectedServices ?? []).reduce(
+      (sum: number, s: any) => sum + (Number(s.price) || 0),
+      0,
+    );
 
     const productsTotal = (this.cart ?? []).reduce(
-      (sum: number, x: any) => sum + (Number(x.product?.price ?? 0) * Number(x.qty ?? 0)),
-      0
+      (sum: number, x: any) =>
+        sum + Number(x.product?.price ?? 0) * Number(x.qty ?? 0),
+      0,
     );
 
     this.totalPrice = servicesTotal + productsTotal;
   }
-
-
-
 
   selectedReservationId: number | null = null;
   selectedBookingScheduledStart: string | null = null;
@@ -317,11 +348,6 @@ export class PaymentPointComponent implements OnInit {
   employeesForService: any[] = [];
   serviceEmployees: Record<number, any[]> = {}; // Key is serviceId (number)
   isEmployeesLoading = false;
-
-
-
-
-
 
   loadEmployeesForService(serviceId: number) {
     // For new bookings, use getServiceEmployees2 (no bookingId needed)
@@ -344,11 +370,9 @@ export class PaymentPointComponent implements OnInit {
         this.serviceEmployees[serviceId] = [];
         this.isEmployeesLoading = false;
         this.toastr.error('فشل تحميل العمال لهذه الخدمة', 'خطأ');
-      }
+      },
     });
   }
-
-
 
   submitBooking() {
     if (this.customerForm.invalid) {
@@ -363,7 +387,9 @@ export class PaymentPointComponent implements OnInit {
 
     // ✅ if services exist, require employee for each service
     if (this.selectedServices.length > 0) {
-      const missing = this.selectedServices.filter(s => !this.serviceEmployeeMap[s.id]);
+      const missing = this.selectedServices.filter(
+        (s) => !this.serviceEmployeeMap[s.id],
+      );
       if (missing.length > 0) {
         this.toastr.warning('اختار عامل لكل خدمة قبل التأكيد', 'تنبيه');
         return;
@@ -383,7 +409,10 @@ export class PaymentPointComponent implements OnInit {
         return;
       }
       if (cash > this.finalTotalForPayment) {
-        this.toastr.warning('مبلغ الكاش لا يمكن أن يتجاوز الإجمالي النهائي', 'تنبيه');
+        this.toastr.warning(
+          'مبلغ الكاش لا يمكن أن يتجاوز الإجمالي النهائي',
+          'تنبيه',
+        );
         return;
       }
     }
@@ -398,7 +427,9 @@ export class PaymentPointComponent implements OnInit {
     const scheduledStart = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:00:00`;
 
     const bodyType = Number(v.carCategory);
-    const { brand, model, year } = this.parseBrandModelYear(String(v.carType ?? ''));
+    const { brand, model, year } = this.parseBrandModelYear(
+      String(v.carType ?? ''),
+    );
 
     const payload: any = {
       branchId: this.branchId,
@@ -417,52 +448,68 @@ export class PaymentPointComponent implements OnInit {
         model: model || '',
         color: '',
         year: year ?? 0,
-        isDefault: true
+        isDefault: true,
       },
 
-      serviceIds: this.selectedServices.map(s => s.id),
+      serviceIds: this.selectedServices.map((s) => s.id),
 
-      serviceAssignments: this.selectedServices.map(s => ({
+      serviceAssignments: this.selectedServices.map((s) => ({
         serviceId: s.id,
-        employeeId: this.serviceEmployeeMap[s.id]
+        employeeId: this.serviceEmployeeMap[s.id],
       })),
 
-      gifts: this.selectedGiftIds.length > 0
-        ? [{ productId: this.selectedGiftIds[0] }]
-        : [],
+      gifts:
+        this.selectedGiftIds.length > 0
+          ? [{ productId: this.selectedGiftIds[0] }]
+          : [],
 
-      products: this.cart.map(c => ({
+      products: this.cart.map((c) => ({
         productId: c.product.id,
-        qty: c.qty
+        qty: c.qty,
       })),
 
-      notes: ''
+      notes: '',
     };
     payload.supervisorId = this.selectedSupervisorId;
 
     // adjustedTotal: لو مجاني = 0، لو تعديل = القيمة، لو عادي = الإجمالي المحسوب
-    const adjTotal = this.adjustTotalMode === 'free' ? 0
-      : this.adjustTotalMode === 'custom' ? (Number(this.adjustCustomAmount) || this.totalPrice)
-        : this.totalPrice;
+    const adjTotal =
+      this.adjustTotalMode === 'free'
+        ? 0
+        : this.adjustTotalMode === 'custom'
+          ? Number(this.adjustCustomAmount)
+          : this.totalPrice;
+    console.log(this.adjustTotalMode);
+    console.log(adjTotal);
+    console.log(this.adjustCustomAmount);
+
     payload.adjustedTotal = adjTotal;
 
     // طريقة الدفع: 1 = كاش، 2 = فيزا، 3 = مخصص (كاش + فيزا)
     const finalTotal = adjTotal * 1.14;
-    const cashAmt = this.paymentType === 'cash' ? finalTotal
-      : this.paymentType === 'visa' ? 0
-        : (Number(this.customCashAmount) || 0);
-    const visaAmt = this.paymentType === 'visa' ? finalTotal
-      : this.paymentType === 'cash' ? 0
-        : Math.max(0, finalTotal - cashAmt);
-    payload.paymentMethod = this.paymentType === 'cash' ? 1 : this.paymentType === 'visa' ? 2 : 3;
+    const cashAmt =
+      this.paymentType === 'cash'
+        ? finalTotal
+        : this.paymentType === 'visa'
+          ? 0
+          : Number(this.customCashAmount) || 0;
+    const visaAmt =
+      this.paymentType === 'visa'
+        ? finalTotal
+        : this.paymentType === 'cash'
+          ? 0
+          : Math.max(0, finalTotal - cashAmt);
+    payload.paymentMethod =
+      this.paymentType === 'cash' ? 1 : this.paymentType === 'visa' ? 2 : 3;
     payload.cashAmount = cashAmt;
     payload.visaAmount = visaAmt;
 
     // Save customer data before submitting
     this.customerFormData = {
       name: String(v.name ?? '').trim(),
-      phone: String(v.phone ?? '').trim()
+      phone: String(v.phone ?? '').trim(),
     };
+    console.log('------->', payload);
 
     this.isSubmitting = true;
     this.api.cashierCheckout(payload).subscribe({
@@ -480,12 +527,19 @@ export class PaymentPointComponent implements OnInit {
 
         this.invoiceData = res?.data ?? res;
         if (this.invoiceData && this.customerFormData) {
-          this.invoiceData.clientName = this.invoiceData.clientName || this.invoiceData.customerName || this.customerFormData.name;
-          this.invoiceData.clientNumber = this.invoiceData.clientNumber || this.invoiceData.phoneNumber || this.invoiceData.phone || this.customerFormData.phone;
+          this.invoiceData.clientName =
+            this.invoiceData.clientName ||
+            this.invoiceData.customerName ||
+            this.customerFormData.name;
+          this.invoiceData.clientNumber =
+            this.invoiceData.clientNumber ||
+            this.invoiceData.phoneNumber ||
+            this.invoiceData.phone ||
+            this.customerFormData.phone;
         }
         // المجموع والإجمالي من adjustedTotal: المجموع = adjTotal، الضريبة 14% عليه، الإجمالي = adjTotal + ضريبة
         this.invoiceData.subTotal = adjTotal;
-        this.invoiceData.total = adjTotal + (adjTotal * 0.14);
+        this.invoiceData.total = adjTotal + adjTotal * 0.14;
         this.invoiceData.paymentMethod = payload.paymentMethod;
         this.openInvoiceModal?.();
 
@@ -508,26 +562,38 @@ export class PaymentPointComponent implements OnInit {
       error: () => {
         this.isSubmitting = false;
         // الخطأ يُعرض من ErrorInterceptor (رسالة الباك إند)
-      }
+      },
     });
   }
 
-
-  isServiceSelected(service: ServiceCardVm) { return this.selectedServices.some(s => s.id === service.id); }
+  isServiceSelected(service: ServiceCardVm) {
+    return this.selectedServices.some((s) => s.id === service.id);
+  }
 
   calculateBookingTotal() {
-    const servicesSum = this.selectedServices.reduce((sum, s) => sum + s.price, 0);
-    const productsSum = this.cart.reduce((sum, x) => sum + (x.product.price * x.qty), 0);
+    const servicesSum = this.selectedServices.reduce(
+      (sum, s) => sum + s.price,
+      0,
+    );
+    const productsSum = this.cart.reduce(
+      (sum, x) => sum + x.product.price * x.qty,
+      0,
+    );
     this.totalPrice = servicesSum + productsSum;
   }
 
-  get totalAmount() { return this.totalPrice; } // لتوحيد العرض في الـ HTML
+  get totalAmount() {
+    return this.totalPrice;
+  } // لتوحيد العرض في الـ HTML
 
   /** الإجمالي النهائي للدفع (المجموع + 14% ضريبة) */
   get finalTotalForPayment(): number {
-    const base = this.adjustTotalMode === 'free' ? 0
-      : this.adjustTotalMode === 'custom' ? (Number(this.adjustCustomAmount) || 0)
-        : this.totalPrice;
+    const base =
+      this.adjustTotalMode === 'free'
+        ? 0
+        : this.adjustTotalMode === 'custom'
+          ? Number(this.adjustCustomAmount) || 0
+          : this.totalPrice;
     return base * 1.14;
   }
 
@@ -540,13 +606,24 @@ export class PaymentPointComponent implements OnInit {
 
   loadAvailableSlots() {
     const date = this.customerForm.value.appointmentDate;
-    const serviceIds = this.selectedServices.map(s => s.id);
-    if (!date || serviceIds.length === 0) { this.availableSlots = []; return; }
+    const serviceIds = this.selectedServices.map((s) => s.id);
+    if (!date || serviceIds.length === 0) {
+      this.availableSlots = [];
+      return;
+    }
     this.isSlotsLoading = true;
-    this.api.getAvailableSlots(this.branchId, String(date), serviceIds).subscribe({
-      next: (res: any) => { this.availableSlots = res?.data?.slots ?? []; this.isSlotsLoading = false; },
-      error: () => { this.isSlotsLoading = false; this.availableSlots = []; }
-    });
+    this.api
+      .getAvailableSlots(this.branchId, String(date), serviceIds)
+      .subscribe({
+        next: (res: any) => {
+          this.availableSlots = res?.data?.slots ?? [];
+          this.isSlotsLoading = false;
+        },
+        error: () => {
+          this.isSlotsLoading = false;
+          this.availableSlots = [];
+        },
+      });
   }
 
   // --- Submit & Invoicing ---
@@ -554,7 +631,6 @@ export class PaymentPointComponent implements OnInit {
     if (this.activeTab === 'new-order') this.submitOrder();
     else this.submitBooking();
   }
-
 
   invoiceData: any = null;
   customerFormData: { name: string; phone: string } | null = null;
@@ -571,22 +647,22 @@ export class PaymentPointComponent implements OnInit {
     // Save customer data before submitting
     this.customerFormData = {
       name: String(this.orderForm.value.fullName ?? '').trim(),
-      phone: String(this.orderForm.value.phoneNumber ?? '').trim()
+      phone: String(this.orderForm.value.phoneNumber ?? '').trim(),
     };
 
     const payload = {
       branchId: this.branchId,
       cashierId: this.cashierId,
-      items: this.cart.map(item => ({
+      items: this.cart.map((item) => ({
         productId: item.product.id,
-        qty: item.qty
+        qty: item.qty,
       })),
       occurredAt: new Date().toISOString(),
       notes: '',
       customer: {
         fullName: this.orderForm.value.fullName,
-        phoneNumber: this.orderForm.value.phoneNumber
-      }
+        phoneNumber: this.orderForm.value.phoneNumber,
+      },
     };
 
     this.api.createPosInvoice(payload).subscribe({
@@ -595,8 +671,15 @@ export class PaymentPointComponent implements OnInit {
 
         this.invoiceData = res?.data ?? res;
         if (this.invoiceData && this.customerFormData) {
-          this.invoiceData.clientName = this.invoiceData.clientName || this.invoiceData.customerName || this.customerFormData.name;
-          this.invoiceData.clientNumber = this.invoiceData.clientNumber || this.invoiceData.phoneNumber || this.invoiceData.phone || this.customerFormData.phone;
+          this.invoiceData.clientName =
+            this.invoiceData.clientName ||
+            this.invoiceData.customerName ||
+            this.customerFormData.name;
+          this.invoiceData.clientNumber =
+            this.invoiceData.clientNumber ||
+            this.invoiceData.phoneNumber ||
+            this.invoiceData.phone ||
+            this.customerFormData.phone;
         }
         this.openInvoiceModal();
         this.cart = [];
@@ -606,7 +689,7 @@ export class PaymentPointComponent implements OnInit {
       error: (err) => {
         console.error(err);
         this.toastr.error(err?.error?.message || 'فشل تسجيل الطلب');
-      }
+      },
     });
   }
 
@@ -632,20 +715,18 @@ export class PaymentPointComponent implements OnInit {
     modal.show();
   }
 
-
   downloadInvoice() {
     this.printInvoiceSvc.print();
   }
 
   onlyNumbers(event: any) {
-    if (!/[0-9]/.test(String.fromCharCode(event.charCode))) event.preventDefault();
+    if (!/[0-9]/.test(String.fromCharCode(event.charCode)))
+      event.preventDefault();
   }
-
 
   printInvoice() {
     this.printInvoiceSvc.print();
   }
-
 
   private todayYYYYMMDD(): string {
     const d = new Date();
@@ -676,8 +757,11 @@ export class PaymentPointComponent implements OnInit {
 
   serviceEmployeeMap: Record<number, number> = {};
 
-
-  private parseBrandModelYear(carTypeText: string): { brand: string; model: string; year?: number } {
+  private parseBrandModelYear(carTypeText: string): {
+    brand: string;
+    model: string;
+    year?: number;
+  } {
     const text = (carTypeText || '').trim();
     const parts = text.split(/\s+/).filter(Boolean);
 
@@ -733,14 +817,14 @@ export class PaymentPointComponent implements OnInit {
         this.isLookingUpClient = false;
         this.foundClients = [];
         this.currentClientIsPremium = false;
-      }
+      },
     });
   }
 
   handleClientFound(client: any) {
     this.currentClientIsPremium = client?.isPremiumCustomer ?? false;
     this.customerForm.patchValue({
-      name: client.fullName || ''
+      name: client.fullName || '',
     });
 
     // Handle cars
@@ -759,12 +843,13 @@ export class PaymentPointComponent implements OnInit {
   }
 
   fillCarData(car: any) {
-    const carType = [car.brand, car.model, car.year].filter(Boolean).join(' ') || '';
+    const carType =
+      [car.brand, car.model, car.year].filter(Boolean).join(' ') || '';
 
     this.customerForm.patchValue({
       carType: carType,
       carNumber: car.plateNumber || '',
-      carCategory: car.bodyType || null
+      carCategory: car.bodyType || null,
     });
   }
 
@@ -776,7 +861,8 @@ export class PaymentPointComponent implements OnInit {
   }
 
   selectCar(car: any) {
-    if (car?.clientIsPremium != null) this.currentClientIsPremium = car.clientIsPremium;
+    if (car?.clientIsPremium != null)
+      this.currentClientIsPremium = car.clientIsPremium;
     if (car?.clientName != null) {
       this.customerForm.patchValue({ name: car.clientName });
     }
@@ -800,22 +886,21 @@ export class PaymentPointComponent implements OnInit {
     if (this.selectedClient) {
       return (this.selectedClient.cars || []).map((car: any) => ({
         ...car,
-        clientIsPremium: this.selectedClient?.isPremiumCustomer
+        clientIsPremium: this.selectedClient?.isPremiumCustomer,
       }));
     }
-    return this.foundClients.flatMap(client =>
+    return this.foundClients.flatMap((client) =>
       (client.cars || []).map((car: any) => ({
         ...car,
         clientName: client.fullName,
         clientPhone: client.phoneNumber,
-        clientIsPremium: client.isPremiumCustomer
-      }))
+        clientIsPremium: client.isPremiumCustomer,
+      })),
     );
   }
 
   getCarCategoryName(bodyType: number): string {
-    const category = this.carCategories.find(cat => cat.id === bodyType);
+    const category = this.carCategories.find((cat) => cat.id === bodyType);
     return category?.nameAr || `فئة ${bodyType}`;
   }
-
 }
