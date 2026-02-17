@@ -70,9 +70,18 @@ export class InvoicesComponent implements OnInit, OnDestroy {
   totalInvoicesCount = 0;
   totalDailyAmount = 0;
 
-  private todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  /** تاريخ اليوم حسب التوقيت المحلي (ليس UTC) بصيغة YYYY-MM-DD */
+  private static getLocalDateString(d?: Date): string {
+    const date = d ?? new Date();
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
 
-  // filters (قيم معروضة في الـ UI ومربوطة بـ ngModel) - من ويوم انهارده افتراضياً
+  private todayStr = InvoicesComponent.getLocalDateString();
+
+  // filters (قيم معروضة في الـ UI ومربوطة بـ ngModel) - من ويوم انهارده افتراضياً (توقيت محلي)
   filterSearch = '';
   filterFrom = this.todayStr;
   filterTo = this.todayStr;
@@ -80,14 +89,15 @@ export class InvoicesComponent implements OnInit, OnDestroy {
   filterStatus = '';
 
   private searchTerm$ = new BehaviorSubject<string>('');
-  private from$ = new BehaviorSubject<string>(this.todayStr);
-  private to$ = new BehaviorSubject<string>(this.todayStr);
+
+  private from$ = new BehaviorSubject<string>(this.filterFrom);
+  private to$ = new BehaviorSubject<string>(this.filterTo);
   private paymentMethod$ = new BehaviorSubject<string>('all');
   private statusFilter$ = new BehaviorSubject<string>(''); // "" | "unpaid" | "paid" | "cancelled"
 
   private page$ = new BehaviorSubject<number>(1);
   private pageSize$ = new BehaviorSubject<number>(10);
-  
+
   // pagination observables
   currentPage$ = this.page$.asObservable();
   pageSizeObservable$ = this.pageSize$.asObservable();
@@ -99,25 +109,25 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     totalCashAmount?: number;
     totalVisaAmount?: number;
   } | null = null;
-  
+
   // pagination computed values
   get currentPage(): number {
     return (this.page$ as any).value || 1;
   }
-  
+
   get pageSize(): number {
     return (this.pageSize$ as any).value || 20;
   }
-  
+
   get totalPages(): number {
     if (this.totalInvoicesCount === 0) return 1;
     return Math.ceil(this.totalInvoicesCount / this.pageSize);
   }
-  
+
   get startIndex(): number {
     return (this.currentPage - 1) * this.pageSize + 1;
   }
-  
+
   get endIndex(): number {
     const end = this.currentPage * this.pageSize;
     return Math.min(end, this.totalInvoicesCount);
@@ -172,7 +182,7 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     private auth: AuthService,
     private printInvoice: PrintInvoiceService,
     private invoiceDeletionHub: InvoiceDeletionHubService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.invoiceDeletionHub.startConnection();
@@ -218,7 +228,7 @@ export class InvoicesComponent implements OnInit, OnDestroy {
   }
 
   resetFilters(): void {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = InvoicesComponent.getLocalDateString();
     this.filterSearch = '';
     this.filterFrom = today;
     this.filterTo = today;
@@ -231,7 +241,7 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     this.statusFilter$.next('');
     this.page$.next(1);
   }
-  
+
   // ---------- Pagination Handlers ----------
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
@@ -243,29 +253,29 @@ export class InvoicesComponent implements OnInit, OnDestroy {
       }
     }
   }
-  
+
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.goToPage(this.currentPage + 1);
     }
   }
-  
+
   previousPage(): void {
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }
   }
-  
+
   changePageSize(size: number): void {
     this.pageSize$.next(size);
     this.page$.next(1); // Reset to first page
   }
-  
+
   getPageNumbers(): number[] {
     const pages: number[] = [];
     const total = this.totalPages;
     const current = this.currentPage;
-    
+
     if (total <= 7) {
       // Show all pages if 7 or less
       for (let i = 1; i <= total; i++) {
@@ -274,27 +284,27 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     } else {
       // Show first page
       pages.push(1);
-      
+
       if (current > 3) {
         pages.push(-1); // Ellipsis
       }
-      
+
       // Show pages around current
       const start = Math.max(2, current - 1);
       const end = Math.min(total - 1, current + 1);
-      
+
       for (let i = start; i <= end; i++) {
         pages.push(i);
       }
-      
+
       if (current < total - 2) {
         pages.push(-1); // Ellipsis
       }
-      
+
       // Show last page
       pages.push(total);
     }
-    
+
     return pages;
   }
 
@@ -426,10 +436,10 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     const total = this.payModalTotal;
     const cashAmt = this.payMethod === 'cash' ? total
       : this.payMethod === 'visa' ? 0
-      : (Number(this.payCustomCashAmount) || 0);
+        : (Number(this.payCustomCashAmount) || 0);
     const visaAmt = this.payMethod === 'visa' ? total
       : this.payMethod === 'cash' ? 0
-      : this.payModalVisaAmount;
+        : this.payModalVisaAmount;
     const paymentMethod = this.payMethod === 'cash' ? 1 : this.payMethod === 'visa' ? 2 : 3;
 
     if (this.payMethod === 'custom' && (cashAmt <= 0 || cashAmt > total)) {

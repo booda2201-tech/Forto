@@ -65,7 +65,16 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
   totalInvoicesCount = 0;
   totalDailyAmount = 0;
 
-  private todayStr = new Date().toISOString().slice(0, 10);
+  /** تاريخ اليوم حسب التوقيت المحلي (ليس UTC) بصيغة YYYY-MM-DD */
+  private static getLocalDateString(d?: Date): string {
+    const date = d ?? new Date();
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  private todayStr = AdminInvoicesComponent.getLocalDateString();
 
   filterSearch = '';
   filterFrom = this.todayStr;
@@ -207,7 +216,7 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
   }
 
   resetFilters(): void {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = AdminInvoicesComponent.getLocalDateString();
     this.filterSearch = '';
     this.filterFrom = today;
     this.filterTo = today;
@@ -518,7 +527,7 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
   isLoadingDailyPdf = false;
 
   downloadDailyDetailsPdf(): void {
-    const dateStr = (this.from$ as any).value || this.filterFrom || new Date().toISOString().slice(0, 10);
+    const dateStr = (this.from$ as any).value || this.filterFrom || AdminInvoicesComponent.getLocalDateString();
     if (!dateStr) {
       alert('اختر تاريخ "من" أولاً');
       return;

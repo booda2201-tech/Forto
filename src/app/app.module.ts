@@ -79,7 +79,8 @@ import { AdminInvoicesComponent } from './components/admin/invoices/invoices.com
     FormsModule,
     NgbModule,
     HttpClientModule,
-    TestComponent
+    TestComponent,
+    InvoicesComponent
 ],
   providers: [
     NotificationService,
