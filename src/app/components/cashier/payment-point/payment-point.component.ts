@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { ApiService } from 'src/app/services/api.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { CashierShiftService } from 'src/app/services/cashier-shift.service';
 import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
@@ -64,6 +65,12 @@ export class PaymentPointComponent implements OnInit {
   paymentType: 'cash' | 'visa' | 'custom' = 'cash';
   customCashAmount = 0;
 
+  // طلب جديد (المشروبات): خيارات الدفع (عرضها أسفل الصفحة)
+  newOrderAdjustMode: 'normal' | 'free' | 'custom' = 'normal';
+  newOrderPaymentType: 'cash' | 'visa' | 'custom' = 'cash';
+  newOrderAdjustCustomAmount = 0;   // المبلغ النهائي عند "تعديل"
+  newOrderPaymentCashAmount = 0;   // مبلغ الكاش عند طريقة الدفع "مخصص"
+
   // Pricing & Invoice Data
   totalPrice = 0; // عرض السعر المباشر
   subTotal = 0;
@@ -103,8 +110,13 @@ export class PaymentPointComponent implements OnInit {
     private router: Router,
     private toastr: ToastrService,
     private auth: AuthService,
+    private cashierShift: CashierShiftService,
     private printInvoiceSvc: PrintInvoiceService,
   ) {}
+
+  get cashierShiftId(): number {
+    return this.cashierShift.getActiveShift()?.id ?? 0;
+  }
 
   ngOnInit(): void {
     const today = this.todayYYYYMMDD();
@@ -586,6 +598,20 @@ export class PaymentPointComponent implements OnInit {
     return this.totalPrice;
   } // لتوحيد العرض في الـ HTML
 
+  /** للمودال طلب جديد: المبلغ النهائي (عادي = الإجمالي، مجاني = 0، تعديل = المدخل) */
+  get newOrderFinalTotal(): number {
+    if (this.newOrderAdjustMode === 'free') return 0;
+    if (this.newOrderAdjustMode === 'custom') return Number(this.newOrderAdjustCustomAmount) || 0;
+    return this.totalPrice;
+  }
+
+  /** في وضع مخصص لطلب جديد: الباقي فيزا */
+  get newOrderComputedVisaAmount(): number {
+    if (this.newOrderPaymentType !== 'custom') return 0;
+    const cash = Number(this.newOrderPaymentCashAmount) || 0;
+    return Math.max(0, this.newOrderFinalTotal - cash);
+  }
+
   /** الإجمالي النهائي للدفع (المجموع + 14% ضريبة) */
   get finalTotalForPayment(): number {
     const base =
@@ -639,12 +665,31 @@ export class PaymentPointComponent implements OnInit {
   currentClientIsPremium = false;
 
   private submitOrder() {
+    this.confirmNewOrderPayment();
+  }
+
+  confirmNewOrderPayment() {
     if (this.orderForm.invalid || this.cart.length === 0) {
-      this.toastr.error('يرجى إكمال البيانات واختيار المنتجات');
+      this.toastr.error('يرجى إكمال بيانات العميل واختيار المنتجات');
       return;
     }
+    if (this.newOrderPaymentType === 'custom') {
+      const cash = Number(this.newOrderPaymentCashAmount) || 0;
+      if (cash <= 0) {
+        this.toastr.warning('أدخل مبلغ الكاش في الدفع المخصص', 'تنبيه');
+        return;
+      }
+      if (cash > this.newOrderFinalTotal) {
+        this.toastr.warning('مبلغ الكاش لا يمكن أن يتجاوز الإجمالي النهائي', 'تنبيه');
+        return;
+      }
+    }
 
-    // Save customer data before submitting
+    const finalTotal = this.newOrderFinalTotal;
+    const paymentMethod = this.newOrderPaymentType === 'cash' ? 1 : this.newOrderPaymentType === 'visa' ? 2 : 3;
+    const cashAmount = this.newOrderPaymentType === 'cash' ? finalTotal : this.newOrderPaymentType === 'visa' ? 0 : Number(this.newOrderPaymentCashAmount) || 0;
+    const visaAmount = this.newOrderPaymentType === 'visa' ? finalTotal : this.newOrderPaymentType === 'cash' ? 0 : this.newOrderComputedVisaAmount;
+
     this.customerFormData = {
       name: String(this.orderForm.value.fullName ?? '').trim(),
       phone: String(this.orderForm.value.phoneNumber ?? '').trim(),
@@ -658,15 +703,22 @@ export class PaymentPointComponent implements OnInit {
         qty: item.qty,
       })),
       occurredAt: new Date().toISOString(),
-      notes: '',
+      notes: String(this.orderForm.value.notes ?? '').trim(),
       customer: {
-        fullName: this.orderForm.value.fullName,
-        phoneNumber: this.orderForm.value.phoneNumber,
+        fullName: this.customerFormData.name,
+        phoneNumber: this.customerFormData.phone,
       },
+      adjustedTotal: finalTotal,
+      paymentMethod,
+      cashAmount,
+      visaAmount,
+      cashierShiftId: this.cashierShiftId,
     };
 
+    this.isSubmitting = true;
     this.api.createPosInvoice(payload).subscribe({
       next: (res: any) => {
+        this.isSubmitting = false;
         this.toastr.success('تم تسجيل الطلب بنجاح');
 
         this.invoiceData = res?.data ?? res;
@@ -683,10 +735,11 @@ export class PaymentPointComponent implements OnInit {
         }
         this.openInvoiceModal();
         this.cart = [];
-        this.orderForm.reset();
+        this.orderForm.reset({ fullName: '', phoneNumber: '', notes: '' });
         this.customerFormData = null;
       },
       error: (err) => {
+        this.isSubmitting = false;
         console.error(err);
         this.toastr.error(err?.error?.message || 'فشل تسجيل الطلب');
       },

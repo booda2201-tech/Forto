@@ -146,35 +146,133 @@
         </div>
       </div>
 
-      <!-- Bottom sticky summary bar -->
-      <div class="bottom-bar">
-        <div class="bar-right">
-          <div class="total-text">
-            <span class="muted">الإجمالي:</span>
-            <span class="total">{{ totalAmount | number: "1.2-2" }} ج.م</span>
+      <!-- جزء الدفع: الإجمالي المتوقع + المبلغ النهائي + طريقة الدفع + تأكيد الدفع (مثل المغسلة) -->
+      <div class="form-footer new-order-footer">
+        <div class="form-footer-inner">
+          <div class="price-block">
+            <div class="total-price">
+              <span>الإجمالي المتوقع:</span>
+              <strong>{{ totalAmount | number: "1.2-2" }} ج.م</strong>
+            </div>
+            <div class="adjust-total-section">
+              <span class="adjust-label">المبلغ النهائي:</span>
+              <div class="adjust-options">
+                <button
+                  type="button"
+                  class="adjust-opt"
+                  [class.active]="newOrderAdjustMode === 'normal'"
+                  (click)="newOrderAdjustMode = 'normal'"
+                >
+                  <i class="bi bi-receipt"></i> العادي
+                </button>
+                <button
+                  type="button"
+                  class="adjust-opt adjust-opt-free"
+                  [class.active]="newOrderAdjustMode === 'free'"
+                  (click)="newOrderAdjustMode = 'free'"
+                >
+                  <i class="bi bi-gift"></i> مجاني
+                </button>
+                <div
+                  class="adjust-opt-custom"
+                  [class.active]="newOrderAdjustMode === 'custom'"
+                >
+                  <button
+                    type="button"
+                    class="btn-trigger-edit"
+                    (click)="newOrderAdjustMode = 'custom'"
+                  >
+                    <i class="bi bi-pencil-square"></i> تعديل
+                  </button>
+                  <input
+                    type="number"
+                    class="adjust-input"
+                    [(ngModel)]="newOrderAdjustCustomAmount"
+                    [ngModelOptions]="{ standalone: true }"
+                    [disabled]="newOrderAdjustMode !== 'custom'"
+                    min="0"
+                    step="0.01"
+                    placeholder="0"
+                  />
+                  <span class="adjust-currency">ج.م</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="bar-left">
-          <button
-            type="button"
-            class="btn-ghost"
-            (click)="
-              cart = [];
-              orderForm.reset({ fullName: '', phoneNumber: '', notes: '' })
-            "
-          >
-            إلغاء
-          </button>
+          <div class="payment-method-block">
+            <div class="payment-method-title">
+              <i class="bi bi-wallet2"></i>
+              <span>طريقة الدفع</span>
+            </div>
+            <div class="payment-method-cards">
+              <button
+                type="button"
+                class="payment-card"
+                [class.payment-card-active]="newOrderPaymentType === 'cash'"
+                (click)="newOrderPaymentType = 'cash'"
+              >
+                <i class="bi bi-cash-coin payment-card-icon"></i>
+                <span class="payment-card-label">كاش</span>
+              </button>
+              <button
+                type="button"
+                class="payment-card"
+                [class.payment-card-active]="newOrderPaymentType === 'visa'"
+                (click)="newOrderPaymentType = 'visa'"
+              >
+                <i class="bi bi-credit-card payment-card-icon"></i>
+                <span class="payment-card-label">فيزا</span>
+              </button>
+              <button
+                type="button"
+                class="payment-card"
+                [class.payment-card-active]="newOrderPaymentType === 'custom'"
+                (click)="newOrderPaymentType = 'custom'"
+              >
+                <i class="bi bi-cash-stack payment-card-icon"></i>
+                <span class="payment-card-label">مخصص</span>
+              </button>
+            </div>
+            <div class="custom-cash-box" *ngIf="newOrderPaymentType === 'custom'">
+              <label>مبلغ الكاش (ج.م)</label>
+              <input
+                type="number"
+                class="custom-cash-input"
+                [(ngModel)]="newOrderPaymentCashAmount"
+                [ngModelOptions]="{ standalone: true }"
+                min="0"
+                [max]="newOrderFinalTotal"
+                step="0.01"
+                placeholder="0"
+              />
+              <div class="custom-cash-visa">
+                الباقي فيزا:
+                <strong>{{ newOrderComputedVisaAmount | number: "1.2-2" }} ج.م</strong>
+              </div>
+            </div>
+          </div>
 
-          <button
-            type="button"
-            class="btn-primary"
-            (click)="onSubmit()"
-            [disabled]="orderForm.invalid || cart.length === 0 || isSubmitting"
-          >
-            {{ isSubmitting ? "جارٍ الحفظ..." : "تأكيد" }}
-          </button>
+          <div class="actions">
+            <button
+              type="button"
+              class="btn-cancel"
+              (click)="
+                cart = [];
+                orderForm.reset({ fullName: '', phoneNumber: '', notes: '' })
+              "
+            >
+              إلغاء
+            </button>
+            <button
+              type="button"
+              class="btn-save"
+              (click)="confirmNewOrderPayment()"
+              [disabled]="orderForm.invalid || cart.length === 0 || isSubmitting"
+            >
+              {{ isSubmitting ? "جاري..." : "تأكيد الدفع" }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
