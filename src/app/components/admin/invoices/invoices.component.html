@@ -73,9 +73,20 @@
 
         <div class="col-lg-2 col-md-6">
           <button class="btn btn-light w-100 text-danger fw-bold" (click)="exportFilteredToExcel()">
-            تصدير الفواتير (Excel)
+            تصدير الفواتير
           </button>
         </div>
+
+
+
+        <div class="col-lg-2 col-md-6">
+          <button type="button" class="btn btn-outline-primary w-100 fw-bold" (click)="exportBubbleHopeInvoices()"
+            [disabled]="isLoadingBubbleExport">
+            <span *ngIf="!isLoadingBubbleExport"><i class="bi bi-cup-hot me-1"></i> فواتير البابل</span>
+            <span *ngIf="isLoadingBubbleExport">جاري التحميل...</span>
+          </button>
+        </div>
+
 
         <div class="col-lg-2 col-md-6">
           <button type="button" class="btn btn-orange text-white w-100 fw-bold" (click)="downloadDailyDetailsPdf()"
@@ -84,6 +95,10 @@
             <span *ngIf="isLoadingDailyPdf">جاري التحميل...</span>
           </button>
         </div>
+
+
+
+
       </div>
     </div>
 
@@ -101,7 +116,7 @@
               <th>طريقة الدفع</th>
               <th>حالة الدفع</th>
               <th class="d-none d-lg-table-cell">التاريخ</th>
-              <!-- <th>إجراءات</th> -->
+              <th>إجراءات</th>
             </tr>
           </thead>
 
@@ -149,7 +164,7 @@
                 {{ invoice.date }}
               </td>
 
-              <!-- <td>
+              <td>
                 <div class="d-flex justify-content-center gap-2 flex-wrap">
                   <button
                     *ngIf="invoice.status === 1"
@@ -160,7 +175,7 @@
                     <span *ngIf="payingInvoiceId !== invoice.invoiceId"><i class="bi bi-cash-coin"></i> دفع</span>
                     <span *ngIf="payingInvoiceId === invoice.invoiceId">جاري...</span>
                   </button>
-                  <button
+                  <!-- <button
                     *ngIf="invoice.status !== 3 && invoice.status !== 4 && invoice.status !== 5"
                     class="btn btn-sm btn-outline-warning rounded-3"
                     (click)="openAdjustPriceModal(invoice)"
@@ -168,7 +183,7 @@
                     title="زيادة السعر / تعديل المبلغ"
                   >
                     <i class="bi bi-currency-exchange"></i> زيادة السعر
-                  </button>
+                  </button> -->
                   <button
                     class="btn btn-sm btn-orange text-white rounded-3 shadow-sm"
                     (click)="openInvoice(invoice)"
@@ -188,7 +203,10 @@
                     <span *ngIf="deletingInvoiceId === invoice.invoiceId">جاري...</span>
                   </button>
                 </div>
-              </td> -->
+              </td>
+           
+           
+           
             </tr>
 
             <tr *ngIf="((invoices$ | async)?.length || 0) === 0">

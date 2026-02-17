@@ -41,7 +41,8 @@
         </div>
 
         <div class="col-lg-2 col-md-6">
-          <input type="date" class="form-control custom-input" [(ngModel)]="filterFrom" (ngModelChange)="onFromChange($event)" />
+          <input type="date" class="form-control custom-input" [(ngModel)]="filterFrom"
+            (ngModelChange)="onFromChange($event)" />
         </div>
 
         <div class="col-lg-2 col-md-6">
@@ -71,11 +72,33 @@
         </div>
 
         <div class="col-lg-2 col-md-6">
-          <!--  <button class="btn btn-light w-100 text-danger fw-bold" (click)="exportFilteredToExcel()">
-  تصدير الفواتير (Excel)
-</button> -->
-
+          <button class="btn btn-light w-100 text-danger fw-bold" (click)="exportFilteredToExcel()">
+            تصدير الفواتير
+          </button>
         </div>
+
+
+
+        <div class="col-lg-2 col-md-6">
+          <button type="button" class="btn btn-outline-primary w-100 fw-bold" (click)="exportBubbleHopeInvoices()"
+            [disabled]="isLoadingBubbleExport">
+            <span *ngIf="!isLoadingBubbleExport"><i class="bi bi-cup-hot me-1"></i> فواتير البابل</span>
+            <span *ngIf="isLoadingBubbleExport">جاري التحميل...</span>
+          </button>
+        </div>
+
+
+        <div class="col-lg-2 col-md-6">
+          <button type="button" class="btn btn-orange text-white w-100 fw-bold" (click)="downloadDailyDetailsPdf()"
+            [disabled]="isLoadingDailyPdf">
+            <span *ngIf="!isLoadingDailyPdf"><i class="bi bi-file-earmark-pdf me-1"></i> تفاصيل اليوم PDF</span>
+            <span *ngIf="isLoadingDailyPdf">جاري التحميل...</span>
+          </button>
+        </div>
+
+
+
+
       </div>
     </div>
 
@@ -113,7 +136,6 @@
               </td>
 
               <td class="d-none d-md-table-cell">
-                <!-- API gives itemsText string -->
                 <span class="text-muted small">{{ invoice.itemsText || '-' }}</span>
               </td>
 
@@ -144,28 +166,47 @@
 
               <td>
                 <div class="d-flex justify-content-center gap-2 flex-wrap">
-                  <button *ngIf="invoice.status === 1" class="btn btn-sm btn-success rounded-3"
-                    (click)="payInvoice(invoice)" [disabled]="payingInvoiceId !== null">
+                  <button
+                    *ngIf="invoice.status === 1"
+                    class="btn btn-sm btn-success rounded-3"
+                    (click)="payInvoice(invoice)"
+                    [disabled]="payingInvoiceId !== null"
+                  >
                     <span *ngIf="payingInvoiceId !== invoice.invoiceId"><i class="bi bi-cash-coin"></i> دفع</span>
                     <span *ngIf="payingInvoiceId === invoice.invoiceId">جاري...</span>
                   </button>
-                  <button *ngIf="invoice.status !== 3 && invoice.status !== 4 && invoice.status !== 5"
-                    class="btn btn-sm btn-outline-warning rounded-3" (click)="openAdjustPriceModal(invoice)"
-                    [disabled]="isSavingAdjust" title="زيادة السعر / تعديل المبلغ">
+                  <button
+                    *ngIf="invoice.status !== 3 && invoice.status !== 4 && invoice.status !== 5"
+                    class="btn btn-sm btn-outline-warning rounded-3"
+                    (click)="openAdjustPriceModal(invoice)"
+                    [disabled]="isSavingAdjust"
+                    title="زيادة السعر / تعديل المبلغ"
+                  >
                     <i class="bi bi-currency-exchange"></i> زيادة السعر
                   </button>
-                  <button class="btn btn-sm btn-orange text-white rounded-3 shadow-sm" (click)="openInvoice(invoice)"
-                    data-bs-toggle="modal" data-bs-target="#invoiceModal">
+                  <button
+                    class="btn btn-sm btn-orange text-white rounded-3 shadow-sm"
+                    (click)="openInvoice(invoice)"
+                    data-bs-toggle="modal"
+                    data-bs-target="#adminInvoiceModal"
+                  >
                     <i class="bi bi-printer"></i>
                   </button>
-                  <button *ngIf="invoice.status !== 4 && invoice.status !== 5"
-                    class="btn btn-sm btn-outline-danger rounded-3" (click)="openDeleteModal(invoice)"
-                    [disabled]="deletingInvoiceId !== null" title="طلب حذف الفاتورة">
+                  <button
+                    *ngIf="invoice.status !== 4 && invoice.status !== 5"
+                    class="btn btn-sm btn-outline-danger rounded-3"
+                    (click)="openDeleteModal(invoice)"
+                    [disabled]="deletingInvoiceId !== null"
+                    title="طلب حذف الفاتورة"
+                  >
                     <span *ngIf="deletingInvoiceId !== invoice.invoiceId"><i class="bi bi-trash"></i> </span>
                     <span *ngIf="deletingInvoiceId === invoice.invoiceId">جاري...</span>
                   </button>
                 </div>
               </td>
+           
+           
+           
             </tr>
 
             <tr *ngIf="((invoices$ | async)?.length || 0) === 0">
@@ -230,20 +271,14 @@
   </div>
 </div>
 
-<!-- Modal -->
-<div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+<!-- Modal عرض الفاتورة -->
+<div class="modal fade" id="adminInvoiceModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
     <div class="modal-content border-0 shadow-lg">
 
-      <!-- <div class="text-end p-2 no-print">
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div> -->
-
-      <div class="modal-body p-4 forto-invoice-container" id="printableInvoice">
+      <div class="modal-body p-4 forto-invoice-container" id="adminPrintableInvoice">
         <div class="text-center mb-3">
-        <img src="../../../../assets/imeg/logoforto.jpeg" 
-     class="brand-logo mb-1" 
-     style="width: 70px !important; height: auto !important; max-width: 70px !important;">
+          <img src="../../../../assets/imeg/logoforto.jpeg" class="brand-logo mb-1" style="max-width: 150px;">
           <h5 class="fw-bold m-0">FORTO CAR CARE CENTER</h5>
           <div class="">#{{ selectedInvoice?.id }}</div>
         </div>
@@ -254,13 +289,11 @@
           <div><strong>العميل:</strong> {{ selectedInvoice?.customerName || 'Walk-in' }}</div>
           <div><strong>الهاتف:</strong> {{ selectedInvoice?.phone || '-' }}</div>
           <div><strong>رقم العربية:</strong> {{ selectedInvoice?.plateNumber || '-' }}</div>
-          <!-- <div><strong>التاريخ:</strong> {{ selectedInvoice?.date }}</div> -->
           <div><strong>التاريخ : </strong> {{ (selectedInvoice?.paidAt | date:'yyyy/M/d - h:mm a') || '-' }}</div>
           <div><strong>طريقة الدفع:</strong> {{ selectedInvoice ? paymentLabel(selectedInvoice.paymentMethod) : '' }}
           </div>
         </div>
 
-        <!-- Lines table (REAL prices + qty) -->
         <table class="table table-sm invoice-table mb-2" style="font-size: 12px;">
           <thead class="border-bottom">
             <tr>
@@ -293,7 +326,7 @@
           </div>
           <div class="d-flex justify-content-between fw-bold mt-1" style="font-size: 15px;">
             <span>الإجمالي:</span>
-            <span class="text-orange">{{ finalTotal | number:'1.2-2' }} ج.م</span>
+            <span>{{ finalTotal | number:'1.2-2' }} ج.م</span>
           </div>
         </div>
 
@@ -313,8 +346,8 @@
   </div>
 </div>
 
-<!-- Payment method modal (عند الضغط على دفع) -->
-<div class="modal fade" id="payMethodModal" tabindex="-1" aria-hidden="true" dir="rtl">
+<!-- طريقة الدفع -->
+<div class="modal fade" id="adminPayMethodModal" tabindex="-1" aria-hidden="true" dir="rtl">
   <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header border-0">
@@ -357,12 +390,11 @@
 </div>
 
 <!-- طلب حذف الفاتورة -->
-<div class="modal fade" id="deleteInvoiceModal" tabindex="-1" aria-hidden="true" dir="rtl">
+<div class="modal fade" id="adminDeleteInvoiceModal" tabindex="-1" aria-hidden="true" dir="rtl">
   <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header border-0">
         <h5 class="modal-title fw-bold text-danger"><i class="bi bi-trash me-2"></i> طلب حذف الفاتورة</h5>
-        <!-- <button type="button" class="btn-close" (click)="closeDeleteModal()"></button> -->
       </div>
       <div class="modal-body" *ngIf="invoiceToDelete">
         <p class="mb-2">فاتورة: <strong>{{ invoiceToDelete.id }}</strong></p>
@@ -382,8 +414,8 @@
   </div>
 </div>
 
-<!-- زيادة السعر / تعديل المبلغ المعاد حسابه -->
-<div class="modal fade" id="adjustPriceModal" tabindex="-1" aria-hidden="true" dir="rtl">
+<!-- زيادة السعر -->
+<div class="modal fade" id="adminAdjustPriceModal" tabindex="-1" aria-hidden="true" dir="rtl">
   <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header border-0">
@@ -408,5 +440,42 @@
         </button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- محتوى تقرير تفاصيل اليوم للـ PDF (مخفي، يُلتقط بـ html2canvas) -->
+<div id="dailySummaryPdfContent" class="daily-summary-pdf-source" *ngIf="dailySummaryForPdf" dir="rtl">
+  <div class="daily-summary-inner">
+    <h2 class="daily-summary-title">سجل المعاملات والمدفوعات</h2>
+    <p class="daily-summary-meta">كاشير مسؤول: {{ dailySummaryForPdf.shifts?.[0]?.responsibleEmployeeName || 'ملخص اليوم' }}</p>
+    <p class="daily-summary-meta">وردية رقم: {{ dailySummaryForPdf.shifts?.[0]?.cashierShiftId ?? '-' }}</p>
+    <p class="daily-summary-meta">وردية بدأت: {{ dailySummaryForPdf.shifts?.[0]?.openedAt ? (dailySummaryForPdf.shifts[0].openedAt | date:'yyyy-MM-dd h:mm a') : '-' }}</p>
+    <p class="daily-summary-meta">وردية انتهت: {{ dailySummaryForPdf.shifts?.[0]?.closedAt ? (dailySummaryForPdf.shifts[0].closedAt | date:'yyyy-MM-dd h:mm a') : 'لم تنتهِ' }}</p>
+    <p class="daily-summary-meta">التاريخ: {{ (dailySummaryForPdf.date | date:'yyyy-MM-dd') || '-' }}</p>
+    <table class="daily-summary-table">
+      <!-- <tr>
+        <td class="daily-summary-label">نقد في اليد (عهدة + كاش)</td>
+        <td class="daily-summary-value">{{ ((dailySummaryForPdf.totalCashForDay || 0) + (dailySummaryForPdf.totalReceivedPledgeForDay || 0)) | number:'1.2-2' }}</td>
+      </tr> -->
+      <tr>
+        <td class="daily-summary-label">إجمالي مبيعات اليوم</td>
+        <td class="daily-summary-value">{{ (dailySummaryForPdf.totalSalesForDay || 0) | number:'1.2-2' }}</td>
+      </tr>
+      <tr>
+        <td class="daily-summary-label">دفع نقداً (Cash)</td>
+        <td class="daily-summary-value">{{ (dailySummaryForPdf.totalCashForDay || 0) | number:'1.2-2' }}</td>
+      </tr>
+      <!-- <tr>
+        <td class="daily-summary-label">العهدة المستلمة</td>
+        <td class="daily-summary-value">{{ (dailySummaryForPdf.totalReceivedPledgeForDay || 0) | number:'1.2-2' }}</td>
+      </tr> -->
+      <tr>
+        <td class="daily-summary-label">دفع فيزا (Visa)</td>
+        <td class="daily-summary-value">{{ (dailySummaryForPdf.totalVisaForDay || 0) | number:'1.2-2' }}</td>
+      </tr>
+
+    </table>
+    <hr class="daily-summary-hr" />
+    <p class="daily-summary-footer">نظام فورتو - مراجعة الخزينة</p>
   </div>
 </div>

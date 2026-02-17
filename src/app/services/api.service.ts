@@ -7,8 +7,8 @@ import { Observable } from 'rxjs';
 })
 export class ApiService {
   /** استخدم server أو local حسب أين شغّال الباك — الـ API و SignalR هيستخدموا نفس الـ base */
-  private baseUrl = 'https://api.fortolaundry.com';   // سيرفر
-  // private baseUrl = 'https://localhost:7179';      // local (للتطوير لو الباك على نفس الجهاز)
+  // private baseUrl = 'https://api.fortolaundry.com';   // سيرفر
+  private baseUrl = 'https://localhost:7179';      // local (للتطوير لو الباك على نفس الجهاز)
 
   constructor(private http: HttpClient) {}
 
@@ -441,6 +441,31 @@ export class ApiService {
   closeCashierShift(shiftId: number, payload: { closedByEmployeeId: number }) {
     return this.http.post(`${this.baseUrl}/api/cashier-shifts/${shiftId}/close`, payload, {
       responseType: 'text',
+    });
+  }
+
+  /** تقرير المنتجات المباعة (فواتير البابل / Bubble Hope) — من / إلى تاريخ */
+  getSoldProductsReport(from: string, to: string) {
+    const fromStr = from ? from.slice(0, 10) : '';
+    const toStr = to ? to.slice(0, 10) : '';
+    return this.http.get<{
+      success: boolean;
+      data?: {
+        fromDate: string;
+        toDate: string;
+        items: Array<{
+          productDescription: string;
+          unitPrice: number;
+          qty: number;
+          lineTotal: number;
+          invoiceNumber: string;
+          invoiceId: number;
+          paidAt: string;
+        }>;
+        grandTotal: number;
+      };
+    }>(`${this.baseUrl}/api/invoices/reports/sold-products`, {
+      params: { from: fromStr, to: toStr },
     });
   }
 

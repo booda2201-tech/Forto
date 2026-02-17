@@ -1,6 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import {
   BehaviorSubject,
   combineLatest,
@@ -17,6 +15,10 @@ import { AuthService } from 'src/app/services/auth.service';
 import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
 import { InvoiceDeletionHubService } from 'src/app/services/invoice-deletion-hub.service';
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 type InvoiceLineUi = {
   lineId: number;
@@ -28,24 +30,21 @@ type InvoiceLineUi = {
 
 /** status: 1 = Unpaid, 2 = Paid, 3 = Cancelled, 4 = Pending deletion, 5 = Deleted */
 type InvoiceUi = {
-  id: string; // invoiceNumber للعرض (مثل for-2026-110)
-  invoiceId: number; // للـ API (payInvoiceCash)
+  id: string;
+  invoiceId: number;
   customerName: string;
   phone: string;
-  plateNumber?: string; // رقم لوحة السيارة
-  paymentMethod: number; // 1 = cash, 2 = visa
-  status: 1 | 2 | 3 | 4 | 5; // 1 غير مدفوعة، 2 مدفوعة، 3 ملغاة، 4 منتظر تأكيد الحذف، 5 محذوفة
-  date: string; // YYYY-MM-DD
+  plateNumber?: string;
+  paymentMethod: number;
+  status: 1 | 2 | 3 | 4 | 5;
+  date: string;
   createdAt: string;
   paidAt: string;
   subTotal: number;
   discount: number;
   total: number;
-  /** تكلفة الفاتورة (من الـ API إن وُجدت) */
   cost?: number;
-  /** ربح الفاتورة (من الـ API إن وُجد، وإلا يُحسب من total - cost) */
   profit?: number;
-
   itemsText: string;
   lines: InvoiceLineUi[];
 };
@@ -64,7 +63,7 @@ export class InvoicesComponent implements OnInit, OnDestroy {
 
   branchId = 1;
   get cashierId(): number {
-    return this.auth.getEmployeeId() ?? 5;
+    return this.auth.getEmployeeId() ?? 0;
   }
 
   totalInvoicesCount = 0;
@@ -81,7 +80,6 @@ export class InvoicesComponent implements OnInit, OnDestroy {
 
   private todayStr = InvoicesComponent.getLocalDateString();
 
-  // filters (قيم معروضة في الـ UI ومربوطة بـ ngModel) - من ويوم انهارده افتراضياً (توقيت محلي)
   filterSearch = '';
   filterFrom = this.todayStr;
   filterTo = this.todayStr;
@@ -89,20 +87,17 @@ export class InvoicesComponent implements OnInit, OnDestroy {
   filterStatus = '';
 
   private searchTerm$ = new BehaviorSubject<string>('');
-
-  private from$ = new BehaviorSubject<string>(this.filterFrom);
-  private to$ = new BehaviorSubject<string>(this.filterTo);
+  private from$ = new BehaviorSubject<string>(this.todayStr);
+  private to$ = new BehaviorSubject<string>(this.todayStr);
   private paymentMethod$ = new BehaviorSubject<string>('all');
-  private statusFilter$ = new BehaviorSubject<string>(''); // "" | "unpaid" | "paid" | "cancelled"
+  private statusFilter$ = new BehaviorSubject<string>('');
 
   private page$ = new BehaviorSubject<number>(1);
   private pageSize$ = new BehaviorSubject<number>(10);
 
-  // pagination observables
   currentPage$ = this.page$.asObservable();
   pageSizeObservable$ = this.pageSize$.asObservable();
 
-  // keep last summary (from API data.summary)
   private lastSummary: {
     totalCount?: number;
     totalRevenue?: number;
@@ -110,7 +105,6 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     totalVisaAmount?: number;
   } | null = null;
 
-  // pagination computed values
   get currentPage(): number {
     return (this.page$ as any).value || 1;
   }
@@ -182,7 +176,7 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     private auth: AuthService,
     private printInvoice: PrintInvoiceService,
     private invoiceDeletionHub: InvoiceDeletionHubService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.invoiceDeletionHub.startConnection();
@@ -196,12 +190,10 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     this.invoiceDeletionHub.stopConnection();
   }
 
-  /** إعادة جلب قائمة الفواتير (بعد تأكيد/رفض الحذف من SignalR أو بعد دفع) */
   refreshInvoiceList(): void {
     this.page$.next(this.currentPage);
   }
 
-  // ---------- UI Handlers (تحديث الـ Subject وإرجاع الصفحة لـ 1) ----------
   onSearch(val: string): void {
     this.searchTerm$.next((val || '').trim());
     this.page$.next(1);
@@ -242,11 +234,9 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     this.page$.next(1);
   }
 
-  // ---------- Pagination Handlers ----------
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.page$.next(page);
-      // Scroll to top of table
       const tableElement = document.querySelector('.table-responsive');
       if (tableElement) {
         tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -268,7 +258,7 @@ export class InvoicesComponent implements OnInit, OnDestroy {
 
   changePageSize(size: number): void {
     this.pageSize$.next(size);
-    this.page$.next(1); // Reset to first page
+    this.page$.next(1);
   }
 
   getPageNumbers(): number[] {
@@ -277,38 +267,21 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     const current = this.currentPage;
 
     if (total <= 7) {
-      // Show all pages if 7 or less
       for (let i = 1; i <= total; i++) {
         pages.push(i);
       }
     } else {
-      // Show first page
       pages.push(1);
-
-      if (current > 3) {
-        pages.push(-1); // Ellipsis
-      }
-
-      // Show pages around current
+      if (current > 3) pages.push(-1);
       const start = Math.max(2, current - 1);
       const end = Math.min(total - 1, current + 1);
-
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-
-      if (current < total - 2) {
-        pages.push(-1); // Ellipsis
-      }
-
-      // Show last page
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (current < total - 2) pages.push(-1);
       pages.push(total);
     }
-
     return pages;
   }
 
-  // ---------- Mapping ----------
   private mapApiToUi(res: any): InvoiceUi[] {
     const items = res?.data?.items ?? [];
 
@@ -327,7 +300,6 @@ export class InvoicesComponent implements OnInit, OnDestroy {
       const dateStr = String(x.date ?? '');
       const onlyDate = dateStr ? dateStr.slice(0, 10) : '';
 
-      // status: 1 = Unpaid, 2 = Paid, 3 = Cancelled, 4 = Pending deletion, 5 = Deleted
       const rawStatus = Number(x.status ?? 1);
       const status: 1 | 2 | 3 | 4 | 5 =
         rawStatus === 1 || rawStatus === 2 || rawStatus === 3 || rawStatus === 4 || rawStatus === 5
@@ -335,7 +307,6 @@ export class InvoicesComponent implements OnInit, OnDestroy {
           : 1;
 
       const total = Number(x.total ?? 0);
-      // الـ API بيرجع totalCost و profit لكل فاتورة
       const cost = Number(x.totalCost ?? x.cost ?? 0);
       const profit = Number(x.profit ?? (total - cost));
 
@@ -347,13 +318,11 @@ export class InvoicesComponent implements OnInit, OnDestroy {
         paidAt: x.paidAt ?? '',
         paymentMethod: Number(x.paymentMethod ?? 0),
         status,
-
         subTotal: Number(x.subTotal ?? 0),
         discount: Number(x.discount ?? 0),
         total,
         cost,
         profit,
-
         customerName: String(x.customerName ?? ''),
         phone: String(x.customerPhone ?? ''),
         plateNumber: x.plateNumber != null ? String(x.plateNumber) : undefined,
@@ -363,7 +332,6 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ---------- Payment label ----------
   paymentLabel(method: number): string {
     return method === 1 ? 'كاش' : method === 2 ? 'فيزا' : 'مخصص';
   }
@@ -372,24 +340,18 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     return method === 1 ? 'bi bi-cash' : method === 2 ? 'bi bi-credit-card' : 'bi bi-cash-stack';
   }
 
-  /** 1 = Unpaid, 2 = Paid, 3 = Cancelled, 4 = Pending deletion, 5 = Deleted */
   statusLabel(status: 1 | 2 | 3 | 4 | 5): string {
     if (status === 1) return 'غير مدفوعة';
     if (status === 2) return 'مدفوعة';
     if (status === 4) return 'منتظر تأكيد الحذف';
     if (status === 5) return 'محذوفة';
-    return 'ملغاة'; // 3
+    return 'ملغاة';
   }
 
-  // ---------- دفع فاتورة (status = 1 غير مدفوعة) ----------
   payingInvoiceId: number | null = null;
-
-  // زيادة السعر (تعديل المبلغ المعاد حسابه)
   invoiceToAdjust: InvoiceUi | null = null;
   adjustTotalValue = 0;
   isSavingAdjust = false;
-
-  // طلب حذف فاتورة
   invoiceToDelete: InvoiceUi | null = null;
   deletionReason = '';
   deletingInvoiceId: number | null = null;
@@ -411,7 +373,7 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     this.invoiceToPay = invoice;
     this.payMethod = 'cash';
     this.payCustomCashAmount = 0;
-    const el = document.getElementById('payMethodModal');
+    const el = document.getElementById('adminPayMethodModal');
     if (el) {
       const modal = new (window as any).bootstrap.Modal(el);
       modal.show();
@@ -420,7 +382,7 @@ export class InvoicesComponent implements OnInit, OnDestroy {
 
   closePayModal(): void {
     this.invoiceToPay = null;
-    const el = document.getElementById('payMethodModal');
+    const el = document.getElementById('adminPayMethodModal');
     if (el) {
       const inst = (window as any).bootstrap?.Modal?.getInstance(el);
       if (inst) inst.hide();
@@ -436,10 +398,10 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     const total = this.payModalTotal;
     const cashAmt = this.payMethod === 'cash' ? total
       : this.payMethod === 'visa' ? 0
-        : (Number(this.payCustomCashAmount) || 0);
+      : (Number(this.payCustomCashAmount) || 0);
     const visaAmt = this.payMethod === 'visa' ? total
       : this.payMethod === 'cash' ? 0
-        : this.payModalVisaAmount;
+      : this.payModalVisaAmount;
     const paymentMethod = this.payMethod === 'cash' ? 1 : this.payMethod === 'visa' ? 2 : 3;
 
     if (this.payMethod === 'custom' && (cashAmt <= 0 || cashAmt > total)) {
@@ -474,7 +436,7 @@ export class InvoicesComponent implements OnInit, OnDestroy {
   openAdjustPriceModal(invoice: InvoiceUi): void {
     this.invoiceToAdjust = invoice;
     this.adjustTotalValue = Number(invoice.total ?? 0);
-    const el = document.getElementById('adjustPriceModal');
+    const el = document.getElementById('adminAdjustPriceModal');
     if (el) {
       const modal = new (window as any).bootstrap.Modal(el);
       modal.show();
@@ -484,7 +446,7 @@ export class InvoicesComponent implements OnInit, OnDestroy {
   closeAdjustPriceModal(): void {
     this.invoiceToAdjust = null;
     this.adjustTotalValue = 0;
-    const el = document.getElementById('adjustPriceModal');
+    const el = document.getElementById('adminAdjustPriceModal');
     if (el) {
       const inst = (window as any).bootstrap.Modal.getInstance(el);
       if (inst) inst.hide();
@@ -517,7 +479,7 @@ export class InvoicesComponent implements OnInit, OnDestroy {
   openDeleteModal(invoice: InvoiceUi): void {
     this.invoiceToDelete = invoice;
     this.deletionReason = '';
-    const el = document.getElementById('deleteInvoiceModal');
+    const el = document.getElementById('adminDeleteInvoiceModal');
     if (el) {
       const modal = new (window as any).bootstrap.Modal(el);
       modal.show();
@@ -527,7 +489,7 @@ export class InvoicesComponent implements OnInit, OnDestroy {
   closeDeleteModal(): void {
     this.invoiceToDelete = null;
     this.deletionReason = '';
-    const el = document.getElementById('deleteInvoiceModal');
+    const el = document.getElementById('adminDeleteInvoiceModal');
     if (el) {
       const inst = (window as any).bootstrap?.Modal?.getInstance(el);
       if (inst) inst.hide();
@@ -560,97 +522,301 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ---------- Excel (شيتين: بيانات الفواتير + التكلفة والربح) ----------
-  exportToExcel(invoice: InvoiceUi): void {
-    const cost = Number(invoice.cost ?? 0);
-    const profit = Number(invoice.profit ?? (invoice.total - cost));
-    const amountPaid = invoice.status === 2 ? invoice.total : 0;
-
-    const sheet1 = [
-      {
-        'رقم الفاتورة': invoice.id,
-        'اسم العميل': invoice.customerName || 'Walk-in',
-        التاريخ: invoice.date,
-        'رقم السيارة': invoice.plateNumber ?? '-',
-        'رقم التليفون': invoice.phone || '-',
-        'المبلغ المدفوع': amountPaid,
-      },
-    ];
-    const sheet2 = [
-      {
-        التكلفة: cost,
-        'سعر البيع': Number(invoice.total ?? 0),
-        الربح: profit,
-        'رقم الفاتورة': invoice.id,
-      },
-    ];
-
-    const ws1: XLSX.WorkSheet = XLSX.utils.json_to_sheet(sheet1);
-    const ws2: XLSX.WorkSheet = XLSX.utils.json_to_sheet(sheet2);
-    const wb: XLSX.WorkBook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws1, 'الفواتير');
-    XLSX.utils.book_append_sheet(wb, ws2, 'التكلفة والربح');
-    XLSX.writeFile(wb, `Invoice_${invoice.id}.xlsx`);
-  }
-
   openInvoice(invoice: InvoiceUi): void {
     this.selectedInvoice = invoice;
   }
 
-  // totals in modal (use API values directly)
+  // تفاصيل اليوم PDF
+  dailySummaryForPdf: any = null;
+  isLoadingDailyPdf = false;
+
+  // فواتير البابل (Bubble Hope)
+  isLoadingBubbleExport = false;
+
+  downloadDailyDetailsPdf(): void {
+    const dateStr = (this.from$ as any).value || this.filterFrom || InvoicesComponent.getLocalDateString();
+    if (!dateStr) {
+      alert('اختر تاريخ "من" أولاً');
+      return;
+    }
+    this.isLoadingDailyPdf = true;
+    this.api.getCashierShiftsSummary(dateStr).subscribe({
+      next: (res: any) => {
+        const data = res?.data;
+        if (!data) {
+          this.isLoadingDailyPdf = false;
+          alert('لا توجد بيانات لهذا التاريخ');
+          return;
+        }
+        this.dailySummaryForPdf = data;
+        setTimeout(() => {
+          const el = document.getElementById('dailySummaryPdfContent');
+          if (!el) {
+            this.dailySummaryForPdf = null;
+            this.isLoadingDailyPdf = false;
+            return;
+          }
+          html2canvas(el, { scale: 4, useCORS: true }).then((canvas) => {
+            const imgData = canvas.toDataURL('image/png', 1.0);
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfW = pdf.internal.pageSize.getWidth();
+            const pdfH = (canvas.height * pdfW) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH, undefined, 'NONE');
+            const fileName = `تفاصيل_اليوم_${dateStr}.pdf`;
+            pdf.save(fileName);
+            this.dailySummaryForPdf = null;
+            this.isLoadingDailyPdf = false;
+          }).catch(() => {
+            this.dailySummaryForPdf = null;
+            this.isLoadingDailyPdf = false;
+          });
+        }, 400);
+      },
+      error: (err) => {
+        this.isLoadingDailyPdf = false;
+        alert(err?.error?.message || 'فشل تحميل بيانات اليوم');
+      },
+    });
+  }
+
   get subTotal(): number {
     return Number(this.selectedInvoice?.subTotal ?? 0);
   }
   get taxAmount(): number {
-    // لو عندكم الضريبة فعلاً 14% وتُحسب على subTotal:
     return this.subTotal * 0.14;
-    // لو الـ total عندكم بالفعل نهائي شامل، قولّي وأخلي tax = total - subTotal
   }
   get finalTotal(): number {
-    // لو total من السيرفر هو النهائي:
     return Number(this.selectedInvoice?.total ?? 0);
   }
 
   downloadInvoice(): void {
-    setTimeout(() => this.printInvoice.print(), 100);
+    setTimeout(() => this.printInvoice.print('adminPrintableInvoice'), 100);
   }
 
-  // exportFilteredToExcel(): void {
-  //   this.invoices$.pipe(take(1)).subscribe((list) => {
-  //     if (!list || list.length === 0) return;
+  exportFilteredToExcel(): void {
+    this.invoices$.pipe(take(1)).subscribe((list) => {
+      if (!list || list.length === 0) return;
 
-  //     // شيت 1: رقم الفاتورة، اسم العميل، التاريخ، رقم السيارة، رقم التليفون، المبلغ المدفوع
-  //     const rows1 = list.map((inv) => ({
-  //       'رقم الفاتورة': inv.id,
-  //       'اسم العميل': inv.customerName || 'Walk-in',
-  //       التاريخ: inv.date,
-  //       'رقم السيارة': inv.plateNumber ?? '-',
-  //       'رقم التليفون': inv.phone || '-',
-  //       'المبلغ المدفوع': inv.status === 2 ? inv.total : 0,
-  //     }));
+      let totalPaid = 0;
+      let totalCost = 0;
+      let totalSelling = 0;
+      let totalProfit = 0;
 
-  //     // شيت 2: التكلفة، سعر البيع، الربح، رقم الفاتورة (من الـ API: totalCost و profit)
-  //     const rows2 = list.map((inv) => {
-  //       const cost = Number(inv.cost ?? 0);
-  //       const profit = Number(inv.profit ?? (inv.total - cost));
-  //       return {
-  //         التكلفة: cost,
-  //         'سعر البيع': Number(inv.total ?? 0),
-  //         الربح: profit,
-  //         'رقم الفاتورة': inv.id,
-  //       };
-  //     });
+      const rows1 = list.map((inv) => {
+        const paid = inv.status === 2 ? Number(inv.total ?? 0) : 0;
+        totalPaid += paid;
+        return {
+          'رقم الفاتورة': inv.id,
+          'اسم العميل': inv.customerName || 'Walk-in',
+          التاريخ: inv.date,
+          'رقم السيارة': inv.plateNumber ?? '-',
+          'رقم التليفون': inv.phone || '-',
+          'المبلغ المدفوع': paid,
+        };
+      });
 
-  //     const ws1: XLSX.WorkSheet = XLSX.utils.json_to_sheet(rows1);
-  //     const ws2: XLSX.WorkSheet = XLSX.utils.json_to_sheet(rows2);
-  //     const wb: XLSX.WorkBook = XLSX.utils.book_new();
-  //     XLSX.utils.book_append_sheet(wb, ws1, 'الفواتير');
-  //     XLSX.utils.book_append_sheet(wb, ws2, 'التكلفة والربح');
+      const rows2 = list.map((inv) => {
+        const cost = Number(inv.cost ?? 0);
+        const selling = Number(inv.total ?? 0);
+        const profit = Number(inv.profit ?? (selling - cost));
+        totalCost += cost;
+        totalSelling += selling;
+        totalProfit += profit;
+        return {
+          التكلفة: cost,
+          'سعر البيع': selling,
+          الربح: profit,
+          'رقم الفاتورة': inv.id,
+        };
+      });
 
-  //     const from = (this.from$ as any).value || '';
-  //     const to = (this.to$ as any).value || '';
-  //     const fileName = `Invoices_${from || 'all'}_to_${to || 'all'}.xlsx`;
-  //     XLSX.writeFile(wb, fileName);
-  //   });
-  // }
+      // صف الإجمالي في شيت الفواتير
+      rows1.push({
+        'رقم الفاتورة': 'الإجمالي',
+        'اسم العميل': '',
+        التاريخ: '',
+        'رقم السيارة': '',
+        'رقم التليفون': '',
+        'المبلغ المدفوع': totalPaid,
+      });
+
+      // صف الإجمالي في شيت التكلفة والربح
+      rows2.push({
+        التكلفة: totalCost,
+        'سعر البيع': totalSelling,
+        الربح: totalProfit,
+        'رقم الفاتورة': 'الإجمالي',
+      });
+
+      const ws1: XLSX.WorkSheet = XLSX.utils.json_to_sheet(rows1);
+      const ws2: XLSX.WorkSheet = XLSX.utils.json_to_sheet(rows2);
+      const wb: XLSX.WorkBook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws1, 'الفواتير');
+      XLSX.utils.book_append_sheet(wb, ws2, 'التكلفة والربح');
+
+      const from = (this.from$ as any).value || '';
+      const to = (this.to$ as any).value || '';
+      const baseName = `Invoices_${from || 'all'}_to_${to || 'all'}`;
+      XLSX.writeFile(wb, `${baseName}.xlsx`);
+
+      // تنزيل نفس المحتوى كـ PDF (بخط عربي)
+      this.exportFilteredToPdf(rows1, rows2, baseName);
+    });
+  }
+
+  /** تصدير نفس بيانات الفواتير إلى PDF — بجدول HTML وخط عربي (Amiri) عبر html2canvas */
+  private exportFilteredToPdf(
+    rows1: Array<Record<string, string | number>>,
+    rows2: Array<Record<string, string | number>>,
+    baseFileName: string
+  ): void {
+    const col1 = ['رقم الفاتورة', 'اسم العميل', 'التاريخ', 'رقم السيارة', 'رقم التليفون', 'المبلغ المدفوع'];
+    const col2 = ['التكلفة', 'سعر البيع', 'الربح', 'رقم الفاتورة'];
+
+    const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const head1 = col1.map((c) => `<th style="padding:6px 8px;border:1px solid #ddd;background:#428bca;color:#fff;font-size:11px;">${esc(c)}</th>`).join('');
+    const head2 = col2.map((c) => `<th style="padding:6px 8px;border:1px solid #ddd;background:#5cb85c;color:#fff;font-size:11px;">${esc(c)}</th>`).join('');
+
+    const rows1Html = rows1.map((r) => '<tr>' + col1.map((c) => `<td style="padding:5px 8px;border:1px solid #ddd;font-size:10px;">${esc(String(r[c] ?? ''))}</td>`).join('') + '</tr>').join('');
+    const rows2Html = rows2.map((r) => '<tr>' + col2.map((c) => `<td style="padding:5px 8px;border:1px solid #ddd;font-size:10px;">${esc(String(r[c] ?? ''))}</td>`).join('') + '</tr>').join('');
+
+    const html = `
+      <div dir="rtl" style="font-family:'Amiri',serif;width:190mm;padding:15px;background:#fff;box-sizing:border-box;">
+        <h3 style="margin:0 0 12px 0;font-size:16px;">الفواتير</h3>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+          <thead><tr>${head1}</tr></thead>
+          <tbody>${rows1Html}</tbody>
+        </table>
+        <h3 style="margin:0 0 12px 0;font-size:16px;">التكلفة والربح</h3>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr>${head2}</tr></thead>
+          <tbody>${rows2Html}</tbody>
+        </table>
+      </div>`;
+
+    const wrap = document.createElement('div');
+    wrap.id = 'invoices-pdf-export-wrap';
+    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:190mm;z-index:-1;';
+    wrap.innerHTML = html;
+    document.body.appendChild(wrap);
+
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    wait(350)
+      .then(() => html2canvas(wrap, { scale: 4, useCORS: true, logging: false }))
+      .then((canvas) => {
+        document.body.removeChild(wrap);
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfW = pdf.internal.pageSize.getWidth();
+        const pdfH = (canvas.height * pdfW) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH, undefined, 'NONE');
+        pdf.save(`${baseFileName}.pdf`);
+      })
+      .catch((e) => {
+        if (document.body.contains(wrap)) document.body.removeChild(wrap);
+        console.error('تصدير PDF:', e);
+      });
+  }
+
+  /** تصدير فواتير البابل (Bubble Hope): Excel + PDF بتصميم فاتورة */
+  exportBubbleHopeInvoices(): void {
+    const from = (this.from$ as any).value || this.filterFrom || InvoicesComponent.getLocalDateString();
+    const to = (this.to$ as any).value || this.filterTo || InvoicesComponent.getLocalDateString();
+    this.isLoadingBubbleExport = true;
+    this.api.getSoldProductsReport(from, to).subscribe({
+      next: (res: any) => {
+        const data = res?.data;
+        const items = data?.items ?? [];
+        const grandTotal = Number(data?.grandTotal ?? 0);
+        const baseName = `BubbleHope_Invoices_${from}_to_${to}`;
+
+        // Excel: نفس الداتا — منتج، سعر، كمية، إجمالي السطر، رقم الفاتورة
+        const excelRows = items.map((it: any) => ({
+          'المنتج': this.stripProductPrefix(it.productDescription ?? ''),
+          'السعر': Number(it.unitPrice ?? 0),
+          'الكمية': Number(it.qty ?? 0),
+          'إجمالي السطر': Number(it.lineTotal ?? 0),
+          'رقم الفاتورة': it.invoiceNumber ?? '',
+        }));
+        excelRows.push({
+          'المنتج': 'الإجمالي',
+          'السعر': '',
+          'الكمية': '',
+          'إجمالي السطر': grandTotal,
+          'رقم الفاتورة': '',
+        });
+        const ws = XLSX.utils.json_to_sheet(excelRows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'فواتير البابل');
+        XLSX.writeFile(wb, `${baseName}.xlsx`);
+
+        // PDF: شكل فاتورة — Forto Car Care Center، مشاريب Bubble Hope، ثم كل منتج وسعر ورقم فاتورة، ثم الإجمالي
+        this.exportBubbleHopePdf(items, grandTotal, baseName);
+        this.isLoadingBubbleExport = false;
+      },
+      error: (err) => {
+        this.isLoadingBubbleExport = false;
+        alert(err?.error?.message ?? 'فشل تحميل بيانات فواتير البابل');
+      },
+    });
+  }
+
+  /** إزالة بادئة "Product:" أو "منتج:" من وصف المنتج */
+  private stripProductPrefix(desc: string): string {
+    return String(desc ?? '').replace(/^Product:\s*/i, '').replace(/^منتج:\s*/, '').trim();
+  }
+
+  /** PDF فاتورة البابل — شكل يطبع: عنوان، ثم سطر منتج وسعر ورقم فاتورة، ثم الإجمالي */
+  private exportBubbleHopePdf(
+    items: Array<{ productDescription: string; unitPrice: number; qty: number; lineTotal: number; invoiceNumber: string }>,
+    grandTotal: number,
+    baseFileName: string
+  ): void {
+    const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    // شكل: اسم المنتج --- xالكمية => الإجمالي ثم (رقم الفاتورة) في سطر تحته
+    const linesHtml = items
+      .map((it) => {
+        const name = this.stripProductPrefix(it.productDescription);
+        const nameLower = name.toLowerCase();
+        return `<tr><td style="padding:6px 0;border-bottom:1px solid #eee;font-size:12px;line-height:1.5;">
+          ${esc(nameLower)} --- x${it.qty} => ${it.lineTotal}<br/>
+          <span style="font-size:11px;color:#555;">(${esc(it.invoiceNumber)})</span>
+        </td></tr>`;
+      })
+      .join('');
+    const html = `
+      <div dir="ltr" style="font-family:'Amiri',serif;width:80mm;max-width:280px;padding:20px;background:#fff;box-sizing:border-box;">
+        <div style="text-align:center;margin-bottom:16px;">
+          <div style="font-size:16px;font-weight:bold;margin-bottom:4px;">Forto Car Care Center</div>
+          <div style="font-size:14px;color:#555;">مشاريب Bubble Hope</div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;">
+          ${linesHtml}
+        </table>
+        <div style="margin-top:14px;padding-top:10px;border-top:2px solid #333;font-size:14px;font-weight:bold;">الإجمالي: ${grandTotal} ج.م</div>
+      </div>`;
+
+    const wrap = document.createElement('div');
+    wrap.id = 'bubble-hop-pdf-wrap';
+    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:280px;z-index:-1;';
+    wrap.innerHTML = html;
+    document.body.appendChild(wrap);
+
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    wait(350)
+      .then(() => html2canvas(wrap, { scale: 4, useCORS: true, logging: false }))
+      .then((canvas) => {
+        document.body.removeChild(wrap);
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfW = pdf.internal.pageSize.getWidth();
+        const pdfH = (canvas.height * pdfW) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH, undefined, 'NONE');
+        pdf.save(`${baseFileName}.pdf`);
+      })
+      .catch((e) => {
+        if (document.body.contains(wrap)) document.body.removeChild(wrap);
+        console.error('تصدير فواتير البابل PDF:', e);
+      });
+  }
 }

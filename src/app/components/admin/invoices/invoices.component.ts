@@ -526,6 +526,9 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
   dailySummaryForPdf: any = null;
   isLoadingDailyPdf = false;
 
+  // فواتير البابل (Bubble Hope)
+  isLoadingBubbleExport = false;
+
   downloadDailyDetailsPdf(): void {
     const dateStr = (this.from$ as any).value || this.filterFrom || AdminInvoicesComponent.getLocalDateString();
     if (!dateStr) {
@@ -549,12 +552,12 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
             this.isLoadingDailyPdf = false;
             return;
           }
-          html2canvas(el, { scale: 2, useCORS: true }).then((canvas) => {
-            const imgData = canvas.toDataURL('image/png');
+          html2canvas(el, { scale: 4, useCORS: true }).then((canvas) => {
+            const imgData = canvas.toDataURL('image/png', 1.0);
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfW = pdf.internal.pageSize.getWidth();
             const pdfH = (canvas.height * pdfW) / canvas.width;
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH, undefined, 'NONE');
             const fileName = `تفاصيل_اليوم_${dateStr}.pdf`;
             pdf.save(fileName);
             this.dailySummaryForPdf = null;
@@ -649,8 +652,167 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
 
       const from = (this.from$ as any).value || '';
       const to = (this.to$ as any).value || '';
-      const fileName = `Invoices_${from || 'all'}_to_${to || 'all'}.xlsx`;
-      XLSX.writeFile(wb, fileName);
+      const baseName = `Invoices_${from || 'all'}_to_${to || 'all'}`;
+      XLSX.writeFile(wb, `${baseName}.xlsx`);
+
+      // تنزيل نفس المحتوى كـ PDF (بخط عربي)
+      this.exportFilteredToPdf(rows1, rows2, baseName);
     });
+  }
+
+  /** تصدير نفس بيانات الفواتير إلى PDF — بجدول HTML وخط عربي (Amiri) عبر html2canvas */
+  private exportFilteredToPdf(
+    rows1: Array<Record<string, string | number>>,
+    rows2: Array<Record<string, string | number>>,
+    baseFileName: string
+  ): void {
+    const col1 = ['رقم الفاتورة', 'اسم العميل', 'التاريخ', 'رقم السيارة', 'رقم التليفون', 'المبلغ المدفوع'];
+    const col2 = ['التكلفة', 'سعر البيع', 'الربح', 'رقم الفاتورة'];
+
+    const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const head1 = col1.map((c) => `<th style="padding:6px 8px;border:1px solid #ddd;background:#428bca;color:#fff;font-size:11px;">${esc(c)}</th>`).join('');
+    const head2 = col2.map((c) => `<th style="padding:6px 8px;border:1px solid #ddd;background:#5cb85c;color:#fff;font-size:11px;">${esc(c)}</th>`).join('');
+
+    const rows1Html = rows1.map((r) => '<tr>' + col1.map((c) => `<td style="padding:5px 8px;border:1px solid #ddd;font-size:10px;">${esc(String(r[c] ?? ''))}</td>`).join('') + '</tr>').join('');
+    const rows2Html = rows2.map((r) => '<tr>' + col2.map((c) => `<td style="padding:5px 8px;border:1px solid #ddd;font-size:10px;">${esc(String(r[c] ?? ''))}</td>`).join('') + '</tr>').join('');
+
+    const html = `
+      <div dir="rtl" style="font-family:'Amiri',serif;width:190mm;padding:15px;background:#fff;box-sizing:border-box;">
+        <h3 style="margin:0 0 12px 0;font-size:16px;">الفواتير</h3>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+          <thead><tr>${head1}</tr></thead>
+          <tbody>${rows1Html}</tbody>
+        </table>
+        <h3 style="margin:0 0 12px 0;font-size:16px;">التكلفة والربح</h3>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr>${head2}</tr></thead>
+          <tbody>${rows2Html}</tbody>
+        </table>
+      </div>`;
+
+    const wrap = document.createElement('div');
+    wrap.id = 'invoices-pdf-export-wrap';
+    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:190mm;z-index:-1;';
+    wrap.innerHTML = html;
+    document.body.appendChild(wrap);
+
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    wait(350)
+      .then(() => html2canvas(wrap, { scale: 4, useCORS: true, logging: false }))
+      .then((canvas) => {
+        document.body.removeChild(wrap);
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfW = pdf.internal.pageSize.getWidth();
+        const pdfH = (canvas.height * pdfW) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH, undefined, 'NONE');
+        pdf.save(`${baseFileName}.pdf`);
+      })
+      .catch((e) => {
+        if (document.body.contains(wrap)) document.body.removeChild(wrap);
+        console.error('تصدير PDF:', e);
+      });
+  }
+
+  /** تصدير فواتير البابل (Bubble Hope): Excel + PDF بتصميم فاتورة */
+  exportBubbleHopeInvoices(): void {
+    const from = (this.from$ as any).value || this.filterFrom || AdminInvoicesComponent.getLocalDateString();
+    const to = (this.to$ as any).value || this.filterTo || AdminInvoicesComponent.getLocalDateString();
+    this.isLoadingBubbleExport = true;
+    this.api.getSoldProductsReport(from, to).subscribe({
+      next: (res: any) => {
+        const data = res?.data;
+        const items = data?.items ?? [];
+        const grandTotal = Number(data?.grandTotal ?? 0);
+        const baseName = `BubbleHope_Invoices_${from}_to_${to}`;
+
+        // Excel: نفس الداتا — منتج، سعر، كمية، إجمالي السطر، رقم الفاتورة
+        const excelRows = items.map((it: any) => ({
+          'المنتج': this.stripProductPrefix(it.productDescription ?? ''),
+          'السعر': Number(it.unitPrice ?? 0),
+          'الكمية': Number(it.qty ?? 0),
+          'إجمالي السطر': Number(it.lineTotal ?? 0),
+          'رقم الفاتورة': it.invoiceNumber ?? '',
+        }));
+        excelRows.push({
+          'المنتج': 'الإجمالي',
+          'السعر': '',
+          'الكمية': '',
+          'إجمالي السطر': grandTotal,
+          'رقم الفاتورة': '',
+        });
+        const ws = XLSX.utils.json_to_sheet(excelRows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'فواتير البابل');
+        XLSX.writeFile(wb, `${baseName}.xlsx`);
+
+        // PDF: شكل فاتورة — Forto Car Care Center، مشاريب Bubble Hope، ثم كل منتج وسعر ورقم فاتورة، ثم الإجمالي
+        this.exportBubbleHopePdf(items, grandTotal, baseName);
+        this.isLoadingBubbleExport = false;
+      },
+      error: (err) => {
+        this.isLoadingBubbleExport = false;
+        alert(err?.error?.message ?? 'فشل تحميل بيانات فواتير البابل');
+      },
+    });
+  }
+
+  /** إزالة بادئة "Product:" أو "منتج:" من وصف المنتج */
+  private stripProductPrefix(desc: string): string {
+    return String(desc ?? '').replace(/^Product:\s*/i, '').replace(/^منتج:\s*/, '').trim();
+  }
+
+  /** PDF فاتورة البابل — شكل يطبع: عنوان، ثم سطر منتج وسعر ورقم فاتورة، ثم الإجمالي */
+  private exportBubbleHopePdf(
+    items: Array<{ productDescription: string; unitPrice: number; qty: number; lineTotal: number; invoiceNumber: string }>,
+    grandTotal: number,
+    baseFileName: string
+  ): void {
+    const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    // شكل: اسم المنتج --- xالكمية => الإجمالي ثم (رقم الفاتورة) في سطر تحته
+    const linesHtml = items
+      .map((it) => {
+        const name = this.stripProductPrefix(it.productDescription);
+        const nameLower = name.toLowerCase();
+        return `<tr><td style="padding:6px 0;border-bottom:1px solid #eee;font-size:12px;line-height:1.5;">
+          ${esc(nameLower)} --- x${it.qty} => ${it.lineTotal}<br/>
+          <span style="font-size:11px;color:#555;">(${esc(it.invoiceNumber)})</span>
+        </td></tr>`;
+      })
+      .join('');
+    const html = `
+      <div dir="ltr" style="font-family:'Amiri',serif;width:80mm;max-width:280px;padding:20px;background:#fff;box-sizing:border-box;">
+        <div style="text-align:center;margin-bottom:16px;">
+          <div style="font-size:16px;font-weight:bold;margin-bottom:4px;">Forto Car Care Center</div>
+          <div style="font-size:14px;color:#555;">مشاريب Bubble Hope</div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;">
+          ${linesHtml}
+        </table>
+        <div style="margin-top:14px;padding-top:10px;border-top:2px solid #333;font-size:14px;font-weight:bold;">الإجمالي: ${grandTotal} ج.م</div>
+      </div>`;
+
+    const wrap = document.createElement('div');
+    wrap.id = 'bubble-hop-pdf-wrap';
+    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:280px;z-index:-1;';
+    wrap.innerHTML = html;
+    document.body.appendChild(wrap);
+
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    wait(350)
+      .then(() => html2canvas(wrap, { scale: 4, useCORS: true, logging: false }))
+      .then((canvas) => {
+        document.body.removeChild(wrap);
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfW = pdf.internal.pageSize.getWidth();
+        const pdfH = (canvas.height * pdfW) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH, undefined, 'NONE');
+        pdf.save(`${baseFileName}.pdf`);
+      })
+      .catch((e) => {
+        if (document.body.contains(wrap)) document.body.removeChild(wrap);
+        console.error('تصدير فواتير البابل PDF:', e);
+      });
   }
 }
