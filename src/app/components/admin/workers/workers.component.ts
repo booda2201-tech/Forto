@@ -69,7 +69,7 @@ export class WorkersComponent implements OnInit {
   roles = [
     { id: 1, label: 'عامل (Worker)' },
     { id: 2, label: 'كاشير (Cashier)' },
-    { id: 3, label: 'مشرف (Supervisor)' },
+    { id: 3, label: 'مشرف (Supervisor)' }
   ];
 
   constructor(private api: ApiService) { }
@@ -218,6 +218,7 @@ export class WorkersComponent implements OnInit {
     // return role === 2 ? 'Cashier' : 'Worker';
     if (role === 2) return 'كاشير';
     if (role === 3) return 'مشرف';
+    if (role === 4) return 'أدمن';
     return 'عامل';
   }
 

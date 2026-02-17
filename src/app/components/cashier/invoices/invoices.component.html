@@ -241,7 +241,9 @@
 
       <div class="modal-body p-4 forto-invoice-container" id="printableInvoice">
         <div class="text-center mb-3">
-          <img src="../../../../assets/imeg/logoforto.jpeg" class="brand-logo mb-1" style="max-width: 150px;">
+        <img src="../../../../assets/imeg/logoforto.jpeg" 
+     class="brand-logo mb-1" 
+     style="width: 70px !important; height: auto !important; max-width: 70px !important;">
           <h5 class="fw-bold m-0">FORTO CAR CARE CENTER</h5>
           <div class="">#{{ selectedInvoice?.id }}</div>
         </div>
@@ -291,7 +293,7 @@
           </div>
           <div class="d-flex justify-content-between fw-bold mt-1" style="font-size: 15px;">
             <span>الإجمالي:</span>
-            <span>{{ finalTotal | number:'1.2-2' }} ج.م</span>
+            <span class="text-orange">{{ finalTotal | number:'1.2-2' }} ج.م</span>
           </div>
         </div>
 

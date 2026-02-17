@@ -739,3 +739,35 @@ $border-light: #ececec;
     color: #28a745;
   }
 }
+
+
+
+
+
+
+
+
+
+/* شكل نقطة الحالة */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* تأثير عند تمرير الماوس على الكارت */
+.worker-card {
+  direction: ltr;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.worker-card:hover {
+  background-color: #f8f9fa;
+  border-color: #0d6efd !important;
+}
+
+.rounded-15 {
+  border-radius: 15px !important;
+}

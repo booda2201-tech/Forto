@@ -40,4 +40,8 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
   }
+
+    isLoginPage(): boolean {
+    return this.router.url === '/login';
+  }
 }

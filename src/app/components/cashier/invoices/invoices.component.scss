@@ -88,62 +88,256 @@
 
 
 
-@media print {
 
+
+
+/* إعدادات الحاوية الرئيسية للفاتورة */
+.forto-invoice-container {
+  background-color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  direction: rtl; /* للتأكد من اتجاه اللغة العربية */
+  padding-bottom: 20px; /* مسافة افتراضية على الشاشة */
+}
+
+.brand-logo {
+  width: 80px !important; /* الحجم الطبيعي على الشاشة */
+  height: auto;
+}
+
+.invoice-table {
+  th, td {
+    vertical-align: middle;
+    border-color: #eee !important;
+  }
+}
+
+
+@media print {
+  @page {
+    size: 80mm auto; /* عرض الورقة 80 مم والطول تلقائي */
+    margin: 0; /* إلغاء الهوامش */
+  }
+
+  body {
+    width: 80mm; /* إجبار عرض الصفحة */
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+  }
+
+  /* إخفاء كل العناصر في الصفحة ما عدا الفاتورة */
   body * {
     visibility: hidden;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    height: 0;
+    overflow: hidden;
   }
 
-
+  /* إظهار حاوية الفاتورة فقط */
   #printableInvoice, #printableInvoice * {
     visibility: visible;
-    color: #000000 !important;
-    text-shadow: 0 0 0 #000;
+    height: auto;
+    overflow: visible;
   }
 
-  #printableInvoice {
+  /* تنسيق حاوية الفاتورة لتملأ الورقة */
+  .forto-invoice-container {
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 10px;
+    width: 80mm !important; /* العرض الثابت للطابعة */
+    padding: 2mm 5mm !important; /* هوامش صغيرة داخلية */
     background-color: white !important;
+    font-size: 12px !important; /* حجم خط مناسب للإيصال */
+    color: #000 !important; /* تأكد من أن الخط أسود تماماً */
   }
 
+  /* تحسين الشعار للطباعة الحرارية */
+  .brand-logo {
+    width: 60px !important; /* تكبير الشعار قليلاً ليكون واضحاً */
+    height: auto !important;
+    filter: grayscale(100%); /* تحويل للأبيض والأسود لطباعة أوضح */
+    margin-bottom: 5px !important;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
 
-  .fw-bold, strong, th {
+  /* إخفاء عناصر المودال غير الضرورية */
+  .modal-dialog, .modal-content {
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  /* تنسيق النصوص والعناوين */
+  h5 {
+    font-size: 14px !important;
     font-weight: 900 !important;
   }
 
-  span, div, td {
-    font-weight: 700 !important;
-  }
-
-
-  .no-print, .btn, .btn-close, .modal-footer, .modal-header {
-    display: none !important;
-  }
-
-
-  table {
+  /* تحسين الجدول للإيصال الصغير */
+  .invoice-table {
     width: 100% !important;
-    border-collapse: collapse;
+  }
+  
+  .invoice-table th, .invoice-table td {
+    padding: 2px 0 !important; /* تقليل المسافات داخل الجدول */
+    font-size: 11px !important;
   }
 
-  hr, .border-bottom {
-    border-top: 2px solid #000 !important;
+  /* الخطوط الفاصلة */
+  hr {
+    border-top: 1px dashed #000 !important; /* خط متقطع واضح */
+    margin: 5px 0 !important;
     opacity: 1 !important;
   }
 
-
-  .brand-logo {
-    filter: grayscale(1) contrast(2) brightness(0.5);
+  /* إخفاء الأزرار وأي شيء يحمل كلاس no-print */
+  .no-print, .btn, .modal-footer, .btn-close {
+    display: none !important;
   }
 }
 
 
 
 
+
+
+
+
+/* تنسيقات مودال زيادة السعر - Forto Style */
+#adjustPriceModal {
+  .modal-content {
+    border-radius: 20px; /* زوايا دائرية ناعمة */
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    border: none;
+  }
+
+  .modal-header {
+    background-color: #fff;
+    padding: 1.5rem 1.5rem 0.5rem;
+    
+    .modal-title {
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      color: #ffc107; /* اللون الأصفر الخاص بالهوية */
+      
+      i {
+        font-size: 1.4rem;
+        margin-left: 10px;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+    
+    p {
+      color: #444;
+      font-size: 0.95rem;
+      margin-bottom: 0.8rem;
+      
+      strong {
+        color: #000;
+      }
+    }
+
+    .form-label {
+      margin-top: 10px;
+      color: #333;
+      font-size: 0.9rem;
+    }
+
+    .form-control {
+      border: 2px solid #eee;
+      border-radius: 12px;
+      padding: 12px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+
+      &:focus {
+        border-color: #ffc107;
+        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.15);
+        outline: none;
+      }
+    }
+
+    small {
+      display: block;
+      margin-top: 8px;
+      color: #888;
+      font-style: italic;
+    }
+  }
+
+  .modal-footer {
+    padding: 1rem 1.5rem 1.5rem;
+    background-color: #f8f9fa;
+    display: flex;
+    gap: 10px;
+
+    .btn {
+      padding: 10px 25px;
+      border-radius: 12px;
+      font-weight: 600;
+      flex: 1; /* جعل الأزرار متساوية العرض */
+      transition: transform 0.2s ease;
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+
+    .btn-warning {
+      background-color: #ffc107;
+      border: none;
+      color: #000;
+
+      &:hover {
+        background-color: #e0a800;
+      }
+
+      &:disabled {
+        background-color: #ffe082;
+        opacity: 0.7;
+      }
+    }
+
+    .btn-outline-secondary {
+      border: 2px solid #ddd;
+      color: #666;
+
+      &:hover {
+        background-color: #eee;
+        border-color: #ccc;
+        color: #333;
+      }
+    }
+  }
+}
+#adjustPriceModal {
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* يضمن توزيع العنوان في اليمين والزر في اليسار */
+    flex-direction: row; /* للتأكد من الاتجاه داخل الهيدر */
+
+    .btn-close {
+      margin: 0; /* إلغاء أي هوامش افتراضية */
+      padding: 0.5rem;
+      /* في حالة الـ RTL، المتصفح يضعه يميناً، لذا سنجبره على اليسار */
+      margin-right: auto; 
+      margin-left: 0;
+    }
+    
+    .modal-title {
+      margin-right: 0;
+      margin-left: auto; /* يدفع العنوان لليمين */
+    }
+  }
+}
