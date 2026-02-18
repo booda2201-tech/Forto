@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   BehaviorSubject,
   combineLatest,
+  forkJoin,
   map,
   Observable,
   shareReplay,
@@ -540,15 +541,30 @@ export class InvoicesComponent implements OnInit, OnDestroy {
       return;
     }
     this.isLoadingDailyPdf = true;
-    this.api.getCashierShiftsSummary(dateStr).subscribe({
-      next: (res: any) => {
-        const data = res?.data;
+    const summary$ = this.api.getCashierShiftsSummary(dateStr);
+    const paidInvoices$ = this.api.getInvoicesList({
+      branchId: this.branchId,
+      from: dateStr,
+      to: dateStr,
+      status: 'paid',
+      page: 1,
+      pageSize: 9999,
+    });
+    forkJoin({ summary: summary$, invoices: paidInvoices$ }).subscribe({
+      next: ({ summary: summaryRes, invoices: invoicesRes }: any) => {
+        const data = summaryRes?.data;
         if (!data) {
           this.isLoadingDailyPdf = false;
           alert('لا توجد بيانات لهذا التاريخ');
           return;
         }
-        this.dailySummaryForPdf = data;
+        const items = invoicesRes?.data?.items ?? [];
+        const paidInvoices = (items as any[]).map((x: any) => ({
+          invoiceNumber: x.invoiceNumber ?? x.invoiceId ?? '-',
+          plateNumber: x.plateNumber != null ? String(x.plateNumber) : '-',
+          total: Number(x.total ?? 0),
+        }));
+        this.dailySummaryForPdf = { ...data, paidInvoices };
         setTimeout(() => {
           const el = document.getElementById('dailySummaryPdfContent');
           if (!el) {
@@ -557,11 +573,37 @@ export class InvoicesComponent implements OnInit, OnDestroy {
             return;
           }
           html2canvas(el, { scale: 4, useCORS: true }).then((canvas) => {
-            const imgData = canvas.toDataURL('image/png', 1.0);
             const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfW = pdf.internal.pageSize.getWidth();
-            const pdfH = (canvas.height * pdfW) / canvas.width;
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH, undefined, 'NONE');
+            const pdfPageW = pdf.internal.pageSize.getWidth();
+            const pdfPageH = pdf.internal.pageSize.getHeight();
+            // نفس الحجم دايماً: عرض الصفحة كامل، والطول يحدد عدد الصفحات (ورقة الطباعة تزيد)
+            const imgW = pdfPageW;
+            const imgH = (canvas.height * pdfPageW) / canvas.width;
+            if (imgH <= pdfPageH) {
+              const imgData = canvas.toDataURL('image/png', 1.0);
+              pdf.addImage(imgData, 'PNG', 0, 0, imgW, imgH, undefined, 'NONE');
+            } else {
+              // محتوى طويل: تقطيع إلى صفحات متعددة بنفس حجم الخط والشكل
+              const pageHeightPx = (canvas.width * pdfPageH) / pdfPageW;
+              let srcY = 0;
+              let pageIndex = 0;
+              while (srcY < canvas.height) {
+                const sliceH = Math.min(pageHeightPx, canvas.height - srcY);
+                const pageCanvas = document.createElement('canvas');
+                pageCanvas.width = canvas.width;
+                pageCanvas.height = Math.ceil(sliceH);
+                const ctx = pageCanvas.getContext('2d');
+                if (ctx) {
+                  ctx.drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+                  if (pageIndex > 0) pdf.addPage();
+                  const pageImgData = pageCanvas.toDataURL('image/png', 1.0);
+                  const pageImgH = (pageCanvas.height * pdfPageW) / pageCanvas.width;
+                  pdf.addImage(pageImgData, 'PNG', 0, 0, pdfPageW, pageImgH, undefined, 'NONE');
+                }
+                srcY += sliceH;
+                pageIndex++;
+              }
+            }
             const fileName = `تفاصيل_اليوم_${dateStr}.pdf`;
             pdf.save(fileName);
             this.dailySummaryForPdf = null;
@@ -778,27 +820,27 @@ export class InvoicesComponent implements OnInit, OnDestroy {
       .map((it) => {
         const name = this.stripProductPrefix(it.productDescription);
         const nameLower = name.toLowerCase();
-        return `<tr><td style="padding:6px 0;border-bottom:1px solid #eee;font-size:12px;line-height:1.5;">
+        return `<tr><td style="padding:8px 0;border-bottom:1px solid #333;font-size:17px;line-height:1.6;color:#000;font-weight:600;">
           ${esc(nameLower)} --- x${it.qty} => ${it.lineTotal}<br/>
-          <span style="font-size:11px;color:#555;">(${esc(it.invoiceNumber)})</span>
+          <span style="font-size:15px;color:#222;font-weight:600;">(${esc(it.invoiceNumber)})</span>
         </td></tr>`;
       })
       .join('');
     const html = `
-      <div dir="ltr" style="font-family:'Amiri',serif;width:80mm;max-width:280px;padding:20px;background:#fff;box-sizing:border-box;">
-        <div style="text-align:center;margin-bottom:16px;">
-          <div style="font-size:16px;font-weight:bold;margin-bottom:4px;">Forto Car Care Center</div>
-          <div style="font-size:14px;color:#555;">مشاريب Bubble Hope</div>
+      <div dir="ltr" style="font-family:'Amiri',serif;width:90mm;max-width:320px;padding:24px;background:#fff;box-sizing:border-box;color:#000;">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:22px;font-weight:bold;margin-bottom:8px;color:#000;">Forto Car Care Center</div>
+          <div style="font-size:18px;color:#222;font-weight:600;">مشاريب Bubble Hope</div>
         </div>
         <table style="width:100%;border-collapse:collapse;">
           ${linesHtml}
         </table>
-        <div style="margin-top:14px;padding-top:10px;border-top:2px solid #333;font-size:14px;font-weight:bold;">الإجمالي: ${grandTotal} ج.م</div>
+        <div style="margin-top:18px;padding-top:12px;border-top:2px solid #000;font-size:20px;font-weight:bold;color:#000;">الإجمالي: ${grandTotal} ج.م</div>
       </div>`;
 
     const wrap = document.createElement('div');
     wrap.id = 'bubble-hop-pdf-wrap';
-    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:280px;z-index:-1;';
+    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:320px;z-index:-1;';
     wrap.innerHTML = html;
     document.body.appendChild(wrap);
 

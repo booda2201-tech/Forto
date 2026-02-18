@@ -12,7 +12,7 @@
 
       <div class="col-6 col-md-3">
         <div class="card stat-card border-0 shadow-sm p-3 bg-orange-light text-orange">
-          <span class="small">إجمالي الدخل المفلتر</span>
+          <span class="small">إجمالي الدخل </span>
           <h4 class="fw-bold mb-0">{{ totalDailyAmount | number:'1.0-0' }} ج.م</h4>
         </div>
       </div>
@@ -444,14 +444,27 @@
 </div>
 
 <!-- محتوى تقرير تفاصيل اليوم للـ PDF (مخفي، يُلتقط بـ html2canvas) -->
-<div id="dailySummaryPdfContent" class="daily-summary-pdf-source" *ngIf="dailySummaryForPdf" dir="rtl">
-  <div class="daily-summary-inner">
+<div id="dailySummaryPdfContent" class="daily-summary-pdf-source " *ngIf="dailySummaryForPdf" >
+  <div class="daily-summary-inner p-0">
+    <p class="daily-summary-brand">Forto Car Care Center</p>
     <h2 class="daily-summary-title">سجل المعاملات والمدفوعات</h2>
     <p class="daily-summary-meta">كاشير مسؤول: {{ dailySummaryForPdf.shifts?.[0]?.responsibleEmployeeName || 'ملخص اليوم' }}</p>
     <p class="daily-summary-meta">وردية رقم: {{ dailySummaryForPdf.shifts?.[0]?.cashierShiftId ?? '-' }}</p>
     <p class="daily-summary-meta">وردية بدأت: {{ dailySummaryForPdf.shifts?.[0]?.openedAt ? (dailySummaryForPdf.shifts[0].openedAt | date:'yyyy-MM-dd h:mm a') : '-' }}</p>
     <p class="daily-summary-meta">وردية انتهت: {{ dailySummaryForPdf.shifts?.[0]?.closedAt ? (dailySummaryForPdf.shifts[0].closedAt | date:'yyyy-MM-dd h:mm a') : 'لم تنتهِ' }}</p>
     <p class="daily-summary-meta">التاريخ: {{ (dailySummaryForPdf.date | date:'yyyy-MM-dd') || '-' }}</p>
+    <div class="daily-summary-invoices" *ngIf="dailySummaryForPdf.paidInvoices?.length">
+      <p class="daily-summary-invoices-title">فواتير اليوم المدفوعة</p>
+      <ng-container *ngFor="let inv of dailySummaryForPdf.paidInvoices; let last = last">
+        <div class="daily-summary-invoice-row">
+          <span>رقم الفاتورة: {{ inv.invoiceNumber }}</span>
+          <span>رقم العربية: {{ inv.plateNumber }}</span>
+          <span>السعر المدفوع: {{ inv.total | number:'1.2-2' }} ج.م</span>
+        </div>
+        <hr class="daily-summary-invoice-hr" *ngIf="!last" />
+      </ng-container>
+    </div>
+    <hr class="daily-summary-hr" />
     <table class="daily-summary-table">
       <!-- <tr>
         <td class="daily-summary-label">نقد في اليد (عهدة + كاش)</td>
@@ -463,7 +476,7 @@
       </tr>
       <tr>
         <td class="daily-summary-label">دفع نقداً (Cash)</td>
-        <td class="daily-summary-value">{{ (dailySummaryForPdf.totalCashForDay || 0) | number:'1.2-2' }}</td>
+        <td class="daily-summary-value ">{{ (dailySummaryForPdf.totalCashForDay || 0) | number:'1.2-2' }}</td>
       </tr>
       <!-- <tr>
         <td class="daily-summary-label">العهدة المستلمة</td>
