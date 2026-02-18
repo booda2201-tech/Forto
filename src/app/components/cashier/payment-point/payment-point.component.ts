@@ -733,6 +733,10 @@ export class PaymentPointComponent implements OnInit {
             this.invoiceData.phone ||
             this.customerFormData.phone;
         }
+        // عرض الفاتورة: المجموع = المبلغ بعد التعديل، الضريبة 14%، الإجمالي = المجموع + الضريبة
+        this.invoiceData.subTotal = finalTotal;
+        this.invoiceData.total = finalTotal * 1.14;
+        this.invoiceData.paymentMethod = payload.paymentMethod;
         this.openInvoiceModal();
         this.cart = [];
         this.orderForm.reset({ fullName: '', phoneNumber: '', notes: '' });
