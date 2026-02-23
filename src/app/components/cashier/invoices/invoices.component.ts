@@ -564,7 +564,16 @@ export class InvoicesComponent implements OnInit, OnDestroy {
           plateNumber: x.plateNumber != null ? String(x.plateNumber) : '-',
           total: Number(x.total ?? 0),
         }));
-        this.dailySummaryForPdf = { ...data, paidInvoices };
+        // أرقام الفاتورة من نفس مصدر صفحة الفواتير (ملخص الـ API) وليس من ورديات الشيفت
+        const invSummary = invoicesRes?.data?.summary ?? {};
+        this.dailySummaryForPdf = {
+          ...data,
+          paidInvoices,
+          totalSalesForDay: invSummary.totalRevenue ?? data.totalSalesForDay ?? 0,
+          totalCashForDay: invSummary.totalCashAmount ?? data.totalCashForDay ?? 0,
+          totalVisaForDay: invSummary.totalVisaAmount ?? data.totalVisaForDay ?? 0,
+          totalDiscountsForDay: data.totalDiscountsForDay ?? 0,
+        };
         setTimeout(() => {
           const el = document.getElementById('dailySummaryPdfContent');
           if (!el) {
