@@ -17,6 +17,8 @@ type DashboardSummary = {
 
   totalCosts: number;
   netProfit: number;
+  totalTips: number;
+  paidRevenueIncludingTips?: number;
 };
 
 @Component({
@@ -111,8 +113,10 @@ export class DashboardComponent implements OnInit {
 
   }
 
-  // KPIs for UI
+  // KPIs for UI — إجمالي الدخل = paidRevenueIncludingTips من الـ API
   get totalRevenue(): number {
+    const including = this.summary?.paidRevenueIncludingTips;
+    if (including != null && !isNaN(including)) return Number(including);
     return Number(this.summary?.paidRevenue ?? 0);
   }
 
@@ -126,6 +130,10 @@ export class DashboardComponent implements OnInit {
 
   get productsCost(): number {
     return Number(this.summary?.productsSoldCost ?? 0);
+  }
+
+  get totalTips(): number {
+    return Number(this.summary?.totalTips ?? 0);
   }
 
   get materialsCost(): number {
