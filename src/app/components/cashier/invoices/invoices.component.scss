@@ -1,4 +1,23 @@
 // تقرير تفاصيل اليوم - مصدر الـ PDF (مخفي عن الشاشة) — خط كبير للطباعة، بدون جزء أبيض على الجانبين
+// صف الإحصائيات: 5 بطاقات على سطر واحد دائماً
+.stats-row-five {
+  display: flex;
+  flex-wrap: nowrap;
+
+  .col-stat {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  @media (max-width: 576px) {
+    flex-wrap: wrap;
+    .col-stat {
+      flex: 0 0 50%;
+      max-width: 50%;
+    }
+  }
+}
+
 .daily-summary-pdf-source {
   position: fixed;
   // left: 50%;

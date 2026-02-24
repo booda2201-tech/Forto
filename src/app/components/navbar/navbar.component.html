@@ -81,6 +81,9 @@
               [routerLinkActiveOptions]="{exact: true}"
               (click)="isMenuOpen = false"> الرئيسية </a>
         </li>
+        <li>
+          <a href="#" (click)="openTipsModal($event)" style="cursor: pointer;">إضافة مبالغ أخرى</a>
+        </li>
         <li *ngIf="data.activeShift">
           <a href="#" (click)="endShift($event)" style="cursor: pointer; color: #e65100; font-weight: bold;" [class.disabled]="endingShift">
             {{ endingShift ? 'جاري إنهاء الوردية...' : 'إنهاء الوردية' }}
@@ -104,4 +107,34 @@
     </ul>
   </div>
 </nav>
+
+<!-- مودال إضافة مبالغ أخرى (للکاشیر فقط) -->
+<div class="modal fade" id="tipsModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold">إضافة مبالغ أخرى</h5>
+        <!-- <button type="button" class="btn-close" (click)="closeTipsModal()" aria-label="إغلاق"></button> -->
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label fw-bold">التاريخ</label>
+          <input type="date" class="form-control" [(ngModel)]="tipsDate" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">المبلغ (ج.م)</label>
+          <input type="number" class="form-control" [(ngModel)]="tipsAmount" min="0" step="0.01" placeholder="0" />
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-outline-secondary rounded-3" (click)="closeTipsModal()">إلغاء</button>
+        <button type="button" class="btn btn-orange text-white rounded-3 fw-bold" (click)="saveTips()"
+          [disabled]="savingTips || (tipsAmount !== null && tipsAmount !== undefined && tipsAmount < 0)">
+          <span *ngIf="!savingTips">حفظ</span>
+          <span *ngIf="savingTips">جاري الحفظ...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 

@@ -146,3 +146,14 @@
     z-index: 10;
 
 }
+
+.btn-orange {
+  background-color: #e65100;
+  border-color: #e65100;
+  color: #fff;
+  &:hover {
+    background-color: #d84315;
+    border-color: #d84315;
+    color: #fff;
+  }
+}

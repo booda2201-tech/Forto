@@ -2,32 +2,38 @@
   <div class="invoices-page p-2 p-md-4" dir="rtl">
 
     <!-- Stats -->
-    <div class="row g-3 mb-4 no-print">
-      <div class="col-6 col-md-3">
+    <div class="row g-3 mb-4 no-print stats-row-five">
+      <div class="col-6 col-stat">
         <div class="card stat-card border-0 shadow-sm p-3">
           <span class="text-muted small">عدد العمليات</span>
           <h4 class="fw-bold mb-0">{{ totalInvoicesCount }}</h4>
         </div>
       </div>
 
-      <div class="col-6 col-md-3">
+      <div class="col-6 col-stat">
         <div class="card stat-card border-0 shadow-sm p-3 bg-orange-light text-orange">
           <span class="small">إجمالي الدخل </span>
           <h4 class="fw-bold mb-0">{{ totalDailyAmount | number:'1.0-0' }} ج.م</h4>
         </div>
       </div>
 
-      <div class="col-6 col-md-3">
+      <div class="col-6 col-stat">
         <div class="card stat-card border-0 shadow-sm p-3">
           <span class="text-muted small">إجمالي الكاش</span>
           <h4 class="fw-bold mb-0 text-success">{{ totalCashAmount | number:'1.0-0' }} ج.م</h4>
         </div>
       </div>
 
-      <div class="col-6 col-md-3">
+      <div class="col-6 col-stat">
         <div class="card stat-card border-0 shadow-sm p-3">
           <span class="text-muted small">إجمالي الفيزا</span>
           <h4 class="fw-bold mb-0 text-primary">{{ totalVisaAmount | number:'1.0-0' }} ج.م</h4>
+        </div>
+      </div>
+      <div class="col-6 col-stat">
+        <div class="card stat-card border-0 shadow-sm p-3">
+          <span class="text-muted small">مبالغ أخرى</span>
+          <h4 class="fw-bold mb-0 text-secondary">{{ totalOtherAmounts | number:'1.0-0' }} ج.م</h4>
         </div>
       </div>
     </div>

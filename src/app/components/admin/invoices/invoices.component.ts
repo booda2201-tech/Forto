@@ -15,6 +15,7 @@ import { ApiService } from 'src/app/services/api.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
 import { InvoiceDeletionHubService } from 'src/app/services/invoice-deletion-hub.service';
+import { InvoicesRefreshService } from 'src/app/services/invoices-refresh.service';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -57,6 +58,7 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
   selectedInvoice: InvoiceUi | null = null;
 
   private deletionHubSub: Subscription | null = null;
+  private refreshSub: Subscription | null = null;
 
   branchId = 1;
   get cashierId(): number {
@@ -100,6 +102,8 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
     totalRevenue?: number;
     totalCashAmount?: number;
     totalVisaAmount?: number;
+    totalTips?: number;
+    totalAmountIncludingTips?: number;
   } | null = null;
 
   get currentPage(): number {
@@ -132,6 +136,11 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
     return this.lastSummary?.totalVisaAmount ?? 0;
   }
 
+  /** إجمالي مبالغ أخرى (Tips) - من الـ API إن وُجد، وإلا 0 */
+  get totalOtherAmounts(): number {
+    return (this.lastSummary as any)?.totalTips ?? 0;
+  }
+
   invoices$: Observable<InvoiceUi[]> = combineLatest([
     this.searchTerm$,
     this.from$,
@@ -162,6 +171,7 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
     tap((list) => {
       this.totalInvoicesCount = this.lastSummary?.totalCount ?? list.length;
       this.totalDailyAmount =
+        this.lastSummary?.totalAmountIncludingTips ??
         this.lastSummary?.totalRevenue ??
         list.reduce((acc, inv) => acc + (inv.total || 0), 0);
     }),
@@ -172,7 +182,8 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
     private api: ApiService,
     private auth: AuthService,
     private printInvoice: PrintInvoiceService,
-    private invoiceDeletionHub: InvoiceDeletionHubService
+    private invoiceDeletionHub: InvoiceDeletionHubService,
+    private invoicesRefresh: InvoicesRefreshService
   ) {}
 
   ngOnInit(): void {
@@ -180,10 +191,14 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
     this.deletionHubSub = this.invoiceDeletionHub.onDeletionProcessed.subscribe(() => {
       this.refreshInvoiceList();
     });
+    this.refreshSub = this.invoicesRefresh.onRefreshRequested.subscribe(() => {
+      this.refreshInvoiceList();
+    });
   }
 
   ngOnDestroy(): void {
     this.deletionHubSub?.unsubscribe();
+    this.refreshSub?.unsubscribe();
     this.invoiceDeletionHub.stopConnection();
   }
 

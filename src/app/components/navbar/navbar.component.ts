@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { CashierShiftService } from '../../services/cashier-shift.service';
+import { ApiService } from '../../services/api.service';
+import { InvoicesRefreshService } from '../../services/invoices-refresh.service';
 import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
 
@@ -19,7 +21,9 @@ export class NavbarComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private cashierShift: CashierShiftService,
-    private router: Router
+    private router: Router,
+    private api: ApiService,
+    private invoicesRefresh: InvoicesRefreshService
   ) {
     this.userRole$ = this.authService.userRole$;
   }
@@ -70,6 +74,71 @@ export class NavbarComponent implements OnInit {
       },
       error: () => {
         this.endingShift = false;
+      },
+    });
+  }
+
+  // إضافة مبالغ أخرى (Tips)
+  showTipsModal = false;
+  tipsDate = '';
+  tipsAmount: number | null = null;
+  savingTips = false;
+
+  private static getLocalDateString(d?: Date): string {
+    const date = d ?? new Date();
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  openTipsModal($event: Event): void {
+    $event?.preventDefault();
+    this.tipsDate = NavbarComponent.getLocalDateString();
+    this.tipsAmount = null;
+    this.showTipsModal = true;
+    const el = document.getElementById('tipsModal');
+    if (el) {
+      const modal = new (window as any).bootstrap.Modal(el);
+      modal.show();
+    }
+  }
+
+  closeTipsModal(): void {
+    const el = document.getElementById('tipsModal');
+    if (el) {
+      const inst = (window as any).bootstrap?.Modal?.getInstance(el);
+      if (inst) inst.hide();
+    }
+    this.showTipsModal = false;
+  }
+
+  saveTips(): void {
+    const amount = Number(this.tipsAmount);
+    if (amount == null || isNaN(amount) || amount < 0) {
+      alert('أدخل مبلغاً صحيحاً.');
+      return;
+    }
+    const cashierId = this.authService.getEmployeeId();
+    if (cashierId == null) {
+      alert('لم يتم التعرف على الكاشير.');
+      return;
+    }
+    const dateStr = (this.tipsDate || NavbarComponent.getLocalDateString()).trim();
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const tipsDateApi = `${y}-${m}-${d}`;
+    this.savingTips = true;
+    this.api.createTip({ amount, tipsDate: tipsDateApi, cashierId }).subscribe({
+      next: () => {
+        this.savingTips = false;
+        this.closeTipsModal();
+        this.invoicesRefresh.requestRefresh();
+        alert('تم حفظ المبلغ بنجاح.');
+      },
+      error: (err) => {
+        this.savingTips = false;
+        console.error(err);
+        alert(err?.error?.message || 'فشل حفظ المبلغ.');
       },
     });
   }
