@@ -1,5 +1,5 @@
 .navbar {
-  background: linear-gradient(to left, rgba(0,0,0,0.8), rgb(0, 0, 0));
+  background: #000;
   height: 120px;
   width: 100%;
   border-radius: 0 0 25px 25px ;
@@ -21,6 +21,7 @@
   }
 }
 
+
 .logo {
   display: flex;
   align-items: center;
@@ -35,6 +36,7 @@
 
   }
 }
+
 
 .nav-links {
   display: flex;
@@ -87,7 +89,6 @@
 }
 
 
-
 @media (max-width: 858px) {
   .checkbtn {
     display: block;
@@ -128,9 +129,6 @@
 }
 
 
-
-
-
 .overlay {
     position: fixed;
     top: 0;
@@ -141,11 +139,13 @@
     z-index: 9;
 }
 
+
 .nav-links {
 
     z-index: 10;
 
 }
+
 
 .btn-orange {
   background-color: #e65100;

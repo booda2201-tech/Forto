@@ -587,6 +587,8 @@ export class InvoicesComponent implements OnInit, OnDestroy {
           totalSalesForDay: invSummary.totalRevenue ?? data.totalSalesForDay ?? 0,
           totalCashForDay: invSummary.totalCashAmount ?? data.totalCashForDay ?? 0,
           totalVisaForDay: invSummary.totalVisaAmount ?? data.totalVisaForDay ?? 0,
+          totalTipsForDay: invSummary.totalTips ?? 0,
+          totalAmountIncludingTips: invSummary.totalAmountIncludingTips ?? (invSummary.totalRevenue ?? 0) + (invSummary.totalTips ?? 0),
           totalDiscountsForDay: data.totalDiscountsForDay ?? 0,
         };
         setTimeout(() => {

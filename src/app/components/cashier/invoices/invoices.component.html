@@ -477,10 +477,6 @@
         <td class="daily-summary-value">{{ ((dailySummaryForPdf.totalCashForDay || 0) + (dailySummaryForPdf.totalReceivedPledgeForDay || 0)) | number:'1.2-2' }}</td>
       </tr> -->
       <tr>
-        <td class="daily-summary-label">إجمالي مبيعات اليوم</td>
-        <td class="daily-summary-value">{{ (dailySummaryForPdf.totalSalesForDay || 0) | number:'1.2-2' }}</td>
-      </tr>
-      <tr>
         <td class="daily-summary-label">دفع نقداً (Cash)</td>
         <td class="daily-summary-value ">{{ (dailySummaryForPdf.totalCashForDay || 0) | number:'1.2-2' }}</td>
       </tr>
@@ -491,6 +487,14 @@
       <tr>
         <td class="daily-summary-label">دفع فيزا (Visa)</td>
         <td class="daily-summary-value">{{ (dailySummaryForPdf.totalVisaForDay || 0) | number:'1.2-2' }}</td>
+      </tr>
+      <tr>
+        <td class="daily-summary-label">مبالغ أخرى</td>
+        <td class="daily-summary-value">{{ (dailySummaryForPdf.totalTipsForDay || 0) | number:'1.2-2' }}</td>
+      </tr>
+      <tr>
+        <td class="daily-summary-label">المجموع</td>
+        <td class="daily-summary-value">{{ (dailySummaryForPdf.totalAmountIncludingTips || 0) | number:'1.2-2' }}</td>
       </tr>
 
     </table>
