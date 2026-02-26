@@ -82,6 +82,16 @@ $orange-color: #ff9a27;
   }
 }
 
+.btn-outline-orange {
+  border: 1px solid $orange-color;
+  color: $orange-color;
+  border-radius: 10px;
+  &:hover {
+    background-color: $orange-color;
+    color: white;
+  }
+}
+
 .btn-light-danger {
   background-color: #fff5f5;
   color: #ff4d4d;

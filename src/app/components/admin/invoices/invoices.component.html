@@ -32,7 +32,7 @@
       </div>
       <div class="col-6 col-stat">
         <div class="card stat-card border-0 shadow-sm p-3">
-          <span class="text-muted small">مبالغ أخرى</span>
+          <span class="text-muted small">خدمات أخرى</span>
           <h4 class="fw-bold mb-0 text-secondary">{{ totalOtherAmounts | number:'1.0-0' }} ج.م</h4>
         </div>
       </div>
@@ -172,12 +172,8 @@
 
               <td>
                 <div class="d-flex justify-content-center gap-2 flex-wrap">
-                  <button
-                    *ngIf="invoice.status === 1"
-                    class="btn btn-sm btn-success rounded-3"
-                    (click)="payInvoice(invoice)"
-                    [disabled]="payingInvoiceId !== null"
-                  >
+                  <button *ngIf="invoice.status === 1" class="btn btn-sm btn-success rounded-3"
+                    (click)="payInvoice(invoice)" [disabled]="payingInvoiceId !== null">
                     <span *ngIf="payingInvoiceId !== invoice.invoiceId"><i class="bi bi-cash-coin"></i> دفع</span>
                     <span *ngIf="payingInvoiceId === invoice.invoiceId">جاري...</span>
                   </button>
@@ -190,29 +186,21 @@
                   >
                     <i class="bi bi-currency-exchange"></i> زيادة السعر
                   </button> -->
-                  <button
-                    class="btn btn-sm btn-orange text-white rounded-3 shadow-sm"
-                    (click)="openInvoice(invoice)"
-                    data-bs-toggle="modal"
-                    data-bs-target="#adminInvoiceModal"
-                  >
+                  <button class="btn btn-sm btn-orange text-white rounded-3 shadow-sm" (click)="openInvoice(invoice)"
+                    data-bs-toggle="modal" data-bs-target="#adminInvoiceModal">
                     <i class="bi bi-printer"></i>
                   </button>
-                  <button
-                    *ngIf="invoice.status !== 4 && invoice.status !== 5"
-                    class="btn btn-sm btn-outline-danger rounded-3"
-                    (click)="openDeleteModal(invoice)"
-                    [disabled]="deletingInvoiceId !== null"
-                    title="طلب حذف الفاتورة"
-                  >
+                  <button *ngIf="invoice.status !== 4 && invoice.status !== 5"
+                    class="btn btn-sm btn-outline-danger rounded-3" (click)="openDeleteModal(invoice)"
+                    [disabled]="deletingInvoiceId !== null" title="طلب حذف الفاتورة">
                     <span *ngIf="deletingInvoiceId !== invoice.invoiceId"><i class="bi bi-trash"></i> </span>
                     <span *ngIf="deletingInvoiceId === invoice.invoiceId">جاري...</span>
                   </button>
                 </div>
               </td>
-           
-           
-           
+
+
+
             </tr>
 
             <tr *ngIf="((invoices$ | async)?.length || 0) === 0">
@@ -284,7 +272,9 @@
 
       <div class="modal-body p-4 forto-invoice-container" id="adminPrintableInvoice">
         <div class="text-center mb-3">
-          <img src="../../../../assets/imeg/logoforto.jpeg" class="brand-logo mb-1" style="max-width: 150px;">
+          <img src="../../../../assets/imeg/logoforto.jpeg" class="brand-logo mb-1" style=" width: 70px !important;
+              height: auto !important;
+              max-width: 70px !important;">
           <h5 class="fw-bold m-0">FORTO CAR CARE CENTER</h5>
           <div class="">#{{ selectedInvoice?.id }}</div>
         </div>
@@ -450,14 +440,17 @@
 </div>
 
 <!-- محتوى تقرير تفاصيل اليوم للـ PDF (مخفي، يُلتقط بـ html2canvas) -->
-<div id="dailySummaryPdfContent" class="daily-summary-pdf-source " *ngIf="dailySummaryForPdf" >
+<div id="dailySummaryPdfContent" class="daily-summary-pdf-source " *ngIf="dailySummaryForPdf">
   <div class="daily-summary-inner p-0">
     <p class="daily-summary-brand">Forto Car Care Center</p>
     <h2 class="daily-summary-title">سجل المعاملات والمدفوعات</h2>
-    <p class="daily-summary-meta">كاشير مسؤول: {{ dailySummaryForPdf.shifts?.[0]?.responsibleEmployeeName || 'ملخص اليوم' }}</p>
+    <p class="daily-summary-meta">كاشير مسؤول: {{ dailySummaryForPdf.shifts?.[0]?.responsibleEmployeeName || 'ملخص
+      اليوم' }}</p>
     <p class="daily-summary-meta">وردية رقم: {{ dailySummaryForPdf.shifts?.[0]?.cashierShiftId ?? '-' }}</p>
-    <p class="daily-summary-meta">وردية بدأت: {{ dailySummaryForPdf.shifts?.[0]?.openedAt ? (dailySummaryForPdf.shifts[0].openedAt | date:'yyyy-MM-dd h:mm a') : '-' }}</p>
-    <p class="daily-summary-meta">وردية انتهت: {{ dailySummaryForPdf.shifts?.[0]?.closedAt ? (dailySummaryForPdf.shifts[0].closedAt | date:'yyyy-MM-dd h:mm a') : 'لم تنتهِ' }}</p>
+    <p class="daily-summary-meta">وردية بدأت: {{ dailySummaryForPdf.shifts?.[0]?.openedAt ?
+      (dailySummaryForPdf.shifts[0].openedAt | date:'yyyy-MM-dd h:mm a') : '-' }}</p>
+    <p class="daily-summary-meta">وردية انتهت: {{ dailySummaryForPdf.shifts?.[0]?.closedAt ?
+      (dailySummaryForPdf.shifts[0].closedAt | date:'yyyy-MM-dd h:mm a') : 'لم تنتهِ' }}</p>
     <p class="daily-summary-meta">التاريخ: {{ (dailySummaryForPdf.date | date:'yyyy-MM-dd') || '-' }}</p>
     <div class="daily-summary-invoices" *ngIf="dailySummaryForPdf.paidInvoices?.length">
       <p class="daily-summary-invoices-title">فواتير اليوم المدفوعة</p>
@@ -489,7 +482,7 @@
         <td class="daily-summary-value">{{ (dailySummaryForPdf.totalVisaForDay || 0) | number:'1.2-2' }}</td>
       </tr>
       <tr>
-        <td class="daily-summary-label">مبالغ أخرى</td>
+        <td class="daily-summary-label">خدمات أخرى</td>
         <td class="daily-summary-value">{{ (dailySummaryForPdf.totalTipsForDay || 0) | number:'1.2-2' }}</td>
       </tr>
       <tr>

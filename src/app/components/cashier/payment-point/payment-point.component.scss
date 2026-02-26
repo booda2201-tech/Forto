@@ -72,6 +72,30 @@
     padding: 18px;
   }
 
+  .product-categories-filter {
+    .category-pill {
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      color: #374151;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      &:hover {
+        border-color: #ffa500;
+        background: #fff7ed;
+        color: #ea580c;
+      }
+      &.category-pill-active {
+        background: #ffa500;
+        border-color: #ffa500;
+        color: #fff;
+      }
+    }
+  }
+
   .grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;

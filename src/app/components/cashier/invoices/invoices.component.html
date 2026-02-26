@@ -32,7 +32,7 @@
       </div>
       <div class="col-6 col-stat">
         <div class="card stat-card border-0 shadow-sm p-3">
-          <span class="text-muted small">مبالغ أخرى</span>
+          <span class="text-muted small">خدمات أخرى</span>
           <h4 class="fw-bold mb-0 text-secondary">{{ totalOtherAmounts | number:'1.0-0' }} ج.م</h4>
         </div>
       </div>
@@ -284,7 +284,9 @@
 
       <div class="modal-body p-4 forto-invoice-container" id="adminPrintableInvoice">
         <div class="text-center mb-3">
-          <img src="../../../../assets/imeg/logoforto.jpeg" class="brand-logo mb-1" style="max-width: 150px;">
+          <img src="../../../../assets/imeg/logoforto.jpeg" class="brand-logo mb-1" style=" width: 70px !important;
+              height: auto !important;
+              max-width: 70px !important;">
           <h5 class="fw-bold m-0">FORTO CAR CARE CENTER</h5>
           <div class="">#{{ selectedInvoice?.id }}</div>
         </div>
@@ -304,17 +306,15 @@
           <thead class="border-bottom">
             <tr>
               <th class="text-end">البند</th>
-              <th class="text-center">الكمية</th>
+              <th class="text-center"></th>
               <th class="text-center">سعر الوحدة</th>
-              <th class="text-center">الإجمالي</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let line of selectedInvoice?.lines">
               <td class="text-end">{{ line.description }}</td>
-              <td class="text-center">{{ line.qty }}</td>
+              <td class="text-center"><span *ngIf="line.qty != null && line.qty !== undefined">x{{ line.qty }}</span></td>
               <td class="text-center fw-bold">{{ line.unitPrice }} ج.م</td>
-              <td class="text-center fw-bold">{{ line.total }} ج.م</td>
             </tr>
           </tbody>
         </table>
@@ -489,7 +489,7 @@
         <td class="daily-summary-value">{{ (dailySummaryForPdf.totalVisaForDay || 0) | number:'1.2-2' }}</td>
       </tr>
       <tr>
-        <td class="daily-summary-label">مبالغ أخرى</td>
+        <td class="daily-summary-label">خدمات أخرى</td>
         <td class="daily-summary-value">{{ (dailySummaryForPdf.totalTipsForDay || 0) | number:'1.2-2' }}</td>
       </tr>
       <tr>

@@ -9,7 +9,8 @@ import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 // --- Types Definitions ---
-type ProductVm = { id: number; name: string; price: number; isActive: boolean };
+type ProductVm = { id: number; name: string; price: number; isActive: boolean; categoryId?: number };
+type ProductCategoryVm = { id: number; name: string };
 type CartItemVm = { product: ProductVm; qty: number };
 type ServiceCardVm = {
   id: number;
@@ -37,6 +38,8 @@ export class PaymentPointComponent implements OnInit {
 
   // Products & Cart Logic
   products: ProductVm[] = [];
+  productCategories: ProductCategoryVm[] = [];
+  selectedProductCategoryId: number | null = null;
   cart: CartItemVm[] = [];
 
   // Services & Slots Logic
@@ -122,6 +125,7 @@ export class PaymentPointComponent implements OnInit {
     const today = this.todayYYYYMMDD();
     this.customerForm.patchValue({ appointmentDate: today });
 
+    this.loadProductCategories();
     this.loadProducts();
     this.loadServices();
     this.loadSupervisors();
@@ -142,6 +146,21 @@ export class PaymentPointComponent implements OnInit {
   }
 
   // --- Core Data Loading ---
+  private loadProductCategories(): void {
+    this.api.getProductCategories().subscribe({
+      next: (res: any) => {
+        const list = res?.data ?? [];
+        this.productCategories = Array.isArray(list)
+          ? list.filter((c: any) => c?.isActive !== false).map((c: any) => ({ id: c.id, name: c.name ?? '' }))
+          : [];
+        if (this.productCategories.length > 0 && this.selectedProductCategoryId == null) {
+          this.selectedProductCategoryId = this.productCategories[0].id;
+        }
+      },
+      error: () => (this.productCategories = []),
+    });
+  }
+
   private loadProducts() {
     this.api.getProducts().subscribe({
       next: (res: any) => {
@@ -153,6 +172,7 @@ export class PaymentPointComponent implements OnInit {
             name: p.name,
             price: Number(p.salePrice ?? 0),
             isActive: p.isActive,
+            categoryId: p.categoryId != null ? Number(p.categoryId) : undefined,
           }));
       },
       error: () => this.toastr.error('فشل تحميل المنتجات'),
@@ -206,6 +226,13 @@ export class PaymentPointComponent implements OnInit {
   }
 
   // --- Cart Helpers ---
+  get filteredProducts(): ProductVm[] {
+    if (this.selectedProductCategoryId == null) return this.products;
+    return this.products.filter(
+      (p) => (p.categoryId ?? 0) === this.selectedProductCategoryId
+    );
+  }
+
   getItem(productId: number) {
     return this.cart.find((x) => x.product.id === productId);
   }
@@ -718,6 +745,8 @@ export class PaymentPointComponent implements OnInit {
     this.isSubmitting = true;
     this.api.createPosInvoice(payload).subscribe({
       next: (res: any) => {
+        console.log(res);
+        
         this.isSubmitting = false;
         this.toastr.success('تم تسجيل الطلب بنجاح');
 
@@ -764,6 +793,18 @@ export class PaymentPointComponent implements OnInit {
     if (m === 2) return 'فيزا';
     if (m === 3) return 'مخصص';
     return '-';
+  }
+
+  /** هل سطر الفاتورة منتج (نعرض الكمية للمنتجات فقط وليس الخدمات) */
+  isInvoiceLineProduct(line: any): boolean {
+    if (!line) return false;
+    if (line.isProduct === true) return true;
+    const t = (line.lineType ?? line.type ?? line.itemType ?? '').toString().toLowerCase();
+    if (t === 'product') return true;
+    if (line.productId != null && line.serviceId == null) return true;
+    const desc = (line.description ?? '').toString();
+    if (desc.includes('Product:') || desc.startsWith('منتج:')) return true;
+    return false;
   }
 
   openInvoiceModal() {

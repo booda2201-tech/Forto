@@ -7,8 +7,8 @@ import { Observable } from 'rxjs';
 })
 export class ApiService {
   /** استخدم server أو local حسب أين شغّال الباك — الـ API و SignalR هيستخدموا نفس الـ base */
-  // private baseUrl = 'https://api.fortolaundry.com';   // سيرفر
-  private baseUrl = 'https://localhost:7179';      // local (للتطوير لو الباك على نفس الجهاز)
+  private baseUrl = 'https://api.fortolaundry.com';   // سيرفر
+  // private baseUrl = 'https://localhost:7179';      // local (للتطوير لو الباك على نفس الجهاز)
 
   constructor(private http: HttpClient) {}
 
@@ -177,13 +177,29 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/api/products/with-stock?branchId=1`);
   }
 
+  /** GET فئات المنتجات */
+  getProductCategories() {
+    return this.http.get(`${this.baseUrl}/api/inventory/product-categories/GetAll`);
+  }
+
+  /** POST إنشاء فئة منتجات (الاسم فقط) */
+  createProductCategory(payload: { name: string }) {
+    return this.http.post(`${this.baseUrl}/api/inventory/product-categories/Create`, payload);
+  }
+
   createProduct(payload: {
     name: string;
     sku: string;
     salePrice: number;
     costPerUnit: number;
+    categoryId?: number;
+    catProdId?: number;
   }) {
-    return this.http.post(`${this.baseUrl}/api/products/Create`, payload);
+    const body: any = { ...payload };
+    if (payload.categoryId != null && payload.categoryId > 0) {
+      body.catProdId = payload.categoryId;
+    }
+    return this.http.post(`${this.baseUrl}/api/products/Create`, body);
   }
 
   updateProduct(
@@ -449,28 +465,41 @@ export class ApiService {
     });
   }
 
-  /** تقرير المنتجات المباعة (فواتير البابل / Bubble Hope) — من / إلى تاريخ */
-  getSoldProductsReport(from: string, to: string) {
+  /** تقرير المنتجات المباعة (فواتير البابل / Bubble Hope) — من / إلى تاريخ. يدعم Page و PageSize لجلب كل الصفحات */
+  getSoldProductsReport(
+    from: string,
+    to: string,
+    categoryProductId?: number,
+    page?: number,
+    pageSize?: number
+  ) {
     const fromStr = from ? from.slice(0, 10) : '';
     const toStr = to ? to.slice(0, 10) : '';
+    const params: Record<string, string> = { from: fromStr, to: toStr };
+    if (categoryProductId != null && !Number.isNaN(Number(categoryProductId))) {
+      params['categoryProductId'] = String(categoryProductId);
+    }
+    if (page != null) params['Page'] = String(page);
+    if (pageSize != null) params['PageSize'] = String(pageSize);
     return this.http.get<{
       success: boolean;
       data?: {
-        fromDate: string;
-        toDate: string;
+        fromDate?: string;
+        toDate?: string;
         items: Array<{
           productDescription: string;
           unitPrice: number;
           qty: number;
           lineTotal: number;
           invoiceNumber: string;
-          invoiceId: number;
-          paidAt: string;
+          invoiceId?: number;
+          paidAt?: string;
         }>;
-        grandTotal: number;
+        grandTotal?: number;
+        totalCount?: number;
       };
     }>(`${this.baseUrl}/api/invoices/reports/sold-products`, {
-      params: { from: fromStr, to: toStr },
+      params,
     });
   }
 

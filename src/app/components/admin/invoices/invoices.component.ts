@@ -61,6 +61,7 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
   private refreshSub: Subscription | null = null;
 
   branchId = 1;
+  categoryProductId=1;
   get cashierId(): number {
     return this.auth.getEmployeeId() ?? 0;
   }
@@ -782,47 +783,60 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
       });
   }
 
-  /** تصدير فواتير البابل (Bubble Hope): Excel + PDF بتصميم فاتورة */
+  /** تصدير فواتير البابل (Bubble Hope): جلب كل الصفحات ثم Excel + PDF */
   exportBubbleHopeInvoices(): void {
     const from = (this.from$ as any).value || this.filterFrom || AdminInvoicesComponent.getLocalDateString();
     const to = (this.to$ as any).value || this.filterTo || AdminInvoicesComponent.getLocalDateString();
     this.isLoadingBubbleExport = true;
-    this.api.getSoldProductsReport(from, to).subscribe({
-      next: (res: any) => {
-        const data = res?.data;
-        const items = data?.items ?? [];
-        const grandTotal = Number(data?.grandTotal ?? 0);
-        const baseName = `BubbleHope_Invoices_${from}_to_${to}`;
+    const pageSize = 500;
+    const allItems: any[] = [];
+    let page = 1;
+    let grandTotal = 0;
 
-        // Excel: نفس الداتا — منتج، سعر، كمية، إجمالي السطر، رقم الفاتورة
-        const excelRows = items.map((it: any) => ({
-          'المنتج': this.stripProductPrefix(it.productDescription ?? ''),
-          'السعر': Number(it.unitPrice ?? 0),
-          'الكمية': Number(it.qty ?? 0),
-          'إجمالي السطر': Number(it.lineTotal ?? 0),
-          'رقم الفاتورة': it.invoiceNumber ?? '',
-        }));
-        excelRows.push({
-          'المنتج': 'الإجمالي',
-          'السعر': '',
-          'الكمية': '',
-          'إجمالي السطر': grandTotal,
-          'رقم الفاتورة': '',
-        });
-        const ws = XLSX.utils.json_to_sheet(excelRows);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'فواتير البابل');
-        XLSX.writeFile(wb, `${baseName}.xlsx`);
-
-        // PDF: شكل فاتورة — Forto Car Care Center، مشاريب Bubble Hope، ثم كل منتج وسعر ورقم فاتورة، ثم الإجمالي
-        this.exportBubbleHopePdf(items, grandTotal, baseName);
-        this.isLoadingBubbleExport = false;
-      },
-      error: (err) => {
-        this.isLoadingBubbleExport = false;
-        alert(err?.error?.message ?? 'فشل تحميل بيانات فواتير البابل');
-      },
-    });
+    const fetchNext = () => {
+      this.api.getSoldProductsReport(from, to, this.categoryProductId, page, pageSize).subscribe({
+        next: (res: any) => {
+          const data = res?.data;
+          const items = data?.items ?? [];
+          allItems.push(...items);
+          if (items.length >= pageSize) {
+            page++;
+            fetchNext();
+            return;
+          }
+          grandTotal = data?.grandTotal != null ? Number(data.grandTotal) : allItems.reduce((sum, it) => sum + Number(it.lineTotal ?? 0), 0);
+          if (allItems.length > 0 && grandTotal === 0) {
+            grandTotal = allItems.reduce((sum, it) => sum + Number(it.lineTotal ?? 0), 0);
+          }
+          const baseName = `BubbleHope_Invoices_${from}_to_${to}`;
+          const excelRows: Record<string, string | number>[] = allItems.map((it: any) => ({
+            'المنتج': this.stripProductPrefix(it.productDescription ?? ''),
+            'السعر': Number(it.unitPrice ?? 0),
+            'الكمية': Number(it.qty ?? 0),
+            'إجمالي السطر': Number(it.lineTotal ?? 0),
+            'رقم الفاتورة': it.invoiceNumber ?? '',
+          }));
+          excelRows.push({
+            'المنتج': 'الإجمالي',
+            'السعر': '',
+            'الكمية': '',
+            'إجمالي السطر': grandTotal,
+            'رقم الفاتورة': '',
+          });
+          const ws = XLSX.utils.json_to_sheet(excelRows);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, 'فواتير البابل');
+          XLSX.writeFile(wb, `${baseName}.xlsx`);
+          this.exportBubbleHopePdf(allItems, grandTotal, baseName);
+          this.isLoadingBubbleExport = false;
+        },
+        error: (err) => {
+          this.isLoadingBubbleExport = false;
+          alert(err?.error?.message ?? 'فشل تحميل بيانات فواتير البابل');
+        },
+      });
+    };
+    fetchNext();
   }
 
   /** إزالة بادئة "Product:" أو "منتج:" من وصف المنتج */
@@ -874,8 +888,14 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
         const imgData = canvas.toDataURL('image/png', 1.0);
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfW = pdf.internal.pageSize.getWidth();
-        const pdfH = (canvas.height * pdfW) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH, undefined, 'NONE');
+        const pdfHPage = pdf.internal.pageSize.getHeight();
+        const imgH = (canvas.height * pdfW) / canvas.width;
+        const numPages = Math.ceil(imgH / pdfHPage) || 1;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfW, imgH, undefined, 'NONE');
+        for (let p = 1; p < numPages; p++) {
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, -p * pdfHPage, pdfW, imgH, undefined, 'NONE');
+        }
         pdf.save(`${baseFileName}.pdf`);
       })
       .catch((e) => {

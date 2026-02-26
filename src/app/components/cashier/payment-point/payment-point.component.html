@@ -86,9 +86,24 @@
         </div>
 
         <div class="card-body">
+          <!-- فلتر الفئات -->
+          <div class="product-categories-filter mb-3" *ngIf="productCategories.length > 0">
+            <div class="d-flex flex-wrap gap-2">
+              <button
+                *ngFor="let cat of productCategories"
+                type="button"
+                class="category-pill"
+                [class.category-pill-active]="selectedProductCategoryId === cat.id"
+                (click)="selectedProductCategoryId = cat.id"
+              >
+                {{ cat.name }}
+              </button>
+            </div>
+          </div>
+
           <div class="services-grid">
             <div
-              *ngFor="let p of products"
+              *ngFor="let p of filteredProducts"
               class="service-card"
               [class.selected-active]="isProductSelected(p.id)"
               (click)="toggleProduct(p)"
@@ -520,9 +535,24 @@
             </div>
           </div>
 
+          <!-- فلتر الفئات -->
+          <div class="product-categories-filter mb-3 mt-2" *ngIf="productCategories.length > 0">
+            <div class="d-flex flex-wrap gap-2">
+              <button
+                *ngFor="let cat of productCategories"
+                type="button"
+                class="category-pill"
+                [class.category-pill-active]="selectedProductCategoryId === cat.id"
+                (click)="selectedProductCategoryId = cat.id"
+              >
+                {{ cat.name }}
+              </button>
+            </div>
+          </div>
+
           <div class="services-grid mt-4">
             <div
-              *ngFor="let p of products"
+              *ngFor="let p of filteredProducts"
               class="service-card"
               [class.selected-active]="isProductSelected(p.id)"
               (click)="toggleProduct(p)"
@@ -766,19 +796,20 @@
           <thead class="border-bottom">
             <tr>
               <th class="text-end">البند</th>
-              <!-- <th class="text-center">الكمية</th> -->
+              <th class="text-center">الكمية</th>
               <th class="text-center">السعر</th>
-              <!-- <th class="text-center">الإجمالي</th> -->
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let it of invoiceData.lines">
               <td class="text-end">{{ it.description }}</td>
-              <!-- <td class="text-center">{{ it.qty }}</td> -->
+              <td class="text-center">
+                <span *ngIf="isInvoiceLineProduct(it)">x{{ it.qty }}</span>
+                <span *ngIf="!isInvoiceLineProduct(it)">-</span>
+              </td>
               <td class="text-center fw-bold">
                 {{ it.unitPrice | number: "1.2-2" }}
               </td>
-              <!-- <td class="text-center fw-bold">{{ it.total | number:'1.2-2' }}</td> -->
             </tr>
           </tbody>
         </table>

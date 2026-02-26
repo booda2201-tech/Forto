@@ -10,6 +10,7 @@ type ProductApiDto = {
   salePrice: number;
   costPerUnit: number;
   isActive: boolean;
+  categoryId?: number;
 };
 
 type ProductUi = {
@@ -21,7 +22,10 @@ type ProductUi = {
   isActive: boolean;
   stock: number;
   reorderLevel: number;
+  categoryId?: number;
 };
+
+type ProductCategory = { id: number; name: string; parentId: number | null; isActive: boolean };
 
 @Component({
   selector: 'app-products',
@@ -45,6 +49,11 @@ export class ProductsComponent implements OnInit {
   branchId = 1;
   dismissedAlertIds = new Set<number>();
 
+  productCategories: ProductCategory[] = [];
+  selectedCategoryId: number | null = null;
+  newCategoryName = '';
+  isSavingCategory = false;
+
   stockInProduct: ProductUi | null = null;
   stockInQty = 0;
   stockInUnitCost = 0;
@@ -61,7 +70,20 @@ export class ProductsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadProductCategories();
     this.loadProducts();
+  }
+
+  loadProductCategories(): void {
+    this.api.getProductCategories().subscribe({
+      next: (res: any) => {
+        const list = res?.data ?? [];
+        this.productCategories = Array.isArray(list) ? list.filter((c: any) => c?.isActive !== false) : [];
+      },
+      error: () => {
+        this.productCategories = [];
+      },
+    });
   }
 
   loadProducts() {
@@ -91,6 +113,7 @@ export class ProductsComponent implements OnInit {
                 isActive: !!p.isActive,
                 stock: Number(onHand),
                 reorderLevel: Number(reorder),
+                categoryId: p.categoryId != null ? Number(p.categoryId) : undefined,
               };
             });
 
@@ -112,6 +135,7 @@ export class ProductsComponent implements OnInit {
               isActive: !!p.isActive,
               stock: 0,
               reorderLevel: 0,
+              categoryId: p.categoryId != null ? Number(p.categoryId) : undefined,
             }));
           },
         });
@@ -197,7 +221,16 @@ export class ProductsComponent implements OnInit {
       return;
     }
 
-    const payload = { name, sku, salePrice, costPerUnit };
+    const payload: { name: string; sku: string; salePrice: number; costPerUnit: number; categoryId?: number } = {
+      name,
+      sku,
+      salePrice,
+      costPerUnit,
+    };
+    const catId = this.selectedProduct.categoryId;
+    if (catId != null && catId !== undefined && !Number.isNaN(Number(catId)) && Number(catId) > 0) {
+      payload.categoryId = Number(catId);
+    }
 
     this.api.createProduct(payload).subscribe({
       next: () => {
@@ -213,6 +246,7 @@ export class ProductsComponent implements OnInit {
           isActive: true,
           stock: 0,
           reorderLevel: 0,
+          categoryId: undefined,
         };
       },
       error: (err) => {
@@ -292,5 +326,42 @@ export class ProductsComponent implements OnInit {
 
   dismissAlert(prod: ProductUi): void {
     this.dismissedAlertIds.add(prod.id);
+  }
+
+  /** المنتجات بعد تطبيق فلتر الفئة */
+  get filteredProducts(): ProductUi[] {
+    if (this.selectedCategoryId == null) return this.products;
+    return this.products.filter((p) => (p.categoryId ?? 0) === this.selectedCategoryId);
+  }
+
+  openAddCategoryModal(): void {
+    this.newCategoryName = '';
+    const el = document.getElementById('addCategoryModal');
+    if (el) new (window as any).bootstrap.Modal(el).show();
+  }
+
+  saveNewCategory(): void {
+    const name = (this.newCategoryName || '').trim();
+    if (!name) {
+      alert('أدخل اسم الفئة');
+      return;
+    }
+    this.isSavingCategory = true;
+    this.api.createProductCategory({ name }).subscribe({
+      next: () => {
+        this.isSavingCategory = false;
+        (window as any).bootstrap?.Modal?.getInstance(document.getElementById('addCategoryModal'))?.hide();
+        this.loadProductCategories();
+        alert('تم إضافة الفئة بنجاح');
+      },
+      error: (err) => {
+        this.isSavingCategory = false;
+        alert(err?.error?.message || 'فشل إضافة الفئة');
+      },
+    });
+  }
+
+  categoryName(catId: number): string {
+    return this.productCategories.find((c) => c.id === catId)?.name ?? `#${catId}`;
   }
 }

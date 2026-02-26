@@ -8,8 +8,27 @@
           </h3>
         </div>
 
+        <!-- الفئات + فلتر + إضافة فئة -->
+        <div class="card border-0 shadow-sm rounded-3 p-3 mb-4">
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="fw-bold text-muted small">الفئات:</span>
+            <select
+              class="form-select form-select-sm"
+              style="width: auto; max-width: 200px;"
+              [ngModel]="selectedCategoryId"
+              (ngModelChange)="selectedCategoryId = $event"
+            >
+              <option [ngValue]="null">الكل</option>
+              <option *ngFor="let cat of productCategories" [ngValue]="cat.id">{{ cat.name }}</option>
+            </select>
+            <button type="button" class="btn btn-sm btn-outline-orange" (click)="openAddCategoryModal()">
+              <i class="bi bi-plus-lg me-1"></i> إضافة فئة منتجات جديدة
+            </button>
+          </div>
+        </div>
+
         <div class="row g-3">
-          <div class="col-md-4" *ngFor="let prod of products">
+          <div class="col-md-4" *ngFor="let prod of filteredProducts">
             <div
               class="card product-card border-0 shadow-sm"
               [class.product-below-reorder]="isBelowReorder(prod)"
@@ -81,6 +100,16 @@
           <div class="card-body p-4 text-end">
             <div class="modal-body p-0 text-end">
               <div class="mb-3">
+                <label class="form-label small fw-bold">الفئة</label>
+                <select
+                  class="form-select custom-input"
+                  [(ngModel)]="selectedProduct.categoryId"
+                >
+                  <option [ngValue]="null">-- اختر الفئة --</option>
+                  <option *ngFor="let cat of productCategories" [ngValue]="cat.id">{{ cat.name }}</option>
+                </select>
+              </div>
+              <div class="mb-3">
                 <label class="form-label small fw-bold">اسم المنتج *</label>
                 <input
                   #nameInp
@@ -129,6 +158,35 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- مودال إضافة فئة منتجات -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold">إضافة فئة منتجات جديدة</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <label class="form-label fw-bold">اسم الفئة *</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="newCategoryName"
+            placeholder="مثال: مشروبات"
+          />
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">إلغاء</button>
+        <button type="button" class="btn btn-orange rounded-3 fw-bold" (click)="saveNewCategory()" [disabled]="isSavingCategory || !newCategoryName.trim()">
+          {{ isSavingCategory ? 'جاري الحفظ...' : 'حفظ' }}
+        </button>
       </div>
     </div>
   </div>
