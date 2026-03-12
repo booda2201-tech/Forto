@@ -53,6 +53,8 @@ export class MaterialsComponent implements OnInit {
   stockInMaterial: MaterialUi | null = null;
   stockInQty = 0;
   stockInUnitCost = 0;
+  /** التحميل/سعر الوحدة عند إدخال المخزون (اختياري) */
+  stockInChargePerUnit: number | null = null;
   stockInNotes = '';
   adjustMaterial: MaterialUi | null = null;
   adjustQty = 0;
@@ -139,6 +141,7 @@ export class MaterialsComponent implements OnInit {
     this.stockInMaterial = mat;
     this.stockInQty = 0;
     this.stockInUnitCost = mat.costPerUnit ?? 0;
+    this.stockInChargePerUnit = mat.chargePerUnit != null && !Number.isNaN(Number(mat.chargePerUnit)) ? Number(mat.chargePerUnit) : null;
     this.stockInNotes = '';
   }
 
@@ -149,13 +152,24 @@ export class MaterialsComponent implements OnInit {
     }
     const cashierId = this.auth.getEmployeeId() ?? 0;
     this.isSavingStock = true;
-    this.api.addStockIn(this.branchId, {
+    const payload: {
+      cashierId: number;
+      materialId: number;
+      qty: number;
+      unitCost: number;
+      chargePerUnit?: number;
+      notes?: string;
+    } = {
       cashierId,
       materialId: this.stockInMaterial.id,
       qty: this.stockInQty,
       unitCost: this.stockInUnitCost,
       notes: this.stockInNotes || undefined,
-    }).subscribe({
+    };
+    if (this.stockInChargePerUnit != null && !Number.isNaN(Number(this.stockInChargePerUnit))) {
+      payload.chargePerUnit = Number(this.stockInChargePerUnit);
+    }
+    this.api.addStockIn(this.branchId, payload).subscribe({
       next: () => {
         alert('تم إدخال المخزون بنجاح');
         this.loadMaterials();
@@ -203,13 +217,32 @@ export class MaterialsComponent implements OnInit {
     const unit = Number(this.selectedMaterial.unit);
     const costPerUnit = Number(this.selectedMaterial.costPerUnit);
     const chargePerUnit = Number(this.selectedMaterial.chargePerUnit);
+    const initialStockQty = Number(this.selectedMaterial.stock) || 0;
+    const reorderLevel = Number(this.selectedMaterial.reorderLevel) || 0;
 
-    if (!name || Number.isNaN(unit) || Number.isNaN(costPerUnit) || Number.isNaN(chargePerUnit)) {
+    if (
+      !name ||
+      Number.isNaN(unit) ||
+      Number.isNaN(costPerUnit) ||
+      Number.isNaN(chargePerUnit) ||
+      Number.isNaN(initialStockQty) ||
+      Number.isNaN(reorderLevel) ||
+      initialStockQty < 0 ||
+      reorderLevel < 0
+    ) {
       alert('من فضلك أدخل البيانات بشكل صحيح');
       return;
     }
 
-    const payload = { name, unit, costPerUnit, chargePerUnit };
+    const payload = {
+      name,
+      unit,
+      costPerUnit,
+      chargePerUnit,
+      branchId: this.branchId,
+      initialStockQty,
+      reorderLevel,
+    };
 
     this.api.createMaterial(payload).subscribe({
       next: () => {

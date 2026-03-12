@@ -194,6 +194,9 @@ export class ApiService {
     costPerUnit: number;
     categoryId?: number;
     catProdId?: number;
+    branchId: number;
+    initialStockQty: number;
+    reorderLevel: number;
   }) {
     const body: any = { ...payload };
     if (payload.categoryId != null && payload.categoryId > 0) {
@@ -236,13 +239,18 @@ export class ApiService {
     productId: number;
     qty: number;
     unitCost: number;
+    salePrice?: number;
     notes?: string;
     occurredAt?: string;
   }) {
-    return this.http.post(`${this.baseUrl}/api/branches/${branchId}/products/stock/in`, {
+    const body: any = {
       ...payload,
       occurredAt: payload.occurredAt ?? new Date().toISOString(),
-    });
+    };
+    if (payload.salePrice != null && !Number.isNaN(Number(payload.salePrice))) {
+      body.salePrice = Number(payload.salePrice);
+    }
+    return this.http.post(`${this.baseUrl}/api/branches/${branchId}/products/stock/in`, body);
   }
 
   adjustProductStock(branchId: number, payload: {
@@ -374,13 +382,18 @@ export class ApiService {
     materialId: number;
     qty: number;
     unitCost: number;
+    chargePerUnit?: number;
     notes?: string;
     occurredAt?: string;
   }) {
-    return this.http.post(`${this.baseUrl}/api/branches/${branchId}/stock/in`, {
+    const body: any = {
       ...payload,
       occurredAt: payload.occurredAt ?? new Date().toISOString(),
-    });
+    };
+    if (payload.chargePerUnit != null && !Number.isNaN(Number(payload.chargePerUnit))) {
+      body.chargePerUnit = Number(payload.chargePerUnit);
+    }
+    return this.http.post(`${this.baseUrl}/api/branches/${branchId}/stock/in`, body);
   }
 
   adjustStock(branchId: number, payload: {
@@ -636,6 +649,9 @@ export class ApiService {
     unit: number;
     costPerUnit: number;
     chargePerUnit: number;
+    branchId: number;
+    initialStockQty: number;
+    reorderLevel: number;
   }) {
     return this.http.post(`${this.baseUrl}/api/materials/Create`, payload);
   }

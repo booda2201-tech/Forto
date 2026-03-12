@@ -57,6 +57,8 @@ export class ProductsComponent implements OnInit {
   stockInProduct: ProductUi | null = null;
   stockInQty = 0;
   stockInUnitCost = 0;
+  /** سعر البيع عند إدخال المخزون (اختياري) */
+  stockInSalePrice: number | null = null;
   stockInNotes = '';
   adjustProduct: ProductUi | null = null;
   adjustQty = 0;
@@ -67,7 +69,7 @@ export class ProductsComponent implements OnInit {
     private api: ApiService,
     private auth: AuthService,
     private alertService: ProductStockAlertService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadProductCategories();
@@ -151,6 +153,7 @@ export class ProductsComponent implements OnInit {
     this.stockInProduct = prod;
     this.stockInQty = 0;
     this.stockInUnitCost = prod.costPerUnit ?? 0;
+    this.stockInSalePrice = prod.price != null && !Number.isNaN(Number(prod.price)) ? Number(prod.price) : null;
     this.stockInNotes = '';
   }
 
@@ -161,13 +164,17 @@ export class ProductsComponent implements OnInit {
     }
     const cashierId = this.auth.getEmployeeId() ?? 0;
     this.isSavingStock = true;
-    this.api.addProductStockIn(this.branchId, {
+    const payload: Parameters<ApiService['addProductStockIn']>[1] = {
       cashierId,
       productId: this.stockInProduct.id,
       qty: this.stockInQty,
       unitCost: this.stockInUnitCost,
       notes: this.stockInNotes || undefined,
-    }).subscribe({
+    };
+    if (this.stockInSalePrice != null && !Number.isNaN(Number(this.stockInSalePrice))) {
+      payload.salePrice = Number(this.stockInSalePrice);
+    }
+    this.api.addProductStockIn(this.branchId, payload).subscribe({
       next: () => {
         alert('تم إدخال المخزون بنجاح');
         this.loadProducts();
@@ -215,17 +222,35 @@ export class ProductsComponent implements OnInit {
     const sku = (this.selectedProduct.sku || '').trim();
     const salePrice = Number(this.selectedProduct.price);
     const costPerUnit = Number(this.selectedProduct.costPerUnit);
+    const initialStockQty = Number(this.selectedProduct.stock) || 0;
+    const reorderLevel = Number(this.selectedProduct.reorderLevel) || 0;
 
     if (!name || !sku || Number.isNaN(salePrice) || Number.isNaN(costPerUnit)) {
       alert('من فضلك أدخل الاسم و SKU والسعر والتكلفة بشكل صحيح');
       return;
     }
+    if (initialStockQty < 0 || reorderLevel < 0) {
+      alert('المخزون المبدئي وحد إعادة الطلب يجب أن يكونا غير سالبين');
+      return;
+    }
 
-    const payload: { name: string; sku: string; salePrice: number; costPerUnit: number; categoryId?: number } = {
+    const payload: {
+      name: string;
+      sku: string;
+      salePrice: number;
+      costPerUnit: number;
+      categoryId?: number;
+      branchId: number;
+      initialStockQty: number;
+      reorderLevel: number;
+    } = {
       name,
       sku,
       salePrice,
       costPerUnit,
+      branchId: this.branchId,
+      initialStockQty,
+      reorderLevel,
     };
     const catId = this.selectedProduct.categoryId;
     if (catId != null && catId !== undefined && !Number.isNaN(Number(catId)) && Number(catId) > 0) {
@@ -269,6 +294,7 @@ export class ProductsComponent implements OnInit {
       salePrice: Number(this.selectedProduct.price),
       costPerUnit: Number(this.selectedProduct.costPerUnit),
       isActive: !!this.selectedProduct.isActive,
+      categoryId: this.selectedProduct.categoryId
     };
 
     this.api.updateProduct(this.selectedProduct.id, payload).subscribe({
