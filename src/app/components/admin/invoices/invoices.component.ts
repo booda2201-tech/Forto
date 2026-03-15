@@ -648,7 +648,7 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
     return Number(this.selectedInvoice?.subTotal ?? 0);
   }
   get taxAmount(): number {
-    return this.subTotal * 0.14;
+    return this.subTotal * 0;
   }
   get finalTotal(): number {
     return Number(this.selectedInvoice?.total ?? 0);

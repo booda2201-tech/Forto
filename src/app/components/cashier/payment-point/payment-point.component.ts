@@ -525,7 +525,7 @@ export class PaymentPointComponent implements OnInit {
     payload.adjustedTotal = adjTotal;
 
     // طريقة الدفع: 1 = كاش، 2 = فيزا، 3 = مخصص (كاش + فيزا)
-    const finalTotal = adjTotal * 1.14;
+    const finalTotal = adjTotal ;
     const cashAmt =
       this.paymentType === 'cash'
         ? finalTotal
@@ -578,7 +578,7 @@ export class PaymentPointComponent implements OnInit {
         }
         // المجموع والإجمالي من adjustedTotal: المجموع = adjTotal، الضريبة 14% عليه، الإجمالي = adjTotal + ضريبة
         this.invoiceData.subTotal = adjTotal;
-        this.invoiceData.total = adjTotal + adjTotal * 0.14;
+        this.invoiceData.total = adjTotal + adjTotal * 0;
         this.invoiceData.paymentMethod = payload.paymentMethod;
         this.openInvoiceModal?.();
 
@@ -647,7 +647,7 @@ export class PaymentPointComponent implements OnInit {
         : this.adjustTotalMode === 'custom'
           ? Number(this.adjustCustomAmount) || 0
           : this.totalPrice;
-    return base * 1.14;
+    return base ;
   }
 
   /** في وضع مخصص: الباقي فيزا = الإجمالي النهائي - الكاش المدخل */
@@ -764,7 +764,7 @@ export class PaymentPointComponent implements OnInit {
         }
         // عرض الفاتورة: المجموع = المبلغ بعد التعديل، الضريبة 14%، الإجمالي = المجموع + الضريبة
         this.invoiceData.subTotal = finalTotal;
-        this.invoiceData.total = finalTotal * 1.14;
+        this.invoiceData.total = finalTotal ;
         this.invoiceData.paymentMethod = payload.paymentMethod;
         this.openInvoiceModal();
         this.cart = [];
