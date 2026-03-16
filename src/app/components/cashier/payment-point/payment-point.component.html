@@ -765,7 +765,6 @@
             <strong>العميل:</strong>
             {{
               invoiceData.clientName ||
-                invoiceData.customerName ||
                 customerFormData?.name ||
                 "-"
             }}
@@ -774,8 +773,6 @@
             <strong>الهاتف:</strong>
             {{
               invoiceData.clientNumber ||
-                invoiceData.phoneNumber ||
-                invoiceData.phone ||
                 customerFormData?.phone ||
                 "-"
             }}
@@ -823,8 +820,8 @@
           </div>
 
           <div class="d-flex justify-content-between">
-            <span>الضريبة (0%):</span>
-            <span>{{ invoiceVat | number: "1.2-2" }} ج.م</span>
+            <span>الضريبة ({{ invoiceData.taxRate | number: "1.2-2" }}%):</span>
+            <span>{{ invoiceData.taxAmount | number: "1.2-2" }} ج.م</span>
           </div>
 
           <div

@@ -41,6 +41,8 @@ type InvoiceUi = {
   createdAt: string;
   paidAt: string;
   subTotal: number;
+  taxRate: number;
+  taxAmount: number;
   discount: number;
   total: number;
   cost?: number;
@@ -341,6 +343,8 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
         plateNumber: x.plateNumber != null ? String(x.plateNumber) : undefined,
         itemsText: String(x.itemsText ?? ''),
         lines,
+        taxRate: Number(x.taxRate ?? 0),
+        taxAmount: Number(x.taxAmount ?? 0),
       } as InvoiceUi;
     });
   }

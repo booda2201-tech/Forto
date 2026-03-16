@@ -77,7 +77,6 @@ export class PaymentPointComponent implements OnInit {
   // Pricing & Invoice Data
   totalPrice = 0; // عرض السعر المباشر
   subTotal = 0;
-  taxAmount = 0;
   finalTotal = 0;
   selectedInvoice: any = null;
 
@@ -568,17 +567,14 @@ export class PaymentPointComponent implements OnInit {
         if (this.invoiceData && this.customerFormData) {
           this.invoiceData.clientName =
             this.invoiceData.clientName ||
-            this.invoiceData.customerName ||
             this.customerFormData.name;
           this.invoiceData.clientNumber =
-            this.invoiceData.clientNumber ||
-            this.invoiceData.phoneNumber ||
-            this.invoiceData.phone ||
+            this.invoiceData.clientNumber  ||
             this.customerFormData.phone;
         }
-        // المجموع والإجمالي من adjustedTotal: المجموع = adjTotal، الضريبة 14% عليه، الإجمالي = adjTotal + ضريبة
-        this.invoiceData.subTotal = adjTotal;
-        this.invoiceData.total = adjTotal + adjTotal * 0;
+        // المجموع والإجمالي من adjustedTotal: المجموع = adjTotal， الضريبة 14% عليه， الإجمالي = adjTotal + ضريبة
+        this.invoiceData.subTotal = this.invoiceData.adjustedTotal;
+        this.invoiceData.total = this.invoiceData.adjustedTotal + this.invoiceData.adjustedTotal * this.invoiceData.taxRate;
         this.invoiceData.paymentMethod = payload.paymentMethod;
         this.openInvoiceModal?.();
 
@@ -754,17 +750,14 @@ export class PaymentPointComponent implements OnInit {
         if (this.invoiceData && this.customerFormData) {
           this.invoiceData.clientName =
             this.invoiceData.clientName ||
-            this.invoiceData.customerName ||
             this.customerFormData.name;
           this.invoiceData.clientNumber =
             this.invoiceData.clientNumber ||
-            this.invoiceData.phoneNumber ||
-            this.invoiceData.phone ||
             this.customerFormData.phone;
         }
         // عرض الفاتورة: المجموع = المبلغ بعد التعديل، الضريبة 14%، الإجمالي = المجموع + الضريبة
-        this.invoiceData.subTotal = finalTotal;
-        this.invoiceData.total = finalTotal ;
+        this.invoiceData.subTotal = this.invoiceData.adjustedTotal;
+        this.invoiceData.total = this.invoiceData.total ;
         this.invoiceData.paymentMethod = payload.paymentMethod;
         this.openInvoiceModal();
         this.cart = [];

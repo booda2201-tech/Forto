@@ -43,6 +43,8 @@ type InvoiceUi = {
   createdAt: string;
   paidAt: string;
   subTotal: number;
+  taxRate: number;
+  taxAmount: number;
   discount: number;
   total: number;
   cost?: number;
@@ -337,6 +339,8 @@ export class InvoicesComponent implements OnInit, OnDestroy {
         subTotal: Number(x.subTotal ?? 0),
         discount: Number(x.discount ?? 0),
         total,
+        taxRate: Number(x.taxRate ),
+        taxAmount: Number(x.taxAmount ),
         cost,
         profit,
         customerName: String(x.customerName ?? ''),
@@ -647,15 +651,15 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     });
   }
 
-  get subTotal(): number {
-    return Number(this.selectedInvoice?.subTotal ?? 0);
-  }
-  get taxAmount(): number {
-    return this.subTotal * 0;
-  }
-  get finalTotal(): number {
-    return Number(this.selectedInvoice?.total ?? 0);
-  }
+  // get subTotal(): number {
+  //   return Number(this.selectedInvoice?.subTotal ?? 0);
+  // }
+  // get taxAmount(): number {
+  //   return this.subTotal * 0;
+  // }
+  // get finalTotal(): number {
+  //   return Number(this.selectedInvoice?.total ?? 0);
+  // }
 
   downloadInvoice(): void {
     setTimeout(() => this.printInvoice.print('adminPrintableInvoice'), 100);

@@ -314,15 +314,15 @@
         <div style="font-size: 13px; font-weight: bold;">
           <div class="d-flex justify-content-between">
             <span>المجموع:</span>
-            <span>{{ subTotal | number:'1.2-2' }} ج.م</span>
+            <span>{{ selectedInvoice?.subTotal | number:'1.2-2' }} ج.م</span>
           </div>
           <div class="d-flex justify-content-between fw-bold">
-            <span>الضريبة (0%):</span>
-            <span>{{ taxAmount | number:'1.2-2' }} ج.م</span>
+                      <span>الضريبة ({{ selectedInvoice?.taxRate | number:'1.2-2' }}%):</span>
+            <span>{{ selectedInvoice?.taxAmount | number:'1.2-2' }} ج.م</span>
           </div>
           <div class="d-flex justify-content-between fw-bold mt-1" style="font-size: 15px;">
             <span>الإجمالي:</span>
-            <span>{{ finalTotal | number:'1.2-2' }} ج.م</span>
+            <span>{{ selectedInvoice?.total| number:'1.2-2' }} ج.م</span>
           </div>
         </div>
 
