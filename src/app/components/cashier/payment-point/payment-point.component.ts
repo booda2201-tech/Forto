@@ -75,7 +75,7 @@ export class PaymentPointComponent implements OnInit {
   newOrderPaymentCashAmount = 0;   // مبلغ الكاش عند طريقة الدفع "مخصص"
 
   // Pricing & Invoice Data
-  totalPrice = 0; // عرض السعر المباشر
+  total = 0; // عرض السعر المباشر
   subTotal = 0;
   finalTotal = 0;
   selectedInvoice: any = null;
@@ -195,7 +195,7 @@ export class PaymentPointComponent implements OnInit {
       const bodyType = Number(val);
 
       this.selectedServices = [];
-      this.totalPrice = 0;
+      this.total = 0;
       this.serviceEmployeeMap = {};
       this.serviceEmployees = {};
       this.giftOptions = [];
@@ -377,7 +377,7 @@ export class PaymentPointComponent implements OnInit {
       0,
     );
 
-    this.totalPrice = servicesTotal + productsTotal;
+    this.total = servicesTotal + productsTotal;
   }
 
   selectedReservationId: number | null = null;
@@ -516,7 +516,7 @@ export class PaymentPointComponent implements OnInit {
         ? 0
         : this.adjustTotalMode === 'custom'
           ? Number(this.adjustCustomAmount)
-          : this.totalPrice;
+          : this.total;
     console.log(this.adjustTotalMode);
     console.log(adjTotal);
     console.log(this.adjustCustomAmount);
@@ -552,7 +552,7 @@ export class PaymentPointComponent implements OnInit {
     this.isSubmitting = true;
     this.api.cashierCheckout(payload).subscribe({
       next: (res: any) => {
-        console.log(res);
+        console.log("res : ",res);
 
         if (res?.success === false) {
           this.isSubmitting = false;
@@ -573,8 +573,8 @@ export class PaymentPointComponent implements OnInit {
             this.customerFormData.phone;
         }
         // المجموع والإجمالي من adjustedTotal: المجموع = adjTotal， الضريبة 14% عليه， الإجمالي = adjTotal + ضريبة
-        this.invoiceData.subTotal = this.invoiceData.adjustedTotal;
-        this.invoiceData.total = this.invoiceData.adjustedTotal + this.invoiceData.adjustedTotal * this.invoiceData.taxRate;
+        this.invoiceData.subTotal = this.invoiceData.subTotal;
+        this.invoiceData.total = this.invoiceData.total;
         this.invoiceData.paymentMethod = payload.paymentMethod;
         this.openInvoiceModal?.();
 
@@ -614,18 +614,18 @@ export class PaymentPointComponent implements OnInit {
       (sum, x) => sum + x.product.price * x.qty,
       0,
     );
-    this.totalPrice = servicesSum + productsSum;
+    this.total = servicesSum + productsSum;
   }
 
   get totalAmount() {
-    return this.totalPrice;
+    return this.total;
   } // لتوحيد العرض في الـ HTML
 
   /** للمودال طلب جديد: المبلغ النهائي (عادي = الإجمالي، مجاني = 0، تعديل = المدخل) */
   get newOrderFinalTotal(): number {
     if (this.newOrderAdjustMode === 'free') return 0;
     if (this.newOrderAdjustMode === 'custom') return Number(this.newOrderAdjustCustomAmount) || 0;
-    return this.totalPrice;
+    return this.total;
   }
 
   /** في وضع مخصص لطلب جديد: الباقي فيزا */
@@ -642,7 +642,7 @@ export class PaymentPointComponent implements OnInit {
         ? 0
         : this.adjustTotalMode === 'custom'
           ? Number(this.adjustCustomAmount) || 0
-          : this.totalPrice;
+          : this.total;
     return base ;
   }
 
