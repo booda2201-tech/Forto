@@ -3,12 +3,12 @@
 @import "bootstrap-icons/font/bootstrap-icons.css";
 @import 'ngx-toastr/toastr';
 
-body{
+body {
   direction: rtl;
   max-width: 1920px;
   margin: 0 auto;
-  // background-color: silver;
-
+  background-color: #f8f9fa; /* أضف اللون هنا */
+  min-height: 100vh;
 }
 
 .cont{
@@ -20,8 +20,14 @@ body{
   align-items: center;
 }
 
-.contt{
-  background-color: #f8f9fa;
+.contt {
+    display: flex;
+    flex-direction: column;
+    /* امسح الخلفية من هنا أو اتركها، الـ body سيغطي الفراغات */
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    height: auto;
+    width: 100%; /* تأكد من أنها تأخذ عرض الـ body بالكامل */
 }
 
 

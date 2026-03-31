@@ -30,6 +30,17 @@ type InvoiceLineUi = {
   total: number;
 };
 
+type RefundLineUi = {
+  lineId: number;
+  description: string;
+  qty: number;
+  unitPrice: number;
+  total: number;
+  selected: boolean;
+  refundQty: number;
+  isProduct: boolean; // <--- ضيف السطر ده هنا
+};
+
 /** status: 1 = Unpaid, 2 = Paid, 3 = Cancelled, 4 = Pending deletion, 5 = Deleted */
 type InvoiceUi = {
   id: string;
@@ -62,6 +73,9 @@ type InvoiceUi = {
 })
 export class InvoicesComponent implements OnInit, OnDestroy {
   selectedInvoice: InvoiceUi | null = null;
+  invoiceToRefund: InvoiceUi | null = null;
+  refundLines: RefundLineUi[] = [];
+  isProcessingRefund = false;
 
   private deletionHubSub: Subscription | null = null;
   private refreshSub: Subscription | null = null;
@@ -73,6 +87,7 @@ export class InvoicesComponent implements OnInit, OnDestroy {
 
   totalInvoicesCount = 0;
   totalDailyAmount = 0;
+  totalRefundedAmount = 0;
 
   /** تاريخ اليوم حسب التوقيت المحلي (ليس UTC) بصيغة YYYY-MM-DD */
   private static getLocalDateString(d?: Date): string {
@@ -112,6 +127,16 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     totalAmountIncludingTips?: number;
   } | null = null;
 
+get refundTotal(): number {
+  return this.refundLines
+    .filter(l => l.selected && (l as any).isProduct)
+    .reduce((sum, l) => sum + l.unitPrice * l.refundQty, 0);
+}
+
+get refundSelectedCount(): number {
+  return this.refundLines.filter(l => l.selected && (l as any).isProduct).length;
+}
+
   get currentPage(): number {
     return (this.page$ as any).value || 1;
   }
@@ -147,6 +172,12 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     return (this.lastSummary as any)?.totalTips ?? 0;
   }
 
+  get totalRefundedAmountValue(): number {
+    return (this.lastSummary as any)?.totalRefundedAmount ?? 0;
+    // ملاحظة: تأكد من اسم الحقل اللي راجع من الـ API (غالباً بيكون totalRefundedAmount أو totalRefunded)
+  }
+
+
   invoices$: Observable<InvoiceUi[]> = combineLatest([
     this.searchTerm$,
     this.from$,
@@ -180,6 +211,8 @@ export class InvoicesComponent implements OnInit, OnDestroy {
         this.lastSummary?.totalAmountIncludingTips ??
         this.lastSummary?.totalRevenue ??
         list.reduce((acc, inv) => acc + (inv.total || 0), 0);
+
+        this.totalRefundedAmount = (this.lastSummary as any)?.totalRefundedAmount ?? 0;
     }),
     shareReplay(1),
   );
@@ -387,6 +420,107 @@ export class InvoicesComponent implements OnInit, OnDestroy {
     const cash = Number(this.payCustomCashAmount) || 0;
     return Math.max(0, this.payModalTotal - cash);
   }
+
+
+
+
+
+openRefundModal(invoice: InvoiceUi): void {
+  if (invoice.status !== 2) return; // فقط الفواتير المدفوعة
+  this.invoiceToRefund = invoice;
+
+this.refundLines = (invoice.lines ?? []).map(l => {
+  const description = (l.description ?? '').toLowerCase();
+
+  // المنع هنا: لو الوصف فيه كلمة "Service" أو "غسيل" بيعتبرها خدمة
+  const isService = description.includes('service') ||
+                    description.includes('غسيل');
+
+  return {
+    lineId: l.lineId,
+    description: l.description,
+    qty: l.qty,
+    unitPrice: l.unitPrice,
+    total: l.total,
+    selected: false,
+    refundQty: l.qty,
+    isProduct: !isService // لو مش خدمة يبقى منتج مسموح باسترجاعه
+  };
+});
+
+  const el = document.getElementById('adminRefundModal');
+  if (el) {
+    const modal = new (window as any).bootstrap.Modal(el);
+    modal.show();
+  }
+}
+closeRefundModal(): void {
+  this.invoiceToRefund = null;
+  this.refundLines = [];
+  const el = document.getElementById('adminRefundModal');
+  if (el) {
+    const inst = (window as any).bootstrap?.Modal?.getInstance(el);
+    if (inst) inst.hide();
+  }
+}
+toggleRefundLine(line: any): void {
+  // لو السطر ده مش منتج (خدمة)، اخرج فوراً وما تعملش حاجة
+  if (!line.isProduct) {
+    return;
+  }
+
+  line.selected = !line.selected;
+
+  if (line.selected) {
+    line.refundQty = line.qty; // تعيين الكمية الافتراضية عند التحديد
+  } else {
+    line.refundQty = 0;
+  }
+}
+
+clampRefundQty(line: RefundLineUi): void {
+  if (line.refundQty < 1) line.refundQty = 1;
+  if (line.refundQty > line.qty) line.refundQty = line.qty;
+}
+
+confirmRefund(): void {
+  const inv = this.invoiceToRefund;
+  if (!inv?.invoiceId) return;
+
+  const selectedLines = this.refundLines.filter(l => l.selected && l.refundQty > 0);
+  if (selectedLines.length === 0) {
+    alert('يرجى اختيار صنف واحد على الأقل للاسترجاع.');
+    return;
+  }
+
+  const payload = {
+    originalInvoiceId: inv.invoiceId,
+    cashierId: this.cashierId,
+    lines: selectedLines.map(l => ({
+      lineId: l.lineId,
+      qty: l.refundQty,
+      unitPrice: l.unitPrice,
+    })),
+  };
+
+  this.isProcessingRefund = true;
+  this.api.createRefundInvoice(payload).subscribe({
+    next: () => {
+      this.isProcessingRefund = false;
+      this.closeRefundModal();
+      this.page$.next(this.currentPage);
+      alert('تم إنشاء فاتورة المرتجع بنجاح ✓');
+    },
+    error: (err) => {
+      this.isProcessingRefund = false;
+      console.error(err);
+      alert(err?.error?.message || 'فشل إنشاء فاتورة المرتجع');
+    },
+  });
+}
+
+
+
 
   openPayModal(invoice: InvoiceUi): void {
     if (invoice.status !== 1) return;

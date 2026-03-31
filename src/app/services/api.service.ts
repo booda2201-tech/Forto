@@ -558,6 +558,15 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/api/shifts/GetById/${id}`);
   }
 
+  createRefundInvoice(payload: {
+  originalInvoiceId: number;
+  cashierId: number;
+  lines: { lineId: number; qty: number; unitPrice: number }[];
+  }): Observable<any> {
+  return this.http.post(`${this.baseUrl}/invoices/refund`, payload);
+}
+
+
   createShift(payload: {
     name: string;
     startTime: string; // "09:00"
