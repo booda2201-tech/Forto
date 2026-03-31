@@ -76,6 +76,7 @@ export class InvoicesComponent implements OnInit, OnDestroy {
   invoiceToRefund: InvoiceUi | null = null;
   refundLines: RefundLineUi[] = [];
   isProcessingRefund = false;
+  refundReason: string = '';
 
   private deletionHubSub: Subscription | null = null;
   private refreshSub: Subscription | null = null;
@@ -121,6 +122,7 @@ export class InvoicesComponent implements OnInit, OnDestroy {
   private lastSummary: {
     totalCount?: number;
     totalRevenue?: number;
+    totalReturns?: number;
     totalCashAmount?: number;
     totalVisaAmount?: number;
     totalTips?: number;
@@ -172,10 +174,24 @@ get refundSelectedCount(): number {
     return (this.lastSummary as any)?.totalTips ?? 0;
   }
 
-  get totalRefundedAmountValue(): number {
-    return (this.lastSummary as any)?.totalRefundedAmount ?? 0;
+  // get totalRefundedAmountValue(): number {
+  //   return (this.lastSummary as any)?.totalRefundedAmount ?? 0;
+  //   // ملاحظة: تأكد من اسم الحقل اللي راجع من الـ API (غالباً بيكون totalRefundedAmount أو totalRefunded)
+  // }
+
+    get totalReturnsAmountValue(): number {
+    return (this.lastSummary as any)?.totalReturns ?? 0;
     // ملاحظة: تأكد من اسم الحقل اللي راجع من الـ API (غالباً بيكون totalRefundedAmount أو totalRefunded)
   }
+
+// تعديل الحسبة في الملف البرمجي (TS)
+get finalCash(): number {
+  const cash = this.lastSummary?.totalCashAmount ?? 0;
+  const refunded = (this.lastSummary as any)?.totalRefundedAmount ?? 0;
+  return Math.max(0, cash - refunded);
+}
+
+
 
 
   invoices$: Observable<InvoiceUi[]> = combineLatest([
@@ -421,7 +437,14 @@ get refundSelectedCount(): number {
     return Math.max(0, this.payModalTotal - cash);
   }
 
+  // دالة مساعدة للتأكد من منطقية الكميات قبل التفعيل
+get isRefundValid(): boolean {
+  const selectedLines = this.refundLines.filter(l => l.selected);
+  if (selectedLines.length === 0) return false;
 
+  // التأكد أن كل صنف مختار كميته بين 1 والكمية الأصلية
+  return selectedLines.every(l => l.refundQty >= 1 && l.refundQty <= l.qty);
+}
 
 
 
@@ -457,6 +480,7 @@ this.refundLines = (invoice.lines ?? []).map(l => {
 closeRefundModal(): void {
   this.invoiceToRefund = null;
   this.refundLines = [];
+  this.refundReason = '';
   const el = document.getElementById('adminRefundModal');
   if (el) {
     const inst = (window as any).bootstrap?.Modal?.getInstance(el);
@@ -479,43 +503,74 @@ toggleRefundLine(line: any): void {
 }
 
 clampRefundQty(line: RefundLineUi): void {
-  if (line.refundQty < 1) line.refundQty = 1;
-  if (line.refundQty > line.qty) line.refundQty = line.qty;
+  // إذا كان الحقل فارغاً، لا تفعل شيئاً حتى ينتهي المستخدم من الكتابة
+  if (line.refundQty === null || line.refundQty === undefined) return;
+
+  // التأكد من الحد الأدنى
+  if (line.refundQty < 1) {
+    line.refundQty = 1;
+  }
+
+  // التأكد من الحد الأقصى (الكمية الأصلية)
+  if (line.refundQty > line.qty) {
+    line.refundQty = line.qty;
+  }
+}
+
+onQtyInputChange(event: any, line: any): void {
+  // 1. الحصول على القيمة المكتوبة حالياً في الحقل
+  let value = parseInt(event.target.value);
+
+  // 2. تطبيق منطق التقييد (Clamping)
+  if (isNaN(value) || value < 1) {
+    value = 1;
+  } else if (value > line.qty) {
+    value = line.qty;
+  }
+
+  // 3. تحديث القيمة في الموديل وفي الحقل نفسه لمنع الأرقام الكبيرة
+  line.refundQty = value;
+  event.target.value = value;
+
+  // 4. (اختياري) إذا كان لديك دالة تحسب الإجمالي، استدعيها هنا
+  // this.calculateTotal();
 }
 
 confirmRefund(): void {
-  const inv = this.invoiceToRefund;
+const inv = this.invoiceToRefund;
   if (!inv?.invoiceId) return;
 
   const selectedLines = this.refundLines.filter(l => l.selected && l.refundQty > 0);
-  if (selectedLines.length === 0) {
-    alert('يرجى اختيار صنف واحد على الأقل للاسترجاع.');
-    return;
-  }
 
   const payload = {
     originalInvoiceId: inv.invoiceId,
-    cashierId: this.cashierId,
-    lines: selectedLines.map(l => ({
-      lineId: l.lineId,
-      qty: l.refundQty,
-      unitPrice: l.unitPrice,
-    })),
+    refundMethod: 2,
+    createdByEmployeeId: this.cashierId,
+    // نرسل السبب المدخل من قبل المستخدم هنا
+    reason: this.refundReason || "لا يوجد سبب محدد",
+    items: selectedLines.map(l => ({
+      originalInvoiceLineId: l.lineId,
+      qty: l.refundQty
+    }))
   };
 
   this.isProcessingRefund = true;
+
+  // استدعاء الخدمة
   this.api.createRefundInvoice(payload).subscribe({
-    next: () => {
+    next: (res) => {
       this.isProcessingRefund = false;
-      this.closeRefundModal();
-      this.page$.next(this.currentPage);
+      this.closeRefundModal(); // إغلاق المودال عند النجاح
+      this.refreshInvoiceList(); // تحديث قائمة الفواتير لتعكس الحالة الجديدة
       alert('تم إنشاء فاتورة المرتجع بنجاح ✓');
     },
     error: (err) => {
       this.isProcessingRefund = false;
-      console.error(err);
-      alert(err?.error?.message || 'فشل إنشاء فاتورة المرتجع');
-    },
+      console.error('Refund Error:', err);
+      // إظهار رسالة الخطأ القادمة من الباك-إند إن وجدت
+      const errMsg = err?.error?.message || 'فشل إنشاء فاتورة المرتجع، تأكد من البيانات.';
+      alert(errMsg);
+    }
   });
 }
 

@@ -20,11 +20,19 @@
         </div>
       </div>
 
-      <div class="col-6 col-stat">
+      <!-- <div class="col-6 col-stat">
         <div class="card stat-card border-0 shadow-sm p-3">
           <span class="text-muted small">إجمالي الكاش</span>
           <h4 class="fw-bold mb-0 text-success">
             {{ totalCashAmount | number: "1.0-0" }} ج.م
+          </h4>
+        </div>
+      </div> -->
+      <div class="col-6 col-stat">
+        <div class="card stat-card border-0 shadow-sm p-3">
+          <span class="text-muted small">إجمالي الكاش</span>
+          <h4 class="fw-bold mb-0 text-success">
+            {{ finalCash | number: "1.0-0" }} ج.م
           </h4>
         </div>
       </div>
@@ -51,7 +59,7 @@
         >
           <span class="small fw-medium">إجمالي المرتجع</span>
           <h4 class="fw-bold mb-0">
-            {{ totalRefundedAmount | number: "1.0-0" }} ج.م
+            {{ totalReturnsAmountValue | number: "1.0-0" }} ج.م
           </h4>
         </div>
       </div>
@@ -688,17 +696,17 @@
                 </td>
 
                 <td class="text-center" (click)="$event.stopPropagation()">
-                  <input
-                    *ngIf="line.isProduct"
-                    type="number"
-                    class="form-control form-control-sm text-center mx-auto"
-                    style="width: 80px"
-                    [disabled]="!line.selected"
-                    [(ngModel)]="line.refundQty"
-                    [min]="1"
-                    [max]="line.qty"
-                    (change)="clampRefundQty(line)"
-                  />
+                <input
+                  *ngIf="line.isProduct"
+                  type="number"
+                  class="form-control form-control-sm text-center mx-auto"
+                  style="width: 80px"
+                  [disabled]="!line.selected"
+                  [ngModel]="line.refundQty"
+                  (input)="onQtyInputChange($event, line)"
+                  [min]="1"
+                  [max]="line.qty"
+                />
                   <span *ngIf="!line.isProduct" class="text-muted">—</span>
                 </td>
 
@@ -732,6 +740,20 @@
             </tbody>
           </table>
         </div>
+
+<div class="mb-3 mt-4 text-end" *ngIf="refundSelectedCount > 0">
+  <label for="refundReason" class="form-label fw-bold small text-muted">
+    <i class="bi bi-chat-left-text me-1"></i> سبب الاسترجاع
+  </label>
+  <textarea
+    class="form-control border-danger-subtle focus-ring focus-ring-danger"
+    id="refundReason"
+    rows="2"
+    [(ngModel)]="refundReason"
+    placeholder="اكتب سبب الاسترجاع هنا (اختياري)..."
+    style="font-size: 0.9rem;"
+  ></textarea>
+</div>
 
         <!-- ملخص الاسترجاع -->
         <div
@@ -768,10 +790,10 @@
         </button>
         <button
           type="button"
-          class="btn btn-danger rounded-3 px-4 fw-bold"
-          (click)="confirmRefund()"
-          [disabled]="isProcessingRefund || refundSelectedCount === 0"
-        >
+            class="btn btn-danger rounded-3 px-4 fw-bold"
+            (click)="confirmRefund()"
+            [disabled]="isProcessingRefund || refundSelectedCount === 0 || !refundReason.trim()"
+          >
           <span *ngIf="!isProcessingRefund">
             <i class="bi bi-arrow-counterclockwise me-2"></i>
             تأكيد الاسترجاع (- {{ refundTotal | number: "1.1-1" }} ج.م)
