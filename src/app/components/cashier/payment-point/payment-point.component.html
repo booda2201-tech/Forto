@@ -70,10 +70,17 @@
             <div class="d-flex flex-wrap gap-2">
               <button *ngFor="let cat of productCategories" type="button" class="category-pill"
                 [class.category-pill-active]="selectedProductCategoryId === cat.id"
-                (click)="selectedProductCategoryId = cat.id">
+                (click)="selectedProductCategoryId = cat.id; productSearchTerm = ''">
                 {{ cat.name }}
               </button>
             </div>
+          </div>
+
+          <!-- بحث داخل الفئة -->
+          <div class="mb-3" *ngIf="productCategories.length > 0">
+            <input type="text" class="form-control custom-input" [ngModel]="productSearchTerm"
+              (ngModelChange)="productSearchTerm = $event" [ngModelOptions]="{ standalone: true }"
+              placeholder="ابحث داخل الفئة..." />
           </div>
 
           <div class="services-grid">
@@ -369,13 +376,24 @@
             <div class="d-flex flex-wrap gap-2">
               <button *ngFor="let cat of productCategories" type="button" class="category-pill"
                 [class.category-pill-active]="selectedProductCategoryId === cat.id"
-                (click)="selectedProductCategoryId = cat.id">
+                (click)="selectedProductCategoryId = cat.id; productSearchTerm = ''">
                 {{ cat.name }}
               </button>
             </div>
           </div>
 
+          <!-- بحث داخل الفئة -->
+          <div class="my-1" *ngIf="productCategories.length > 0">
+            <input type="text" class="form-control custom-input p-2" [ngModel]="productSearchTerm"
+              (ngModelChange)="productSearchTerm = $event" [ngModelOptions]="{ standalone: true }"
+              placeholder="ابحث باسم او كود المنتج ..." />
+          </div>
+
+
+
           <div class="services-grid mt-4">
+
+
             <div *ngFor="let p of filteredProducts" class="service-card"
               [class.selected-active]="isProductSelected(p.id)" (click)="toggleProduct(p)">
               <div class="service-name">{{ p.name }}</div>
@@ -402,6 +420,9 @@
               </div>
             </div>
           </div>
+
+
+
         </div>
       </div>
 

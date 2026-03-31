@@ -9,7 +9,14 @@ import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 // --- Types Definitions ---
-type ProductVm = { id: number; name: string; price: number; isActive: boolean; categoryId?: number };
+type ProductVm = {
+  id: number;
+  name: string;
+  sku?: string;
+  price: number;
+  isActive: boolean;
+  categoryId?: number;
+};
 type ProductCategoryVm = { id: number; name: string };
 type CartItemVm = { product: ProductVm; qty: number };
 type ServiceCardVm = {
@@ -40,6 +47,8 @@ export class PaymentPointComponent implements OnInit {
   products: ProductVm[] = [];
   productCategories: ProductCategoryVm[] = [];
   selectedProductCategoryId: number | null = null;
+  /** بحث داخل المنتجات التابعة للفئة المحددة */
+  productSearchTerm = '';
   cart: CartItemVm[] = [];
 
   // Services & Slots Logic
@@ -169,6 +178,7 @@ export class PaymentPointComponent implements OnInit {
           .map((p: any) => ({
             id: p.id,
             name: p.name,
+            sku: p.sku,
             price: Number(p.salePrice ?? 0),
             isActive: p.isActive,
             categoryId: p.categoryId != null ? Number(p.categoryId) : undefined,
@@ -226,10 +236,19 @@ export class PaymentPointComponent implements OnInit {
 
   // --- Cart Helpers ---
   get filteredProducts(): ProductVm[] {
-    if (this.selectedProductCategoryId == null) return this.products;
-    return this.products.filter(
-      (p) => (p.categoryId ?? 0) === this.selectedProductCategoryId
-    );
+    const base =
+      this.selectedProductCategoryId == null
+        ? this.products
+        : this.products.filter((p) => (p.categoryId ?? 0) === this.selectedProductCategoryId);
+
+    const term = String(this.productSearchTerm || '').trim().toLowerCase();
+    if (!term) return base;
+
+    return base.filter((p) => {
+      const name = String(p.name ?? '').toLowerCase();
+      const sku = String(p.sku ?? '').toLowerCase();
+      return name.includes(term) || sku.includes(term);
+    });
   }
 
   getItem(productId: number) {
