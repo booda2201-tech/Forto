@@ -34,7 +34,7 @@ type ProductCategory = { id: number; name: string; parentId: number | null; isAc
 })
 export class ProductsComponent implements OnInit {
   products: ProductUi[] = [];
-
+  p: number = 1;
   selectedProduct: ProductUi = {
     id: 0,
     name: '',

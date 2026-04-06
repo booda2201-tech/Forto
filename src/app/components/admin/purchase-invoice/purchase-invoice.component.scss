@@ -1,0 +1,269 @@
+// المتغيرات المستوحاة من الصورة الجديدة
+$forto-orange:  #ff9800;
+$text-grey: #636e72;
+$forto-dark: #0a0a0a;
+$bg-light: #f8f9fa;
+$border-color: #e9ecef;
+
+.purchase-page {
+  direction: rtl;
+  background-color: $bg-light;
+  min-height: 100vh;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 20px;
+
+  // تصميم التابات (Tabs) مثل الصورة
+.tabs-toggle-container {
+    background: white;
+    display: inline-flex;
+    padding: 5px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    margin-bottom: 30px;
+
+    .toggle-btn {
+      padding: 10px 35px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      background: transparent;
+      color: $text-grey;
+
+      &.active {
+        background-color: $forto-orange;
+        color: white;
+        box-shadow: 0 4px 12px rgba($forto-orange, 0.2);
+      }
+    }
+  }
+  // تصميم الكروت (Cards)
+  .forto-card {
+    background: white;
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 20px;
+    margin-bottom: 20px;
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      &::before {
+        content: "";
+        width: 4px;
+        height: 20px;
+        background: $forto-orange;
+        margin-left: 10px;
+        display: inline-block;
+      }
+    }
+  }
+
+  // المدخلات (Inputs)
+  .form-control, .form-select {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #fafafa;
+    &:focus {
+      border-color: $forto-orange;
+      box-shadow: 0 0 0 0.2rem rgba($forto-orange, 0.1);
+    }
+  }
+
+  // الجدول
+  .luxury-table {
+    width: 100%;
+    th {
+      background-color: #fcfcfc;
+      color: #777;
+      font-weight: 500;
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    td {
+      padding: 15px;
+      border-bottom: 1px solid #f9f9f9;
+    }
+  }
+
+  .btn-add-product {
+    background: $forto-orange;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 20px;
+  }
+
+  .summary-box {
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      &.total-main {
+        font-size: 1.5rem;
+        color: $forto-orange;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .btn-save {
+    background: $forto-orange;
+    color: white;
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    border: none;
+    box-shadow: 0 4px 15px rgba($forto-orange, 0.3);
+  }
+}
+
+
+
+
+
+
+/* --- تنسيقات الجدول الفاخر (Luxury Table) --- */
+.luxury-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 12px; // مسافة أكبر قليلاً بين الصفوف لإعطاء راحة للعين
+  margin-top: -10px;
+
+  th {
+    border: none;
+    color: #a0aec0; // لون رمادي هادئ
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 10px 15px;
+    background: transparent !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  tbody tr {
+    background: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); // ظل أنعم
+    transition: all 0.3s ease;
+    cursor: default;
+
+    td {
+      padding: 16px 15px;
+      border: none;
+      vertical-align: middle;
+      color: #2d3748;
+      font-size: 0.95rem;
+
+      // ضبط زوايا الصف ليظهر ككارت منفصل
+      &:first-child {
+        border-radius: 0 12px 12px 0;
+        border-right: 1px solid #f1f5f9;
+      }
+      &:last-child {
+        border-radius: 12px 0 0 12px;
+        border-left: 1px solid #f1f5f9;
+      }
+    }
+
+    &:hover {
+      background-color: #fffbf9; // لون سمنّي خفيف جداً
+      transform: translateY(-2px); // رفعة بسيطة للفوق عند الوقوف
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    }
+  }
+}
+
+/* --- زر الإجراءات والقائمة المنسدلة --- */
+.action-btn {
+  border-radius: 10px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #4a5568;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 6px 16px;
+  transition: all 0.2s ease;
+  position: relative; // لضمان ثبات القائمة بالنسبة للزر
+
+  &:hover, &.show {
+    background-color: #f7fafc;
+    border-color: #cbd5e0;
+    color: #2d3748;
+  }
+
+  &::after { display: none; }
+}
+
+/* --- حل مشكلة التداخل الجوهري --- */
+.table-responsive {
+    // السماح للمحتوى بالخروج عن حدود الجدول
+    overflow: visible !important;
+    padding-bottom: 50px; // مساحة أمان إضافية لآخر صف
+}
+
+.luxury-dropdown {
+    /* جعل القائمة تطفو فوق طبقات الجدول */
+    position: absolute;
+    z-index: 1060 !important; // أعلى من z-index الخاص بـ Bootstrap
+
+    // لضمان عدم القص في حال كانت الحاوية الأب لها overflow
+    transform: translate3d(0, 0, 0);
+
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 14px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    background-color: #ffffff !important;
+    min-width: 190px;
+    padding: 8px;
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        border-radius: 10px;
+        transition: 0.2s;
+
+        i {
+            font-size: 1.1rem;
+            margin-left: 10px; // لضبط المسافة في الـ RTL
+            width: 20px;
+            text-align: center;
+        }
+
+        &:hover {
+            background-color: #fff5ed;
+            color: #dd6b20;
+        }
+    }
+}
+
+/* حل مشكلة الحاوية المقطوعة في Bootstrap */
+.table-responsive {
+  overflow: visible !important; // هذا يسمح للقائمة بالخروج عن حدود الجدول
+}
+
+// إذا كان هناك حاوية عامة تسبب المشكلة، تأكد أن هذا الكلاس موجود
+.forto-card {
+  position: relative;
+  z-index: 1; // ليكون الجدول تحت القائمة المنسدلة دائماً
+}
+
+/* --- ألوان الحالات (Badges) --- */
+.bg-success-subtle { background-color: #c6f6d5 !important; color: #22543d !important; }
+.bg-warning-subtle { background-color: #feebc8 !important; color: #744210 !important; }
+.bg-danger-subtle { background-color: #fed7d7 !important; color: #822727 !important; }
+
+/* --- أنيميشن الظهور --- */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}

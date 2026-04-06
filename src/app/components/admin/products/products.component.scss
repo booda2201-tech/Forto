@@ -248,3 +248,92 @@ $orange-color: #ff9a27;
 
 
 
+
+
+::ng-deep {
+  .ngx-pagination {
+    margin: 40px 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    list-style: none;
+    direction: rtl;
+
+    li {
+      margin: 0 3px; // تقليل المسافات ليكون الشكل متماسك
+      transition: all 0.2s ease;
+
+      // التنسيق الموحد لكل العناصر (أرقام وأزرار)
+      a, span, .current {
+        padding: 8px 16px;
+        min-width: 44px; // ضمان إن المربع ميبقاش مستطيل رفيع
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 12px; // تدويرة أنعم وأحدث
+        background: #ffffff;
+        color: #6c757d !important; // لون رمادي احترافي للهادي
+        // border: 1px solid #edf2f7; // حدود أنعم بكتير
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        cursor: pointer;
+      }
+
+      // الحالة النشطة (Active Page)
+      &.current {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+
+        span {
+          background: #ff7b00 !important; // لون برتقالي السايت
+          color: #ffffff !important;
+          border: 1px solid #ff7b00;
+          box-shadow: 0 4px 12px rgba(255, 123, 0, 0.25);
+        }
+      }
+
+      // تأثير الـ Hover (الحركة عند الوقوف بالماوس)
+      // &:hover:not(.current):not(.disabled) {
+      //   a {
+      //     background: #fff;
+      //     color: #ff7b00 !important;
+      //     border-color: #ff7b00;
+      //     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      //     transform: translateY(-3px); // رفعة بسيطة بتدي إحساس بالتفاعل
+      //   }
+      // }
+
+      // تنسيق زراير السابق والتالي (الأسهم)
+      &.pagination-previous, &.pagination-next {
+        a {
+          // background: #f8f9fa; // تمييز بسيط بلون أوف وايت
+          // border: 1px solid #e2e8f0;
+          font-size: 13px;
+        }
+
+        // لو مفيش صفحات تانية (تعطيل الزرار)
+        &.disabled {
+          span {
+            // background: #fdfdfd;
+            color: #d1d5db !important;
+            // border-color: #f1f1f1;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+          }
+        }
+      }
+
+      // تجميل النقاط (...)
+      &.ellipsis {
+        padding: 10px;
+        color: #cbd5e0;
+      }
+    }
+  }
+}

@@ -27,6 +27,10 @@ import { TestComponent } from './components/cashier/test/test.component';
 import { StartShiftComponent } from './components/cashier/start-shift/start-shift.component';
 import { CategoriesComponent } from './components/admin/categories/categories.component';
 import { AdminInvoicesComponent } from './components/admin/invoices/invoices.component';
+import { PurchaseInvoiceComponent } from './components/admin/purchase-invoice/purchase-invoice.component';
+
+import { SuppliersComponent } from './components/admin/suppliers/suppliers.component';
+import { ReturnsComponent } from './components/cashier/returns/returns.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent, data: { title: 'تسجيل الدخول' } },
@@ -46,6 +50,9 @@ const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent, data: { title: 'لوحة التحكم' } },
       { path: 'employees-report', component: EmployeesReportComponent, data: { title: 'تقرير الموظفين' } },
       { path: 'invoices', component: AdminInvoicesComponent, data: { title: 'الفواتير' } },
+      { path: 'purchase-invoice', component: PurchaseInvoiceComponent, data: { title: 'فاتورة شراء' } },
+      { path: 'suppliers', component: SuppliersComponent, data: { title: 'الموردين' } },
+
       { path: '', redirectTo: 'home', pathMatch: 'full' },
     ],
   },
@@ -65,6 +72,8 @@ const routes: Routes = [
       { path: 'invoices', component: InvoicesComponent, canActivate: [CashierShiftGuard], data: { title: 'الفواتير' } },
       { path: 'messages', component: MessagesComponent, canActivate: [CashierShiftGuard], data: { title: 'الرسائل' } },
       { path: 'test', component: TestComponent, canActivate: [CashierShiftGuard], data: { title: 'اختبار' } },
+      { path: 'returns', component: ReturnsComponent, canActivate: [CashierShiftGuard], data: { title: 'المرتجعات' } },
+
       { path: '', redirectTo: 'reservations', pathMatch: 'full' },
     ],
   },

@@ -1,0 +1,544 @@
+<div class="page-wrapper" dir="rtl">
+  <header class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5">
+    <div class="header-title">
+      <h1>إدارة {{ viewType === 'supplier' ? 'الموردين' : 'الشركات' }}</h1>
+      <p>إدارة الحسابات، المديونيات، وبيانات التواصل</p>
+    </div>
+
+    <div class="view-switcher">
+      <button (click)="switchView('supplier')" [class.active]="viewType === 'supplier'">الموردين</button>
+      <button (click)="switchView('company')" [class.active]="viewType === 'company'">الشركات</button>
+    </div>
+  </header>
+
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="stat-card red">
+        <div class="stat-info">
+          <span>إجمالي المديونية</span>
+          <h3>{{ getTotalDebt() | number:'1.2-2' }} <small>ج.م</small></h3>
+        </div>
+        <div class="stat-icon"><i class="bi-fill bi-credit-card"></i></div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card orange">
+        <div class="stat-info">
+          <span>عدد {{ viewType === 'supplier' ? 'الموردين' : 'الشركات' }}</span>
+          <h3>{{ filteredPartners.length }}</h3>
+        </div>
+        <div class="stat-icon"><i class="bi-fill bi-people"></i></div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card green">
+        <div class="stat-info">
+          <span>آخر دفعات مسددة</span>
+          <h3>{{ getLastPaidDebt() | number:'1.2-2' }} <small>ج.م</small></h3>
+          <p class="small mt-2">بناءً على آخر 3 عمليات</p>
+        </div>
+        <div class="stat-icon"><i class="bi-fill bi-file-text"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4" dir="ltr">
+
+<aside class="col-lg-4 order-last order-lg-first" dir="rtl">
+  <div class="sidebar-form luxury-card shadow-sm">
+    <div class="form-header">
+      <h2>إضافة {{ viewType === 'supplier' ? 'مورد' : 'شركة' }} جديد</h2>
+    </div>
+
+    <form [formGroup]="addPartnerForm" (ngSubmit)="onSavePartner()">
+      <div class="mb-3">
+        <label class="form-label">اسم {{ viewType === 'supplier' ? 'التاجر' : 'الشركة' }} (عربي)</label>
+        <input type="text" class="form-control shadow-none" formControlName="supplierNameAr"
+                [class.is-invalid]="addPartnerForm.get('supplierNameAr')?.touched && addPartnerForm.get('supplierNameAr')?.invalid"
+                placeholder="الاسم بالعربية">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">اسم {{ viewType === 'supplier' ? 'التاجر' : 'الشركة' }} (EN)</label>
+        <input type="text" class="form-control shadow-none text-end" formControlName="supplierNameEn"
+                [class.is-invalid]="addPartnerForm.get('supplierNameEn')?.touched && addPartnerForm.get('supplierNameEn')?.invalid"
+                placeholder="Name in English" dir="ltr">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">رقم الهاتف</label>
+        <input type="text" class="form-control shadow-none text-end" formControlName="phoneNumber"
+                [class.is-invalid]="addPartnerForm.get('phoneNumber')?.touched && addPartnerForm.get('phoneNumber')?.invalid"
+                placeholder="+968 0000 0000" dir="ltr">
+        <div class="invalid-feedback" *ngIf="addPartnerForm.get('phoneNumber')?.errors?.['pattern']">
+          يجب إدخال أرقام فقط
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-save w-100 mt-2" [disabled]="isLoading || addPartnerForm.invalid">
+        <div class="d-flex align-items-center justify-content-center">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+          <span>{{ isLoading ? 'جاري الحفظ...' : 'حفظ البيانات' }}</span>
+        </div>
+      </button>
+    </form>
+  </div>
+</aside>
+    <main class="col-lg-8">
+      <div class="row g-4">
+        <!-- <div class="col-md-6" *ngFor="let partner of filteredPartners">
+          <div class="partner-card">
+            <div class="card-top">
+              <span class="badge-category">{{ partner.categoryAr }}</span>
+              <div class="name-info text-end">
+                <h3>{{ partner.nameAr }}</h3>
+                <p class="phone-link" dir="ltr">
+                  <i class="bi bi-telephone-fill mx-2"></i> +968 {{ partner.phone }}
+                </p>
+              </div>
+            </div>
+
+            <div class="balance-section">
+              <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span class="status-label">رصيد دائن</span>
+              </div>
+              <div class="text-end">
+                <span class="label-text">الرصيد الحالي</span>
+                <h4 class="amount">
+                {{ partner.currentBalance | number:'1.2-2' }}
+                  <small>ج.م</small>  </h4>
+              </div>
+            </div>
+
+            <div class="card-footer-info">
+              <div class="info-item">
+                <i class="bi bi-calendar3"></i>
+                <span>آخر دفعة: {{ partner.lastPaymentDate }}</span>
+              </div>
+              <div class="info-item fw-bold text-dark">
+                <i class="bi bi-cash-stack"></i>
+                <span>ج.م  {{ partner.lastPaymentAmount | number:'1.2-2' }} </span>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <button (click)="onPay(partner)" class="btn-action pay">
+                <i class="bi bi-wallet2"></i>
+                دفع مبلغ
+              </button>
+              <button (click)="viewStatement(partner)" class="btn-action statement">
+                <i class="bi bi-file-earmark-text"></i>
+                كشف حساب
+              </button>
+            </div>
+          </div>
+        </div> -->
+
+        <div class="col-md-6" *ngFor="let partner of filteredPartners">
+          <div class="partner-card">
+            <div class="card-top">
+              <span class="badge-category">{{ partner.companyNameAr ? 'شركة' : 'مورد' }}</span>
+              <div class="name-info text-end">
+                <h3>{{ partner.supplierNameAr }}</h3>
+                <p class="phone-link" dir="ltr">
+                  <i class="bi bi-telephone-fill mx-2"></i> {{ partner.phoneNumber }}
+                </p>
+              </div>
+            </div>
+
+            <div class="balance-section">
+              <div class="status-indicator">
+                <span class="status-dot" [ngClass]="{'bg-danger': partner.currentBalance > 0}"></span>
+                <span class="status-label">{{ partner.currentBalance > 0 ? 'مديونية' : 'رصيد دائن' }}</span>
+              </div>
+              <div class="text-end">
+                <span class="label-text">الرصيد الحالي</span>
+                <h4 class="amount">
+                  {{ (partner.currentBalance || 0) | number:'1.2-2' }}
+                  <small>ر.ع</small>
+                </h4>
+              </div>
+            </div>
+
+            <div class="card-footer-info">
+              <div class="info-item">
+                <i class="bi bi-calendar3"></i>
+                <span>آخر دفعة: {{ partner.lastPaymentDate || 'لا يوجد' }}</span>
+              </div>
+              <div class="info-item fw-bold text-dark">
+                <i class="bi bi-cash-stack"></i>
+                <span>ر.ع {{ (partner.lastPaymentAmount || 0) | number:'1.2-2' }} </span>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <button (click)="onPay(partner)" class="btn-action pay">
+                <i class="bi bi-wallet2"></i>
+                دفع مبلغ
+              </button>
+              <button (click)="viewStatement(partner)" class="btn-action statement">
+                <i class="bi bi-file-earmark-text"></i>
+                كشف حساب
+              </button>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+    </main>
+
+  </div>
+</div>
+
+
+
+<div class="modal fade" id="payModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <!-- <div class="modal-content custom-modal">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">تسجيل دفع مبلغ للمورد</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="supplier-brief mb-4 p-3 rounded-4 bg-light">
+          <small class="text-muted d-block mb-1">المورد الحالي</small>
+          <h4 class="fw-bold mb-0 text-primary">{{ selectedPartner?.nameAr }}</h4>
+        </div>
+        <form [formGroup]="paymentForm" (ngSubmit)="confirmPayment()">
+          <div class="mb-3">
+            <label class="form-label fw-bold small">إجمالي المبلغ (ر.ع)</label>
+            <input type="number" class="form-control custom-input" placeholder="0.00" formControlName="amount">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold small">طريقة الدفع</label>
+            <select class="form-select custom-input" formControlName="method">
+              <option value="cash">كاش</option>
+              <option value="bank">تحويل بنكي</option>
+              <option value="visa">فيزا / ماستر كارد</option>
+              <option value="custom">مخصص (كاش + فيزا)</option>
+            </select>
+          </div>
+
+          <div class="row g-2 mb-3" *ngIf="paymentForm.get('method')?.value === 'custom'">
+            <div class="col-6">
+              <label class="form-label fw-bold small text-success">مبلغ الكاش</label>
+              <input type="number" class="form-control custom-input" formControlName="cashAmount" placeholder="0.00">
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-bold small text-primary">مبلغ الفيزا</label>
+              <input type="number" class="form-control custom-input bg-light" formControlName="visaAmount" readonly>
+            </div>
+            <div class="col-12">
+                <div class="alert alert-info py-2 px-3 small border-0 rounded-3">
+                  سيتم تقسيم المبلغ: {{ paymentForm.get('cashAmount')?.value }} كاش و {{ paymentForm.get('visaAmount')?.value }} فيزا.
+                </div>
+            </div>
+          </div>
+
+          <button type="submit" [disabled]="paymentForm.invalid" class="btn btn-primary w-100 py-3 mt-3 shadow-sm fw-bold rounded-3">
+            تأكيد عملية الدفع
+          </button>
+        </form>
+      </div>
+    </div> -->
+
+<div class="modal-content custom-modal">
+  <div class="modal-header border-0 pb-0">
+    <h5 class="modal-title fw-bold">تسجيل دفع مبلغ للمورد</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+  <div class="modal-body p-4">
+    <div class="supplier-brief mb-4 p-3 rounded-4 bg-light">
+      <small class="text-muted d-block mb-1">المورد الحالي</small>
+      <h4 class="fw-bold mb-0 text-primary">{{ selectedPartner?.supplierNameAr }}</h4>
+    </div>
+
+    <form [formGroup]="paymentForm" (ngSubmit)="confirmPayment()">
+      <div class="mb-3">
+        <label class="form-label fw-bold small">إجمالي المبلغ (ر.ع)</label>
+        <input type="number" class="form-control custom-input" placeholder="0.00" formControlName="amount">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold small">طريقة الدفع</label>
+        <select class="form-select custom-input" formControlName="method">
+          <option value="cash">كاش</option>
+          <option value="bank">تحويل بنكي</option>
+          <option value="visa">فيزا / ماستر كارد</option>
+          <option value="custom">مخصص (كاش + فيزا)</option>
+        </select>
+      </div>
+
+      <div class="row g-2 mb-3" *ngIf="paymentForm.get('method')?.value === 'custom'">
+        <div class="col-6">
+          <label class="form-label fw-bold small text-success">مبلغ الكاش</label>
+          <input type="number" class="form-control custom-input" formControlName="cashAmount" placeholder="0.00">
+        </div>
+        <div class="col-6">
+          <label class="form-label fw-bold small text-primary">مبلغ الفيزا</label>
+          <input type="number" class="form-control custom-input bg-light" formControlName="visaAmount" readonly>
+        </div>
+        <div class="col-12">
+            <div class="alert alert-info py-2 px-3 small border-0 rounded-3">
+              سيتم تقسيم المبلغ: {{ paymentForm.get('cashAmount')?.value || 0 }} كاش و {{ paymentForm.get('visaAmount')?.value || 0 }} فيزا.
+            </div>
+        </div>
+      </div>
+
+      <button type="submit" [disabled]="paymentForm.invalid || isLoading" class="btn btn-primary w-100 py-3 mt-3 shadow-sm fw-bold rounded-3">
+        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+        {{ isLoading ? 'جاري التأكيد...' : 'تأكيد عملية الدفع' }}
+      </button>
+    </form>
+  </div>
+</div>
+
+  </div>
+</div>
+
+
+<div class="modal fade" id="statementModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <!-- <div class="modal-content custom-modal overflow-hidden">
+      <div class="modal-header bg-dark text-white p-4">
+        <div>
+          <h5 class="modal-title fw-bold mb-1">كشف حساب المعاملات</h5>
+          <p class="small text-white-50 mb-0">سجل الفواتير والمدفوعات لـ {{ selectedPartner?.nameAr }}</p>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 custom-table">
+            <thead class="bg-light">
+              <tr>
+                <th class="py-3 px-4">التاريخ</th>
+                <th class="py-3">البيان</th>
+                <th class="py-3">مدين</th>
+                <th class="py-3">دائن</th>
+                <th class="py-3">الرصيد</th>
+                <th class="py-3 text-center">عرض</th> </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let trans of transactions">
+                <td class="px-4 small text-muted">{{ trans.date }}</td>
+                <td><span class="fw-bold">{{ trans.reference }}</span></td>
+                <td class="text-danger fw-bold">{{ trans.debit | number:'1.2-2' }}</td>
+                <td class="text-success fw-bold">{{ trans.credit | number:'1.2-2' }}</td>
+                <td class="px-4 fw-black">{{ trans.balance | number:'1.2-2' }}</td>
+                  <td class="text-center">
+                    <button (click)="viewInvoice(trans)"
+                            class="btn btn-sm btn-light rounded-circle shadow-sm">
+                      <i class="bi bi-eye text-orange fs-4"></i>
+                    </button>
+                  </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer border-0 p-4 bg-light">
+        <button class="btn btn-outline-dark px-4 rounded-3"><i class="bi bi-printer me-2"></i> طباعة الكشف</button>
+      </div>
+    </div> -->
+
+
+<div class="modal-content custom-modal overflow-hidden">
+  <div class="modal-header bg-dark text-white p-4">
+    <div>
+      <h5 class="modal-title fw-bold mb-1">كشف حساب المعاملات</h5>
+      <p class="small text-white-50 mb-0">سجل الفواتير والمدفوعات لـ {{ selectedPartner?.supplierNameAr }}</p>
+    </div>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+  </div>
+
+  <div class="modal-body p-0">
+    <div class="table-responsive">
+      <div *ngIf="isLoading" class="text-center p-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2">جاري تحميل كشف الحساب...</p>
+      </div>
+
+      <table *ngIf="!isLoading" class="table table-hover mb-0 custom-table">
+        <thead class="bg-light">
+          <tr>
+            <th class="py-3 px-4">التاريخ</th>
+            <th class="py-3">البيان</th>
+            <th class="py-3">مدين</th>
+            <th class="py-3">دائن</th>
+            <th class="py-3">الرصيد</th>
+            <th class="py-3 text-center">عرض</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="transactions.length === 0">
+            <td colspan="6" class="text-center py-4 text-muted">لا توجد معاملات مسجلة لهذا الحساب حتى الآن.</td>
+          </tr>
+
+<tr *ngFor="let trans of transactions">
+  <td class="px-4 small text-muted">{{ trans.date | date:'yyyy-MM-dd' }}</td>
+  <td><span class="fw-bold">{{ trans.statementAr || trans.reference }}</span></td>
+  <td class="text-danger fw-bold">{{ trans.debit | number:'1.2-2' }}</td>
+  <td class="text-success fw-bold">{{ trans.credit | number:'1.2-2' }}</td>
+  <td class="px-4 fw-black">{{ trans.balance | number:'1.2-2' }}</td>
+  </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer border-0 p-4 bg-light">
+    <button class="btn btn-outline-dark px-4 rounded-3" (click)="printStatement()">
+      <i class="bi bi-printer me-2"></i> طباعة الكشف
+    </button>
+  </div>
+</div>
+
+  </div>
+</div>
+
+
+
+
+<!-- <div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content custom-modal border-top-primary">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold">تفاصيل الفاتورة</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="d-flex justify-content-between mb-4 border-bottom pb-3">
+          <div>
+            <h6 class="text-muted mb-1">رقم الفاتورة</h6>
+            <p class="fw-bold mb-0">#INV-1025</p>
+          </div>
+          <div class="text-end">
+            <h6 class="text-muted mb-1">التاريخ</h6>
+            <p class="fw-bold mb-0">2026-03-30</p>
+          </div>
+        </div>
+
+        <div class="invoice-items mb-4">
+          <div class="d-flex justify-content-between py-2 border-bottom small text-muted">
+            <span>الصنف</span>
+            <span>الإجمالي</span>
+          </div>
+          <div class="d-flex justify-content-between py-3 border-bottom">
+            <span>زيت محرك 5W30 (×10)</span>
+            <span class="fw-bold">45.00 ر.ع</span>
+          </div>
+          <div class="d-flex justify-content-between py-3 border-bottom">
+            <span>فلاتر هواء (×5)</span>
+            <span class="fw-bold">15.00 ر.ع</span>
+          </div>
+        </div>
+
+        <div class="bg-light p-3 rounded-3 d-flex justify-content-between align-items-center">
+          <h5 class="mb-0 fw-bold">الإجمالي النهائي</h5>
+          <h4 class="mb-0 fw-black text-primary">60.00 <small>ر.ع</small></h4>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-dark w-100 py-2 rounded-3"><i class="bi bi-printer me-2"></i> طباعة الفاتورة الآن</button>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content custom-modal" [ngClass]="selectedInvoice?.reference?.includes('فاتورة') ? 'border-top-primary' : 'border-top-success'">
+
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">
+          {{ selectedInvoice?.reference?.includes('فاتورة') ? 'تفاصيل الفاتورة' : 'إيصال استلام نقدية' }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="d-flex justify-content-between mb-4 border-bottom pb-3">
+          <div>
+            <h6 class="text-muted mb-1 small">المورد / الشركة</h6>
+            <p class="fw-bold mb-0 text-dark">{{ selectedInvoice?.supplierName || '---' }}</p>
+            <small class="text-muted">{{ selectedInvoice?.branch }}</small>
+          </div>
+          <div class="text-end">
+            <h6 class="text-muted mb-1 small">{{ selectedInvoice?.reference?.includes('فاتورة') ? 'رقم الفاتورة' : 'رقم السند' }}</h6>
+            <p class="fw-bold mb-0 text-primary">#{{ selectedInvoice?.id || '---' }}</p>
+            <p class="small text-muted mb-0">{{ selectedInvoice?.date }}</p>
+          </div>
+        </div>
+
+        <div class="invoice-content" *ngIf="selectedInvoice?.reference?.includes('فاتورة')">
+          <div class="invoice-items mb-4">
+            <div class="d-flex justify-content-between py-2 border-bottom mb-2 small text-muted text-uppercase fw-bold">
+              <span style="flex: 2;">الصنف</span>
+              <span style="flex: 1;" class="text-center">الكمية</span>
+              <span style="flex: 1;" class="text-end">الإجمالي</span>
+            </div>
+
+            <div *ngFor="let item of selectedInvoice?.items" class="d-flex justify-content-between py-3 border-bottom-dashed align-items-center">
+              <div style="flex: 2;" class="d-flex flex-column">
+                <span class="fw-bold text-dark">{{ item.name }}</span>
+                <small class="text-muted">سعر الوحدة: {{ item.price | number }} ج.م</small>
+              </div>
+              <span style="flex: 1;" class="text-center fw-bold">{{ item.qty }}</span>
+              <span style="flex: 1;" class="text-end fw-bold text-dark">{{ item.total | number:'1.2-2' }} ج.م</span>
+            </div>
+          </div>
+
+          <div class="calculations border-top pt-3 mt-3">
+            <div class="d-flex justify-content-between mb-2 small">
+              <span class="text-muted">الإجمالي قبل الضريبة:</span>
+              <span class="text-dark fw-bold">{{ selectedInvoice?.debit | number:'1.2-2' }} ج.م</span>
+            </div>
+            <div class="d-flex justify-content-between mb-3 small">
+              <span class="text-muted">ضريبة القيمة المضافة (14%):</span>
+              <span class="text-dark fw-bold">{{ selectedInvoice?.tax | number:'1.2-2' }} ج.م</span>
+            </div>
+
+            <div class="bg-light p-3 rounded-4 d-flex justify-content-between align-items-center shadow-sm border">
+              <h6 class="mb-0 fw-bold">إجمالي مستحق الفاتورة</h6>
+              <h4 class="mb-0 fw-black text-primary">
+                {{ (selectedInvoice?.debit + (selectedInvoice?.tax || 0)) | number:'1.2-2' }}
+                <span class="fs-6 fw-normal">ج.م</span>
+              </h4>
+            </div>
+          </div>
+        </div>
+
+        <div class="payment-content" *ngIf="selectedInvoice?.reference?.includes('دفعة')">
+          <div class="p-3 border border-2 rounded-4 mb-3 border-light">
+            <div class="d-flex justify-content-between mb-3">
+              <span class="text-muted small font-main">طريقة الدفع:</span>
+              <span class="badge bg-soft-success text-success px-3">{{ selectedInvoice?.method || 'نقدي' }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-2 border-top">
+              <span class="text-secondary"><i class="bi bi-cash-stack me-2"></i> المبلغ المحصل:</span>
+              <span class="fw-bold text-dark">{{ selectedInvoice?.credit | number:'1.2-2' }} ج.م</span>
+            </div>
+          </div>
+
+          <div class="bg-dark text-white p-3 rounded-4 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 font-main">إجمالي السند</h6>
+            <h4 class="mb-0 fw-black text-warning">
+              {{ selectedInvoice?.credit | number:'1.2-2' }}
+              <span class="fs-6 fw-normal">ج.م</span>
+            </h4>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 p-4">
+        <button onclick="window.print()" class="btn btn-dark w-100 py-3 rounded-3 fw-bold">
+          <i class="bi bi-printer-fill me-2"></i> طباعة المستند (A4)
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

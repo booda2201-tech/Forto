@@ -970,13 +970,63 @@ deleteCategory(id: number) {
 
 // ملاحظة: تأكد من أن المسارات (Endpoints) تطابق ما هو موجود في الـ Backend لديك
 
+// --- الموردين (Suppliers) ---
+
+  // 1. إضافة مورد جديد - POST /api/suppliers/Create
+  createSupplier(payload: {
+    companyNameAr: string,
+    companyNameEn: string,
+    supplierNameAr: string,
+    supplierNameEn: string,
+    phoneNumber: string
+  }) {
+    return this.http.post(`${this.baseUrl}/api/suppliers/Create`, payload);
+  }
+
+  // 2. جلب جميع الموردين - GET /api/suppliers/GetAll
+  getAllSuppliers() {
+    return this.http.get(`${this.baseUrl}/api/suppliers/GetAll`);
+  }
+
+  // 3. جلب مورد محدد بالـ ID - GET /api/suppliers/GetById/{id}
+  getSupplierById(id: number | string) {
+    return this.http.get(`${this.baseUrl}/api/suppliers/GetById/${id}`);
+  }
+
+  // 4. تحديث بيانات مورد - PUT /api/suppliers/Update/{id}
+  updateSupplier(id: number | string, payload: any) {
+    return this.http.put(`${this.baseUrl}/api/suppliers/Update/${id}`, payload);
+  }
+
+  // 5. حذف مورد - DELETE /api/suppliers/Delete/{id}
+  deleteSupplier(id: number | string) {
+    return this.http.delete(`${this.baseUrl}/api/suppliers/Delete/${id}`);
+  }
+  // جلب كشف حساب مورد معين
+getSupplierStatement(supplierId: number) {
+  // ملاحظة: تم تغيير المسار بناءً على صورة Postman المرفقة
+  return this.http.get(`${this.baseUrl}/api/purchase-invoices/by-supplier/${supplierId}`);
+}
+  // تسجيل عملية دفع
+  recordSupplierPayment(payload: any) {
+    return this.http.post(`${this.baseUrl}/api/suppliers/RecordPayment`, payload);
+  }
 
 
+// جلب جميع فواتير المشتريات
+getAllPurchaseInvoices(): Observable<any> {
+  return this.http.get(`${this.baseUrl}/api/purchase-invoices/GetAll`);
+}
 
+// إضافة فاتورة مشتريات جديدة
+createPurchaseInvoice(payload: any): Observable<any> {
+  return this.http.post(`${this.baseUrl}/api/purchase-invoices/Create`, payload);
+}
 
-
-
-
+// جلب فاتورة معينة بالتفاصيل (في حال أردت عرضها في المودال)
+getPurchaseInvoiceById(id: number | string): Observable<any> {
+  return this.http.get(`${this.baseUrl}/api/purchase-invoices/GetById/${id}`);
+}
 
 
 

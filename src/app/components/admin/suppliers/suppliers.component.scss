@@ -1,0 +1,694 @@
+// متغيرات الألوان المستوحاة من Forto
+$primary: #ff9800;        // البرتقالي المميز لمغسلة Forto
+$primary-dark: #e68900;
+$dark-bg: #0a0a0a;        // لون الهيدر الأسود في الموقع
+$text-main: #1e293b;
+$text-muted: #64748b;
+$bg-light: #f4f7fa;
+// الألوان الأساسية لبراند Forto
+$primary: #ff9800;
+$danger: #ef4444;
+$success: #10b981;
+$text-main: #1e293b;
+$text-muted: #64748b;    // خلفية الصفحة
+$card-radius: 20px;       // الحواف الدائرية المميزة للكروت في السايت
+$shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.05);
+
+.page-wrapper {
+  // background-color: $bg-light;
+  padding: 2rem 1rem;
+  min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', Tahoma, sans-daily-summary-hrserif;
+}
+
+// تنسيق الهيدر
+.header-title {
+  h1 {
+    // font-weight: 800;
+    font-size: 1.9rem;
+    color: $text-main;
+    margin-bottom: 0.2rem;
+    position: relative;
+    display: inline-block;
+  }
+  p { color: $text-muted; font-size: 0.80rem; font-weight: 600; }
+}
+
+.view-switcher {
+  background: white;
+  padding: 6px;
+  border-radius: 15px;
+  box-shadow: $shadow-soft;
+  border: 1px solid #edf2f7;
+
+  button {
+    border: none; background: none; padding: 10px 30px; border-radius: 12px;
+    font-weight: 800; color: $text-muted; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &.active {
+      background: $primary;
+      color: white;
+      box-shadow: 0 8px 15px rgba($primary, 0.3);
+    }
+  }
+}
+
+// كروت الإحصائيات (Stat Cards)
+// .stat-card {
+//   background: white;
+//   padding: 3px 10px 0px 10px;
+//   border-radius: $card-radius;
+//   box-shadow: $shadow-soft;
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   transition: 0.3s;
+//   position: relative;
+//   overflow: hidden;
+
+//   &:hover { transform: translateY(-7px); }
+
+//   &.orange { .stat-icon { color: $primary; background: rgba($primary, 0.1); } }
+//   &.red { .stat-icon { color: #ef4444; background: #fee2e2; } }
+//   &.green { .stat-icon { color: #10b981; background: #dcfce7; } }
+
+//   .stat-info {
+//     span { font-size: 0.75rem; font-weight: 800; color: $text-muted; opacity: 0.8; }
+//     h3 { margin: 5px 0 0; font-weight: 900; color: $text-main; font-size: 1.8rem; }
+//   }
+
+//   .stat-icon {
+//     width: 60px; height: 60px; border-radius: 18px;
+//     display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
+
+//   }
+// }
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: $card-radius;
+  box-shadow: $shadow-soft;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.3s;
+  position: relative;
+  overflow: hidden;
+
+  // إضافة هذه الخصائص لتوحيد الأبعاد
+  height: 100%;       // ليأخذ الكرت كامل ارتفاع العمود (Col)
+  min-height: 120px;  // ارتفاع ثابت أدنى لضمان التساوي
+  width: 100%;
+
+  &:hover { transform: translateY(-7px); }
+
+  // تنسيق المحتوى الداخلي لضمان عدم التمدد العشوائي
+  .stat-info {
+    flex: 1;          // تجعل النصوص تأخذ المساحة المتاحة وتدفع الأيقونة للطرف
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    span {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: $text-muted;
+      opacity: 0.8;
+      white-space: nowrap; // منع النص من النزول لسطر جديد وتغيير الارتفاع
+    }
+
+    h3 {
+      margin: 5px 0 0;
+      font-weight: 900;
+      color: $text-main;
+      font-size: 1.6rem; // تصغير بسيط ليناسب جميع الشاشات
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+
+      small { font-size: 0.9rem; font-weight: 700; }
+    }
+
+    p {
+      margin: 2px 0 0;
+      font-size: 0.7rem;
+      color: $text-muted;
+      line-height: 1;
+    }
+  }
+
+  .stat-icon {
+    width: 55px;
+    height: 55px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0; // يمنع الأيقونة من الانكماش إذا زاد النص
+  }
+}
+.stat-card {
+  // التنسيق العام (كما فعلنا سابقاً)
+  background: white;
+  border: 1px solid #f1f5f9;
+
+  // تخصيص الألوان لكل فئة
+  &.orange {
+    background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%);
+    border-bottom: 3px solid $primary; // خط سفلي نحيف يعطي لمسة جمالية
+
+    .stat-icon {
+      color: $primary;
+      background: rgba($primary, 0.1);
+      box-shadow: 0 8px 15px rgba($primary, 0.15);
+    }
+
+    h3 { color: $primary; }
+  }
+
+  &.red {
+    background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+    border-bottom: 3px solid $danger;
+
+    .stat-icon {
+      color: $danger;
+      background: rgba($danger, 0.1);
+      box-shadow: 0 8px 15px rgba($danger, 0.15);
+    }
+
+    h3 { color: $danger; }
+  }
+
+  &.green {
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+    border-bottom: 3px solid $success;
+
+    .stat-icon {
+      color: $success;
+      background: rgba($success, 0.1);
+      box-shadow: 0 8px 15px rgba($success, 0.15);
+    }
+
+    h3 { color: $success; }
+  }
+
+  // تأثيرات إضافية عند الوقوف على الكرت
+  &:hover {
+    // &.orange { background: #fff7ed; }
+    // &.red { background: #fef2f2; }
+    // &.green { background: #f0fdf4; }
+
+    .stat-icon {
+      transform: scale(1.1) rotate(-5deg);
+      transition: 0.3s;
+    }
+  }
+}
+
+
+// فورم الإضافة (Sidebar) - يشبه "إضافة خدمة جديدة" في الصورة
+// .sidebar-form {
+//   background: white; border-radius: $card-radius; box-shadow: $shadow-soft;
+//   overflow: hidden; position: sticky; top: 20px;
+
+//   .form-header {
+//     background: $primary; // نفس لون كارت الإضافة في Forto
+//     padding: 1.2rem;
+//     h2 { margin: 0; color: white; font-size: 1rem; font-weight: 800; text-align: center; }
+//   }
+
+//   form { padding: 1.5rem; }
+
+//   label { font-size: 0.8rem; font-weight: 800; color: $text-main; margin-bottom: 6px; display: block; }
+
+//   .form-control, .form-select {
+//     background-color: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px;
+//     font-size: 0.9rem;
+//     &:focus { border-color: $primary; box-shadow: 0 0 0 4px rgba($primary, 0.1); }
+//   }
+
+//   .btn-save {
+//     background: $primary; color: white; border: none; padding: 14px; border-radius: 15px;
+//     font-weight: 800; margin-top: 10px; width: 100%; transition: 0.3s;
+//     &:hover { background: $primary-dark; transform: scale(1.02); box-shadow: 0 10px 20px rgba($primary, 0.2); }
+//   }
+// }
+
+.sidebar-form {
+  background: white;
+  border-radius: $card-radius;
+  box-shadow: $shadow-soft;
+  overflow: hidden;
+
+  // التثبيت عند السكرول
+  position: sticky;
+  top: 20px;
+  z-index: 10; // لضمان بقائه فوق محتوى الصفحة أثناء الحركة
+  height: fit-content; // ضروري جداً لتعمل خاصية الـ sticky بشكل صحيح
+
+  .form-header {
+    background: $primary;
+    padding: 1.2rem;
+    // إضافة انحناء بسيط في الأسفل ليعطي شكل مميز
+    border-bottom: 3px solid rgba(0,0,0,0.05);
+
+    h2 {
+      margin: 0;
+      color: white;
+      font-size: 1.1rem; // تكبير بسيط للوضوح
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  form {
+    padding: 1.5rem;
+  }
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: $text-main;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .form-control, .form-select {
+    background-color: #fcfcfc; // تغيير بسيط للون الخلفية لتمييز الحقول
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+
+    &:focus {
+      background-color: white;
+      border-color: $primary;
+      box-shadow: 0 0 0 4px rgba($primary, 0.1);
+      outline: none;
+    }
+  }
+
+  .btn-save {
+    background: $primary;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 15px;
+    font-weight: 800;
+    margin-top: 10px;
+    width: 100%;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); // تأثير حركة أنعم
+
+    &:hover {
+      background: $primary-dark;
+      transform: translateY(-3px) scale(1.01); // يرتفع للأعلى قليلاً
+      box-shadow: 0 12px 24px rgba($primary, 0.25);
+    }
+
+    &:active {
+      transform: scale(0.98); // تأثير الضغط
+    }
+  }
+}
+
+// كرت المورد (Partner Card)
+// .partner-card {
+//   background: white; border-radius: $card-radius; padding: 1.5rem; box-shadow: $shadow-soft;
+//   border: 1px solid #f1f5f9; transition: 0.4s ease;
+
+//   &:hover { border-color: rgba($primary, 0.3); transform: translateY(-5px); }
+
+//   .card-top {
+//     display: flex; justify-content: space-between; margin-bottom: 1.2rem;
+//     .badge-category { background: #f1f5f9; color: $text-muted; padding: 5px 14px; border-radius: 50px; font-size: 10px; font-weight: 800; }
+//     h3 { font-size: 1.1rem; font-weight: 800; margin: 0; color: $text-main; }
+//     p { color: $text-muted; font-size: 0.8rem; margin-top: 3px; }
+//   }
+
+//   .balance-section {
+//     background: #f0fdf4; padding: 1.2rem; border-radius: 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
+//     border: 1px solid #dcfce7;
+//     .status-label { color: #166534; font-weight: 800; font-size: 11px; }
+//     .amount { margin: 0; color: #166534; font-weight: 900; font-size: 1.4rem; }
+//   }
+
+//   .card-footer-info { font-size: 11px; color: $text-muted; padding: 0 5px; }
+
+//   .card-actions {
+//     display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 1.2rem; pt: 1.2rem; border-top: 1px dashed #e2e8f0;
+
+//     .btn-action {
+//       border: none; border-radius: 12px; padding: 10px 5px; font-size: 11px; font-weight: 800; transition: 0.3s;
+//       display: flex; flex-direction: column; align-items: center; gap: 4px;
+//       i { font-size: 1.2rem; }
+
+//       &.edit { background: #f8fafc; color: #6366f1; &:hover { background: #6366f1; color: white; } }
+//       &.pay { background: #fff7ed; color: $primary; &:hover { background: $primary; color: white; } }
+//       &.statement { background: #f5f3ff; color: #8b5cf6; &:hover { background: #8b5cf6; color: white; } }
+//     }
+//   }
+// }
+
+
+
+.partner-card {
+  background: white;
+  border-radius: 24px; // حواف ناعمة جداً مثل الصور المرفقة
+  padding: 1.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+  border: 1px solid #f1f5f9;
+  transition: all 0.3s ease-in-out;
+  position: relative;
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    border-color: rgba($primary, 0.2);
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+
+    .badge-category {
+      background: #f8fafc;
+      color: #64748b;
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      border: 1px solid #e2e8f0;
+    }
+
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #1e293b;
+      margin: 0;
+    }
+
+    .phone-link {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      i { font-size: 0.75rem; color: $primary; }
+    }
+  }
+
+  .balance-section {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    padding: 1.2rem;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.2rem;
+    border: 1px solid rgba(22, 163, 74, 0.1);
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      padding: 6px 12px;
+      border-radius: 10px;
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #22c55e;
+        border-radius: 50%;
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+      }
+
+      .status-label {
+        color: #166534;
+        font-weight: 800;
+        font-size: 11px;
+      }
+    }
+
+    .label-text {
+      font-size: 10px;
+      color: #166534;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .amount {
+      flex-direction: row-reverse !important;
+      margin: 0;
+      color: #064e3b;
+      font-weight: 900;
+      font-size: 1.5rem;
+      small { font-size: 0.8rem; opacity: 0.8; }
+    }
+  }
+
+  .card-footer-info {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 5px;
+    margin-bottom: 1.5rem;
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #64748b;
+
+      i { color: #94a3b8; font-size: 1rem; }
+    }
+  }
+
+  .card-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding-top: 1.2rem;
+    border-top: 1px dashed #e2e8f0;
+
+    .btn-action {
+      border: none;
+      border-radius: 16px;
+      padding: 10px 5px;
+      font-size: 11px;
+      font-weight: 800;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+
+      i { font-size: 1.25rem; }
+
+      &.edit {
+        background: #f1f5f9;
+        color: #475569;
+        &:hover { background: #475569; color: white; }
+      }
+
+      &.pay {
+        background: rgba($primary, 0.1);
+        color: $primary;
+        &:hover {
+          background: $primary;
+          color: white;
+          box-shadow: 0 8px 15px rgba($primary, 0.2);
+        }
+      }
+
+      &.statement {
+        background: #f5f3ff;
+        color: #7c3aed;
+        &:hover { background: #7c3aed; color: white; }
+      }
+
+      &:active { transform: scale(0.95); }
+    }
+  }
+}
+
+
+
+// تأثير التغبيش خلف المودال (Overlay)
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+.custom-modal {
+  border: none;
+  border-radius: 25px; // حواف دائرية ناعمة كما في كروت الموردين
+  box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+  backdrop-filter: blur(10px); // تأثير Frosted Glass
+  overflow: hidden;
+
+  .modal-header {
+    position: relative;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; // توزيع العناصر
+
+    &.bg-dark {
+      background-color: #1a1c1e !important;
+    }
+
+    // زر الإغلاق على الشمال (Left)
+    .btn-close {
+      position: absolute;
+      left: 1.5rem;
+      top: 1.5rem;
+      margin: 0;
+      padding: 0.5rem;
+      background-color: #f1f5f9;
+      border-radius: 50%;
+      opacity: 0.8;
+      transition: 0.3s;
+      z-index: 10;
+
+      &:hover {
+        opacity: 1;
+        background-color: #e2e8f0;
+        transform: rotate(90deg);
+      }
+    }
+
+    .modal-title {
+      width: 100%;
+      text-align: right; // العنوان لليمين بما أن الواجهة RTL
+      padding-left: 2.5rem; // مساحة لزر الإغلاق
+      font-weight: 800;
+    }
+  }
+
+  .custom-input {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+
+    &:focus {
+      border-color: #ff9800; // لون أورانج فورتو عند التركيز
+      box-shadow: 0 0 0 4px rgba(255, 152, 0, 0.1);
+      outline: none;
+    }
+  }
+}
+
+.custom-table {
+  width: 100%;
+
+  thead th {
+    background: #f8fafc;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    padding: 1rem;
+  }
+
+  tbody td {
+    vertical-align: middle;
+    padding: 1rem;
+    border-color: #f1f5f9;
+    font-size: 0.85rem;
+    color: #334155;
+  }
+
+  tr:last-child td {
+    border: none;
+  }
+}
+
+.fw-black {
+  font-weight: 900;
+}
+
+
+.alert-info {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.75rem;
+}
+.bg-light[readonly] {
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+.border-top-primary {
+  border-top: 5px solid #ff9800 !important; // شريط ملون أعلى الفاتورة
+}
+
+.invoice-items {
+  span { font-size: 0.95rem; }
+}
+
+.btn-light.rounded-circle {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  &:hover {
+    background-color: #ff9800;
+    i { color: white !important; }
+  }
+}
+
+
+
+.border-top-success {
+  border-top: 5px solid #10b981 !important; // اللون الأخضر للدفعات
+}
+
+.bg-soft-success {
+  background-color: rgba(16, 185, 129, 0.1);
+}
+
+.fw-black {
+  font-weight: 900;
+}
+.border-bottom-dashed {
+  border-bottom: 1px dashed #dee2e6;
+}
+
+.fw-black {
+  font-weight: 900 !important;
+}
+
+.font-main {
+  font-family: 'Cairo', sans-serif; // بما أن مشروعك يدعم العربية
+}
+
+.bg-soft-success {
+  background-color: rgba(25, 135, 84, 0.1);
+}
+
+// تنسيق الطباعة لعدم ظهور أزرار المودال عند الطباعة
+@media print {
+  .modal-footer, .btn-close {
+    display: none !important;
+  }
+  .modal-content {
+    border: none !important;
+  }
+}

@@ -7,6 +7,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
+import { NgxPaginationModule } from 'ngx-pagination';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
 
@@ -43,6 +44,9 @@ import { TestComponent } from './components/cashier/test/test.component';
 import { StartShiftComponent } from './components/cashier/start-shift/start-shift.component';
 import { CategoriesComponent } from './components/admin/categories/categories.component';
 import { AdminInvoicesComponent } from './components/admin/invoices/invoices.component';
+import { PurchaseInvoiceComponent } from './components/admin/purchase-invoice/purchase-invoice.component';
+import { SuppliersComponent } from './components/admin/suppliers/suppliers.component';
+import { ReturnsComponent } from './components/cashier/returns/returns.component';
 
 @NgModule({
   declarations: [
@@ -68,6 +72,9 @@ import { AdminInvoicesComponent } from './components/admin/invoices/invoices.com
     CategoriesComponent,
     StartShiftComponent,
     AdminInvoicesComponent,
+    PurchaseInvoiceComponent,
+    SuppliersComponent,
+    ReturnsComponent,
   ],
   imports: [
     BrowserModule,
@@ -80,6 +87,7 @@ import { AdminInvoicesComponent } from './components/admin/invoices/invoices.com
     NgbModule,
     HttpClientModule,
     TestComponent,
+    NgxPaginationModule,
     InvoicesComponent
 ],
   providers: [

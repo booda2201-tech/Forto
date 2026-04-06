@@ -26,11 +26,15 @@
           المنتجات
           <span *ngIf="productsAlertCount > 0" class="badge bg-warning text-dark ms-1">{{ productsAlertCount }}</span>
         </a>
+        <a routerLink="/admin/suppliers" routerLinkActive="active" class="tab-item"> الموردين </a>
+        <!-- <a routerLink="/admin/companies" routerLinkActive="active" class="tab-item"> الشركات </a> -->
         <a routerLink="/admin/workers" routerLinkActive="active" class="tab-item"> العمال </a>
         <a routerLink="/admin/shifts" routerLinkActive="active" class="tab-item"> الشيفتات </a>
         <a routerLink="/admin/dashboard" routerLinkActive="active" class="tab-item"> تقارير شهرية </a>
         <a routerLink="/admin/employees-report" routerLinkActive="active" class="tab-item"> تقرير الموظفين </a>
         <a routerLink="/admin/invoices" routerLinkActive="active" class="tab-item"> الفواتير </a>
+        <a routerLink="/admin/purchase-invoice" routerLinkActive="active" class="tab-item"> فاتورة شراء </a>
+
     </div>
 </div>
 

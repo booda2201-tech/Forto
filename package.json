@@ -27,6 +27,7 @@
     "html2canvas": "^1.4.1",
     "jspdf": "^4.1.0",
     "jspdf-autotable": "^5.0.7",
+    "ngx-pagination": "^6.0.3",
     "ngx-toastr": "^19.1.0",
     "rxjs": "~7.8.0",
     "sweetalert2": "^11.26.17",
