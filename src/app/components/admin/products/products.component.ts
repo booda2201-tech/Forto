@@ -35,6 +35,8 @@ type ProductCategory = { id: number; name: string; parentId: number | null; isAc
 export class ProductsComponent implements OnInit {
   products: ProductUi[] = [];
   p: number = 1;
+  searchTerm: string = '';
+
   selectedProduct: ProductUi = {
     id: 0,
     name: '',
@@ -70,6 +72,14 @@ export class ProductsComponent implements OnInit {
     private auth: AuthService,
     private alertService: ProductStockAlertService
   ) { }
+
+
+onSearch(event: any) {
+  this.searchTerm = event.target.value;
+  this.p = 1; // إعادة الترقيم للصفحة الأولى عند البحث
+}
+
+
 
   ngOnInit(): void {
     this.loadProductCategories();
@@ -355,11 +365,26 @@ export class ProductsComponent implements OnInit {
   }
 
   /** المنتجات بعد تطبيق فلتر الفئة */
-  get filteredProducts(): ProductUi[] {
-    if (this.selectedCategoryId == null) return this.products;
-    return this.products.filter((p) => (p.categoryId ?? 0) === this.selectedCategoryId);
+/** المنتجات بعد تطبيق فلتر الفئة + شريط البحث */
+get filteredProducts(): ProductUi[] {
+  let list = this.products;
+
+  // 1. الفلترة حسب الفئة (إذا كانت مختارة)
+  if (this.selectedCategoryId != null) {
+    list = list.filter((p) => (p.categoryId ?? 0) === this.selectedCategoryId);
   }
 
+  // 2. الفلترة حسب كلمة البحث (الاسم أو الـ SKU)
+  if (this.searchTerm && this.searchTerm.trim() !== '') {
+    const term = this.searchTerm.toLowerCase().trim();
+    list = list.filter(p =>
+      p.name.toLowerCase().includes(term) ||
+      p.sku.toLowerCase().includes(term)
+    );
+  }
+
+  return list;
+}
   openAddCategoryModal(): void {
     this.newCategoryName = '';
     const el = document.getElementById('addCategoryModal');

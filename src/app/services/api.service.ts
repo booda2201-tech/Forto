@@ -1012,7 +1012,6 @@ getSupplierStatement(supplierId: number) {
     return this.http.post(`${this.baseUrl}/api/suppliers/RecordPayment`, payload);
   }
 
-
 // جلب جميع فواتير المشتريات
 getAllPurchaseInvoices(): Observable<any> {
   return this.http.get(`${this.baseUrl}/api/purchase-invoices/GetAll`);
@@ -1022,7 +1021,6 @@ getAllPurchaseInvoices(): Observable<any> {
 createPurchaseInvoice(payload: any): Observable<any> {
   return this.http.post(`${this.baseUrl}/api/purchase-invoices/Create`, payload);
 }
-
 
 // جلب فاتورة معينة بالتفاصيل (في حال أردت عرضها في المودال)
 getPurchaseInvoiceById(id: number | string): Observable<any> {
@@ -1034,10 +1032,12 @@ postPayment(invoiceId: number, data: any) {
   return this.http.post(`${this.baseUrl}/api/purchase-invoices/${invoiceId}/payments`, data);
 }
 
-
 // جلب الفواتير غير المدفوعة للمورد
 getSupplierInvoices(supplierId: number) {
   return this.http.get<any[]>(`/api/purchase-invoices/by-supplier/${supplierId}`);
 }
+
+
+
 
 }

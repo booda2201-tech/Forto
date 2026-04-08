@@ -337,3 +337,35 @@ $orange-color: #ff9a27;
     }
   }
 }
+
+
+
+
+
+
+
+
+.input-group-merge {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  background: #fdfdfd;
+
+  &:focus-within {
+    border-color: #ff6b00; // لون البرتقالي الخاص بك
+    box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+  }
+
+  .input-group-text {
+    border-radius: 0 12px 12px 0 !important; // ليتناسب مع RTL
+  }
+
+  input {
+    height: 45px;
+    font-size: 0.95rem;
+  }
+}
+.form-control:focus {
+    box-shadow: none !important; // بيشيل الظل الأزرق بتاع بوتستراب
+    outline: none !important;    // بيشيل التحديد بتاع المتصفح
+}

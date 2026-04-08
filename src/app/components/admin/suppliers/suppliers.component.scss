@@ -476,7 +476,7 @@ $shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.05);
 
   .card-actions {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(1, 1fr);
     gap: 12px;
     padding-top: 1.2rem;
     border-top: 1px dashed #e2e8f0;

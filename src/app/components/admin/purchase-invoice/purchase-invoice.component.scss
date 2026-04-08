@@ -270,7 +270,7 @@ $border-color: #e9ecef;
 
 // لضمان ظهور القائمة فوق جميع العناصر عند استخدام appendTo="body"
 // ::ng-deep .ng-dropdown-panel {
-//     z-index: 9999 !important; 
+//     z-index: 9999 !important;
 // }
 
 // // إذا كنت تريد تحسين شكل الجدول لمنع أي قص للحواف
@@ -287,7 +287,7 @@ $border-color: #e9ecef;
     border: none;
     box-shadow: 0 15px 50px rgba(0,0,0,0.15);
   }
-  
+
   .table {
     thead th {
       font-weight: 600;
@@ -352,4 +352,120 @@ $border-color: #e9ecef;
   .modal-footer, .btn-close, .action-btn {
     display: none !important;
   }
+}
+
+
+
+
+
+
+
+/* تحسين الكروت */
+.custom-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+  margin-bottom: 1.5rem;
+}
+
+/* تنسيق جدول المنتجات */
+.custom-invoice-table {
+  thead {
+    background-color: #2c3e50; /* لون احترافي داكن */
+    color: white;
+    th {
+      font-weight: 500;
+      border: none;
+      padding: 12px;
+    }
+  }
+
+  tbody tr {
+    transition: all 0.3s ease;
+    &:hover {
+      background-color: #f8f9fa;
+    }
+  }
+}
+
+/* الحاوية الرئيسية للمربع */
+.quick-add-container {
+  background: #ffffff;
+  border: 1px solid #ff9800; /* لون ذهبي هادئ */
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  padding: 1rem;
+  margin-top: 10px;
+  animation: slideDown 0.3s ease-out;
+  position: relative;
+  overflow: hidden;
+
+  // إضافة خط ذهبي رفيع في الأعلى للمسة فخامة
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #ff9800, #f1c40f, #c76718);
+  }
+}
+
+/* العنوان العلوي */
+.quick-add-title {
+  color: #2c3e50;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  i { color: #ff9800; }
+}
+
+/* تنسيق حقل الإدخال */
+.custom-input-group {
+  .input-group-text {
+    background-color: #fcf8ee;
+    border-color: #e0c389;
+    color: #8a6d3b;
+    font-weight: 600;
+  }
+
+  .form-control {
+    border-color: #e0c389;
+    &:focus {
+      box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.15);
+      border-color: #d4af37;
+    }
+  }
+}
+
+/* الزر الذهبي Premium */
+.btn-gold-action {
+  background:$forto-orange;
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(184, 134, 11, 0.2);
+
+  &:hover:not(:disabled) {
+    background:  #ff9900b2;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(184, 134, 11, 0.3);
+  }
+
+  &:disabled {
+    background: #ccc;
+    box-shadow: none;
+  }
+}
+
+/* أنيميشن الظهور */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

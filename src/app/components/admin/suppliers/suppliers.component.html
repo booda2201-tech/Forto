@@ -1,4 +1,4 @@
-<div class="page-wrapper" dir="rtl">
+<!-- <div class="page-wrapper" dir="rtl">
   <header class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5">
     <div class="header-title">
       <h1>إدارة {{ viewType === 'supplier' ? 'الموردين' : 'الشركات' }}</h1>
@@ -87,54 +87,7 @@
 </aside>
     <main class="col-lg-8">
       <div class="row g-4">
-        <!-- <div class="col-md-6" *ngFor="let partner of filteredPartners">
-          <div class="partner-card">
-            <div class="card-top">
-              <span class="badge-category">{{ partner.categoryAr }}</span>
-              <div class="name-info text-end">
-                <h3>{{ partner.nameAr }}</h3>
-                <p class="phone-link" dir="ltr">
-                  <i class="bi bi-telephone-fill mx-2"></i> +968 {{ partner.phone }}
-                </p>
-              </div>
-            </div>
 
-            <div class="balance-section">
-              <div class="status-indicator">
-                <span class="status-dot"></span>
-                <span class="status-label">رصيد دائن</span>
-              </div>
-              <div class="text-end">
-                <span class="label-text">الرصيد الحالي</span>
-                <h4 class="amount">
-                {{ partner.currentBalance | number:'1.2-2' }}
-                  <small>ج.م</small>  </h4>
-              </div>
-            </div>
-
-            <div class="card-footer-info">
-              <div class="info-item">
-                <i class="bi bi-calendar3"></i>
-                <span>آخر دفعة: {{ partner.lastPaymentDate }}</span>
-              </div>
-              <div class="info-item fw-bold text-dark">
-                <i class="bi bi-cash-stack"></i>
-                <span>ج.م  {{ partner.lastPaymentAmount | number:'1.2-2' }} </span>
-              </div>
-            </div>
-
-            <div class="card-actions">
-              <button (click)="onPay(partner)" class="btn-action pay">
-                <i class="bi bi-wallet2"></i>
-                دفع مبلغ
-              </button>
-              <button (click)="viewStatement(partner)" class="btn-action statement">
-                <i class="bi bi-file-earmark-text"></i>
-                كشف حساب
-              </button>
-            </div>
-          </div>
-        </div> -->
 
         <div class="col-md-6" *ngFor="let partner of filteredPartners">
           <div class="partner-card">
@@ -149,11 +102,11 @@
             </div>
 
 <div class="balance-section d-flex justify-content-between align-items-center">
-  
+
   <div class="status-indicator">
-    <span class="status-dot" 
+    <span class="status-dot"
           [ngClass]="{
-            'bg-danger': partner.outstandingBalance > 0, 
+            'bg-danger': partner.outstandingBalance > 0,
             'bg-success': partner.outstandingBalance <= 0
           }">
     </span>
@@ -184,13 +137,9 @@
             </div>
 
             <div class="card-actions">
-              <button (click)="onPay(partner)" class="btn-action pay">
-                <i class="bi bi-wallet2"></i>
-                دفع مبلغ
-              </button>
-              <button (click)="viewStatement(partner)" class="btn-action statement">
+              <button (click)="viewStatement(partner)" class="btn-action statement w-100">
                 <i class="bi bi-file-earmark-text"></i>
-                كشف حساب
+                    عرض سجل المعاملات
               </button>
             </div>
           </div>
@@ -198,11 +147,177 @@
       </div>
     </main>
   </div>
+</div> -->
+
+
+
+<div class="page-wrapper" dir="rtl">
+  <header class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5">
+    <div class="header-title">
+      <h1>إدارة الموردين والشركات</h1>
+      <p>متابعة المديونيات، سجل المدفوعات، وبيانات التواصل الموحدة</p>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-dark px-4 py-2 rounded-3 shadow-sm" routerLink="/admin/purchase-invoice">
+        <i class="bi bi-file-earmark-plus me-2"></i> إضافة فاتورة مشتريات
+      </button>
+    </div>
+  </header>
+
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="stat-card red">
+        <div class="stat-info">
+          <span>إجمالي المديونية المستحقة</span>
+          <h3>{{ getTotalDebt() | number:'1.2-2' }} <small>ج.م</small></h3>
+        </div>
+        <div class="stat-icon"><i class="bi bi-credit-card-2-back"></i></div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card orange">
+        <div class="stat-info">
+          <span>عدد الجهات النشطة</span>
+          <h3>{{ filteredPartners.length }}</h3>
+        </div>
+        <div class="stat-icon"><i class="bi bi-building"></i></div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card green">
+        <div class="stat-info">
+          <span>إجمالي المدفوعات المسددة</span>
+          <h3>{{ totalRecentPayments | number:'1.2-2' }} <small>ج.م</small></h3>
+        </div>
+        <div class="stat-icon"><i class="bi bi-check2-all"></i></div>
+      </div>
+    </div>
+  </div>
+
+<div class="row g-4" dir="ltr">
+<aside class="col-lg-4 order-last order-lg-first" dir="rtl">
+  <div class="sidebar-form luxury-card shadow-sm border-0 animate__animated animate__fadeInRight">
+    <div class="form-header mb-4 border-bottom border-gold pb-3">
+      <h2 class="h5 fw-bold gold-text mb-1">إضافة تاجر جديد</h2>
+    </div>
+
+    <form [formGroup]="addPartnerForm" (ngSubmit)="onSavePartner()">
+      <div class="mb-3">
+        <label class="form-label small fw-bold gold-text-muted">اسم التاجر (عربي)</label>
+        <div class="input-group">
+          <input type="text" class="form-control luxury-input shadow-none"
+                  formControlName="supplierNameAr"
+                  placeholder="الاسم بالعربية"
+                  [class.is-invalid]="addPartnerForm.get('supplierNameAr')?.touched && addPartnerForm.get('supplierNameAr')?.invalid">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-bold gold-text-muted">اسم التاجر (EN)</label>
+        <div class="input-group" dir="ltr">
+          <input type="text" class="form-control luxury-input shadow-none text-end"
+                  formControlName="supplierNameEn"
+                  placeholder="Partner Name (EN)"
+                  [class.is-invalid]="addPartnerForm.get('supplierNameEn')?.touched && addPartnerForm.get('supplierNameEn')?.invalid">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-bold gold-text-muted">رقم الهاتف</label>
+        <div class="input-group" dir="ltr">
+          <input type="text" class="form-control luxury-input shadow-none text-end"
+                  formControlName="phoneNumber"
+                  placeholder="+968 0000 0000"
+                  [class.is-invalid]="addPartnerForm.get('phoneNumber')?.touched && addPartnerForm.get('phoneNumber')?.invalid">
+        </div>
+      </div>
+
+
+      <button type="submit" class="btn btn-save w-100 mt-3 py-3 fw-bold shimmer-effect"
+              [disabled]="isLoading || addPartnerForm.invalid">
+        <div class="d-flex align-items-center justify-content-center">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+          <span>{{ isLoading ? 'جاري المعالجة...' : 'حفظ البيانات' }}</span>
+        </div>
+      </button>
+    </form>
+  </div>
+</aside>
+
+  <main class="col-lg-8">
+    <div class="row g-4">
+      <div class="col-md-6" *ngFor="let partner of filteredPartners">
+        <div class="partner-card luxury-card h-100 border-0 shadow-sm">
+
+          <div class="card-top d-flex justify-content-between align-items-start mb-3">
+                <span class="badge-category">{{ partner.companyNameAr ? 'شركة' : 'مورد' }}</span>
+            <div class="name-info text-end">
+              <h3 class="h6 fw-bold mb-1">{{ partner.supplierNameAr }}</h3>
+              <p class="small text-muted mb-1" dir="ltr">{{ partner.supplierNameEn }}</p>
+              <p class="phone-link small text-primary mb-0" dir="ltr">
+                  {{ partner.phoneNumber }} <i class="bi bi-telephone-fill ms-1"></i>
+              </p>
+            </div>
+          </div>
+
+          <div class="balance-section bg-light p-3 rounded-3 mb-3 d-flex justify-content-between align-items-center">
+            <div class="status-indicator">
+              <span class="status-dot" [ngClass]="partner.outstandingBalance > 0 ? 'bg-danger' : 'bg-success'"></span>
+              <span class="small fw-bold">{{ partner.outstandingBalance > 0 ? 'مديونية' : 'رصيد دائن' }}</span>
+            </div>
+            <div class="text-end">
+              <span class="label-text x-small text-muted d-block">الرصيد الحالي</span>
+              <h4 class="amount mb-0 h5 fw-bold" [class.text-danger]="partner.outstandingBalance > 0">
+                {{ (partner.outstandingBalance || 0) | number:'1.2-2' }} <small>ج.م</small>
+              </h4>
+            </div>
+          </div>
+
+          <div class="card-footer-info d-flex justify-content-between border-top pt-3">
+            <div class="info-item">
+              <i class="bi bi-calendar3 small text-muted me-1"></i>
+              <span class="x-small text-muted">آخر دفعة: {{ partner.lastPaymentDate || 'لا يوجد' }}</span>
+            </div>
+            <div class="info-item fw-bold text-dark">
+              <span class="x-small">ح.م {{ (partner.lastPaymentAmount || 0) | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+            <div class="card-actions">
+              <button (click)="viewStatement(partner)" class="btn-action statement w-100">
+                <i class="bi bi-file-earmark-text"></i>
+                    عرض سجل المعاملات
+              </button>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="filteredPartners.length === 0" class="text-center py-5">
+      <i class="bi bi-people text-muted display-1"></i>
+      <p class="text-muted mt-3">لا يوجد تجار مسجلين حالياً</p>
+    </div>
+  </main>
+</div>
 </div>
 
 
 
-<div class="modal fade" id="payModal" tabindex="-1" aria-hidden="true">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <div class="modal fade" id="payModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
 
 <div class="modal-content custom-modal">
@@ -257,7 +372,71 @@
 </div>
 
   </div>
+</div> -->
+
+<div class="modal fade" id="confirmPayModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content custom-modal border-0 shadow-lg">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">تسجيل دفع مبلغ للمورد</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="supplier-brief mb-4 p-3 rounded-4 bg-light border-start border-primary border-4">
+          <small class="text-muted d-block mb-1">المورد: {{ selectedPartner?.supplierNameAr }}</small>
+          <h5 class="fw-bold mb-0 text-primary">فاتورة رقم: {{ selectedInvoiceNumber }}</h5>
+        </div>
+
+        <form [formGroup]="paymentForm" (ngSubmit)="confirmPayment()">
+          <div class="mb-3">
+            <label class="form-label fw-bold small">إجمالي المبلغ المطلوب دفعه (ر.ع)</label>
+            <input type="number" class="form-control custom-input py-2"
+                    placeholder="0.00" formControlName="amount">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold small">طريقة الدفع</label>
+            <select class="form-select custom-input py-2" formControlName="method">
+              <option value="cash">نقداً (Cash)</option>
+              <option value="visa"> فيزا (Visa/MasterCard)</option>
+              <option value="bank">تحويل بنكي (Bank Transfer)</option>
+              <option value="custom">دفع مخصص (كاش + فيزا)</option>
+            </select>
+          </div>
+
+          <div class="row g-2 mb-3 px-2 py-3 rounded-3 bg-primary-subtle"
+               *ngIf="paymentForm.get('method')?.value === 'custom'">
+            <div class="col-6">
+              <label class="form-label fw-bold small text-success">مبلغ الكاش</label>
+              <input type="number" class="form-control border-success-subtle shadow-none"
+                      formControlName="cashAmount" placeholder="0.00">
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-bold small text-primary">مبلغ الفيزا</label>
+              <input type="number" class="form-control border-primary-subtle bg-white shadow-none"
+                      formControlName="visaAmount" readonly>
+            </div>
+            <div class="col-12">
+              <div class="alert alert-info py-2 px-3 mt-2 mb-0 small border-0 shadow-sm">
+                <i class="bi bi-info-circle me-1"></i>
+                سيتم تقسيم الدفعة تلقائياً بناءً على المبلغ المدخل.
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" [disabled]="paymentForm.invalid || isLoading"
+                  class="btn btn-primary w-100 py-3 mt-3 shadow-sm fw-bold rounded-3">
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isLoading ? 'جاري المعالجة...' : 'تأكيد عملية الدفع' }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
+
+
+
 
 
 <div class="modal fade" id="statementModal" tabindex="-1" aria-hidden="true">
@@ -320,7 +499,7 @@
     <button class="btn btn-sm btn-outline-primary" (click)="viewInvoice(trans)" title="عرض الفاتورة">
       <i class="bi bi-eye"></i>
     </button>
-    
+
     <button class="btn btn-sm btn-outline-success" (click)="viewInvoicePayments(trans)" title="عرض الدفعات">
       <i class="bi bi-cash-stack"></i>
     </button>
@@ -351,6 +530,9 @@
           <h5 class="modal-title fw-bold mb-0">تفاصيل دفعات الفاتورة</h5>
           <span class="badge bg-primary mt-2">رقم: {{ selectedInvoiceNumber }}</span>
         </div>
+        <button (click)="onPayFromInvoice()" class="btn btn-success shadow-sm px-4 fw-bold">
+          <i class="bi bi-plus-circle me-2"></i> دفع دفعة جديدة لهذه الفاتورة
+        </button>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
@@ -377,7 +559,7 @@
         </div>
 
         <h6 class="fw-bold mb-3 mt-4 border-bottom pb-2">سجل الحركات المالية (الدفعات)</h6>
-        
+
         <div *ngIf="invoicePayments.length === 0" class="text-center py-5">
           <i class="bi bi-wallet2 text-muted display-6"></i>
           <p class="text-muted mt-2">لا يوجد سجل مدفوعات حالي لهذه الفاتورة.</p>
@@ -419,7 +601,7 @@
 <div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-md modal-dialog-centered">
     <div class="modal-content custom-modal overflow-hidden">
-      
+
       <div class="modal-header bg-dark text-white p-4">
         <h5 class="modal-title fw-bold">تفاصيل فاتورة المشتريات</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -452,9 +634,9 @@
                   <span class="fw-bold text-dark">{{ item.productName }}</span>
                   <small class="text-muted">سعر الوحدة: {{ item.unitPurchasePrice | number }} ج.م</small>
                 </div>
-                
+
                 <span style="flex: 1;" class="text-center fw-bold">{{ item.qty }}</span>
-                
+
                 <span style="flex: 1;" class="text-end fw-bold text-dark">
     {{ (item.qty * item.unitPurchasePrice) | number:'1.2-2' }} ج.م
                 </span>
@@ -482,7 +664,7 @@
                 <span class="fs-6 fw-normal">ج.م</span>
               </h4>
             </div>
-            
+
             <div class="mt-3 d-flex justify-content-between align-items-center px-2">
                 <span class="small text-success">المبلغ المدفوع: {{ selectedInvoice?.amountPaid | number:'1.2-2' }}</span>
                 <span class="small text-danger fw-bold">المتبقي: {{ (selectedInvoice?.total - selectedInvoice?.amountPaid) | number:'1.2-2' }}</span>

@@ -1,4 +1,4 @@
- 
+
 import { Component, OnInit, TemplateRef } from '@angular/core';
 import { ApiService } from '../../../services/api.service';
 import { AuthService } from '../../../services/auth.service';
@@ -14,20 +14,23 @@ export class PurchaseInvoiceComponent implements OnInit {
 // الحالات والبيانات الأساسية
   currentTab: 'list' | 'add' = 'add';
   isLoading = false;
-  
+
   // المصفوفات (تم تعريف filteredInvoices و searchTerm لحل أخطاء الـ Build)
   previousInvoices: any[] = [];
-  filteredInvoices: any[] = []; 
+  filteredInvoices: any[] = [];
   suppliers: any[] = [];
   allProducts: any[] = [];
   allMaterials: any[] = [];
-  
+
   // متغيرات البحث والفلترة
   searchTerm: string = '';
   filterDate: string = '';
-  
+
   // تفاصيل الفاتورة المختارة للعرض
   selectedInvoice: any = null;
+  selectedInvoiceData: any;
+  selectedInvoiceNumber: string = '';
+  invoicePayments: any[] = [];
 
   // الحسابات المالية
   taxRate = 0;
@@ -41,7 +44,7 @@ export class PurchaseInvoiceComponent implements OnInit {
     branchId: 1, // تثبيت الفرع دائماً على 1
     invoiceDate: new Date().toISOString().split('T')[0],
     paymentMethod: 1,
-    recordedByEmployeeId: 0 
+    recordedByEmployeeId: 0
   };
 
   invoiceItems: any[] = [];
@@ -50,10 +53,10 @@ export class PurchaseInvoiceComponent implements OnInit {
   addCustomItem = (term: string) => ({ id: 0, name: term, isNew: true });
 
   constructor(
-    private apiService: ApiService, 
-    private modalService: NgbModal, 
-    private authService: AuthService
-  ) 
+    private apiService: ApiService,
+    private modalService: NgbModal,
+    private authService: AuthService,
+  )
     {
     this.initFirstItem();
   }
@@ -66,11 +69,12 @@ ngOnInit() {
 }
   // تهيئة السطر الأول بقيم رقمية بدلاً من null لتجنب أخطاء الـ Build
 initFirstItem() {
-    this.invoiceItems = [{ 
-      lineKind: 0, productId: 0, materialId: 0, customName: '', qty: 1, unitPurchasePrice: 0, unitSalePrice: 0 
-    }];
-  }
-  
+  this.invoiceItems = [{
+    lineKind: 0, productId: 0, materialId: 0, customName: '', customSku: '', // أضفنا customSku
+    qty: 1, unitPurchasePrice: 0, unitSalePrice: 0
+  }];
+}
+
 
   loadSuppliers() {
     this.apiService.getAllSuppliers().subscribe({
@@ -116,7 +120,7 @@ setAutomaticData() {
       this.invoiceDetails.recordedByEmployeeId = empId;
     } else {
       // قيمة احتياطية في حالة فشل الجلب
-      this.invoiceDetails.recordedByEmployeeId = 6827; 
+      this.invoiceDetails.recordedByEmployeeId = 6827;
     }
   }
 
@@ -128,67 +132,98 @@ setAutomaticData() {
   }
 
 // 1. عند اختيار عنصر من القائمة
+// onItemSelect(item: any, selectedData: any) {
+//   if (selectedData) {
+//     if (selectedData.isNew) {
+
+//       // حالة إضافة جديد (Tag) - سنقوم بالحفظ الفوري في السيرفر
+//       this.isLoading = true;
+
+//       if (item.lineKind === 0) {
+//         // نداء إضافة منتج
+//         const productPayload = {
+//           name: selectedData.name,
+//           sku: 'SKU-' + Date.now(), // توليد SKU تلقائي بسيط
+//           salePrice: Number(item.unitSalePrice || 0),
+//           costPerUnit: Number(item.unitPurchasePrice || 0),
+//           categoryId: 1, // تأكد من وجود Category بالرقم ده أو غيره
+//           branchId: 1,
+//           initialStockQty: Number(item.qty || 0),
+//           reorderLevel: 5
+//         };
+
+//         this.apiService.createProduct(productPayload).subscribe({
+//           next: (res: any) => {
+//             const newProd = res.data || res;
+//             item.productId = newProd.id;
+//             item.selectedId = newProd.id;
+//             item.customName = ''; // تم الحفظ، لم يعد مخصصاً
+//             this.loadInitialData(); // لتحديث القائمة
+//             this.isLoading = false;
+//             alert(`تم إضافة المنتج "${selectedData.name}" بنجاح`);
+//           },
+//           error: () => (this.isLoading = false)
+//         });
+
+//       } else {
+//         // نداء إضافة خامة
+//         const materialPayload = {
+//           name: selectedData.name,
+//           unit: 1, // وحدة افتراضية
+//           costPerUnit: Number(item.unitPurchasePrice || 0),
+//           chargePerUnit: Number(item.unitSalePrice || 0),
+//           branchId: 1,
+//           initialStockQty: Number(item.qty || 0),
+//           reorderLevel: 5
+//         };
+
+//         this.apiService.createMaterial(materialPayload).subscribe({
+//           next: (res: any) => {
+//             const newMat = res.data || res;
+//             item.materialId = newMat.id;
+//             item.selectedId = newMat.id;
+//             item.customName = '';
+//             this.loadInitialData();
+//             this.isLoading = false;
+//             alert(`تم إضافة الخامة "${selectedData.name}" بنجاح`);
+//           },
+//           error: () => (this.isLoading = false)
+//         });
+//       }
+
+//     } else {
+//       // حالة اختيار منتج موجود فعلياً
+//       item.customName = '';
+//       if (item.lineKind === 0) {
+//         item.productId = selectedData.id;
+//         item.materialId = 0;
+//       } else {
+//         item.materialId = selectedData.id;
+//         item.productId = 0;
+//       }
+//       item.unitPurchasePrice = selectedData.purchasePrice || selectedData.costPerUnit || 0;
+//       item.unitSalePrice = selectedData.salePrice || selectedData.chargePerUnit || 0;
+//     }
+//   }
+// }
+
 onItemSelect(item: any, selectedData: any) {
   if (selectedData) {
     if (selectedData.isNew) {
-      // حالة إضافة جديد (Tag) - سنقوم بالحفظ الفوري في السيرفر
-      this.isLoading = true;
+      // 1. أهم خطوة: بنثبت الاسم في customName عشان الـ *ngIf في الـ HTML يفضل شايفه ويفتح الخانة
+      item.customName = selectedData.name;
 
-      if (item.lineKind === 0) {
-        // نداء إضافة منتج
-        const productPayload = {
-          name: selectedData.name,
-          sku: 'SKU-' + Date.now(), // توليد SKU تلقائي بسيط
-          salePrice: Number(item.unitSalePrice || 0),
-          costPerUnit: Number(item.unitPurchasePrice || 0),
-          categoryId: 1, // تأكد من وجود Category بالرقم ده أو غيره
-          branchId: 1,
-          initialStockQty: Number(item.qty || 0),
-          reorderLevel: 5
-        };
+      // 2. بنصفر البيانات القديمة عشان نضمن إننا بنبدأ "على بياض" للصنف الجديد
+      item.productId = 0;
+      item.materialId = 0;
+      item.selectedId = null;
+      item.customSku = ''; // بنفضي خانة الكود عشان الموظف يكتبها
 
-        this.apiService.createProduct(productPayload).subscribe({
-          next: (res: any) => {
-            const newProd = res.data || res;
-            item.productId = newProd.id;
-            item.selectedId = newProd.id;
-            item.customName = ''; // تم الحفظ، لم يعد مخصصاً
-            this.loadInitialData(); // لتحديث القائمة
-            this.isLoading = false;
-            alert(`تم إضافة المنتج "${selectedData.name}" بنجاح`);
-          },
-          error: () => (this.isLoading = false)
-        });
-
-      } else {
-        // نداء إضافة خامة
-        const materialPayload = {
-          name: selectedData.name,
-          unit: 1, // وحدة افتراضية
-          costPerUnit: Number(item.unitPurchasePrice || 0),
-          chargePerUnit: Number(item.unitSalePrice || 0),
-          branchId: 1,
-          initialStockQty: Number(item.qty || 0),
-          reorderLevel: 5
-        };
-
-        this.apiService.createMaterial(materialPayload).subscribe({
-          next: (res: any) => {
-            const newMat = res.data || res;
-            item.materialId = newMat.id;
-            item.selectedId = newMat.id;
-            item.customName = '';
-            this.loadInitialData();
-            this.isLoading = false;
-            alert(`تم إضافة الخامة "${selectedData.name}" بنجاح`);
-          },
-          error: () => (this.isLoading = false)
-        });
-      }
-
+      // هنا إحنا وقفنا.. مش هنعمل حفظ للسيرفر غير لما الموظف يدوس بنفسه على زرار الحفظ الأصفر
     } else {
-      // حالة اختيار منتج موجود فعلياً
-      item.customName = '';
+      // حالة اختيار منتج موجود فعلياً في السيستم
+      item.customName = ''; // بنخفي الـ input لو كان مفتوح
+
       if (item.lineKind === 0) {
         item.productId = selectedData.id;
         item.materialId = 0;
@@ -196,23 +231,27 @@ onItemSelect(item: any, selectedData: any) {
         item.materialId = selectedData.id;
         item.productId = 0;
       }
+
+      // بنسحب الأسعار المسجلة فعلاً في السيستم عشان الموظف ميضطرش يكتبها تاني
       item.unitPurchasePrice = selectedData.purchasePrice || selectedData.costPerUnit || 0;
       item.unitSalePrice = selectedData.salePrice || selectedData.chargePerUnit || 0;
     }
   }
 }
 
+
 // 2. تحديث دالة إضافة سطر جديد لتشمل selectedId
 addNewItem() {
-  this.invoiceItems.push({ 
-    lineKind: 0, 
-    productId: 0, 
-    materialId: 0, 
+  this.invoiceItems.push({
+    lineKind: 0,
+    productId: 0,
+    materialId: 0,
     selectedId: null, // الحقل الوسيط للـ ng-select
-    customName: '', 
-    qty: 1, 
-    unitPurchasePrice: 0, 
-    unitSalePrice: 0 
+    customName: '',
+    customSku: '',
+    qty: 1,
+    unitPurchasePrice: 0,
+    unitSalePrice: 0
   });
 }
   removeItem(index: number) {
@@ -265,7 +304,7 @@ addNewItem() {
   //   this.apiService.createPurchaseInvoice(payload).subscribe({
   //     next: () => {
   //       console.log(payload);
-        
+
   //       alert('تم الحفظ بنجاح!');
   //       this.resetForm();
   //       this.loadInvoices();
@@ -285,13 +324,18 @@ addNewItem() {
 saveNewItemQuickly(item: any) {
   if (!item.customName) return;
 
+if (item.lineKind === 0 && !item.customSku) {
+    alert('من فضلك أدخل كود المنتج أولاً');
+    return;
+  }
+
   this.isLoading = true;
-  
+
   if (item.lineKind === 0) {
     // تجهيز بيانات المنتج
     const payload = {
       name: item.customName,
-      sku: 'SKU-' + Date.now(),
+      sku: item.customSku,
       salePrice: Number(item.unitSalePrice || 0),
       costPerUnit: Number(item.unitPurchasePrice || 0),
       categoryId: 1, // تأكد أن الرقم 1 موجود في السيستم
@@ -305,7 +349,8 @@ saveNewItemQuickly(item: any) {
         const newProd = res.data || res;
         item.productId = newProd.id;
         item.selectedId = newProd.id;
-        item.customName = ''; // مسح الحالة "جديد" بعد الحفظ
+        item.customName = '';
+        item.customSku = ''; // مسح الحالة "جديد" بعد الحفظ
         this.loadInitialData(); // تحديث القائمة
         this.isLoading = false;
         alert('تم حفظ المنتج الجديد بنجاح');
@@ -319,6 +364,7 @@ saveNewItemQuickly(item: any) {
     // تجهيز بيانات الخامة
     const payload = {
       name: item.customName,
+      sku: item.customSku,
       unit: 1,
       costPerUnit: Number(item.unitPurchasePrice || 0),
       chargePerUnit: Number(item.unitSalePrice || 0),
@@ -333,6 +379,7 @@ saveNewItemQuickly(item: any) {
         item.materialId = newMat.id;
         item.selectedId = newMat.id;
         item.customName = '';
+        item.customSku = '';
         this.loadInitialData();
         this.isLoading = false;
         alert('تم حفظ الخامة الجديدة بنجاح');
@@ -370,7 +417,7 @@ saveInvoice() {
     discount: Number(this.discount || 0),
     taxRate: Number(this.taxRate || 0),
     amountPaid: Number(this.amountPaid || 0),
-    
+
     // الحل الجذري هنا: إرسال الحقل المطلوب فقط للسيرفر
     Items: this.invoiceItems.map(item => {
       const line: any = {
@@ -383,7 +430,7 @@ saveInvoice() {
       // إذا كان منتج (0) أرسل productId فقط
       if (line.lineKind === 0) {
         line.productId = item.productId > 0 ? item.productId : null;
-      } 
+      }
       // إذا كان خامة (1) أرسل materialId فقط
       else if (line.lineKind === 1) {
         line.materialId = item.materialId > 0 ? item.materialId : null;
@@ -429,6 +476,33 @@ printInvoice(invoice?: any) {
     window.print();
   }
 }
+
+openPayments(content: any, invoice: any) {
+  // 1. إسناد بيانات الفاتورة المختارة للمتغيرات
+  this.selectedInvoiceData = invoice;
+  this.selectedInvoiceNumber = invoice.invoiceNumber || invoice.id;
+
+  // 2. جلب سجل الدفعات (افترضنا هنا أنها موجودة كـ Array داخل الفاتورة أو يتم جلبها من API)
+  // إذا كانت الدفعات تأتي من الـ API، يمكنك مناداة الخدمة هنا
+  this.invoicePayments = invoice.payments || [];
+
+  // 3. فتح المودال باستخدام NgbModal
+  this.modalService.open(content, {
+    size: 'lg',
+    centered: true,
+    scrollable: true
+    // windowClass: 'custom-modal-animation' // اختياري لإضافة أنيميشن فخم
+  });
+}
+
+
+
+
+
+
+
+
+
 
   get subTotal() { return this.invoiceItems.reduce((acc, item) => acc + (item.qty * item.unitPurchasePrice), 0); }
   get finalTotal() { return this.subTotal + (this.subTotal * this.taxRate / 100) - (this.subTotal * this.discount / 100); }

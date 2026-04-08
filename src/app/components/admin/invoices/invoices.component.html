@@ -284,6 +284,7 @@
         <div class="client-data mb-3 fw-bold" style="font-size: 12px;">
           <div><strong>العميل:</strong> {{ selectedInvoice?.customerName || 'Walk-in' }}</div>
           <div><strong>الهاتف:</strong> {{ selectedInvoice?.phone || '-' }}</div>
+          <!-- <div><strong>نوع العربية:</strong> {{ selectedInvoice?.brand || '-' }}</div> -->
           <div><strong>رقم العربية:</strong> {{ selectedInvoice?.plateNumber || '-' }}</div>
           <div><strong>التاريخ : </strong> {{ (selectedInvoice?.paidAt | date:'yyyy/M/d - h:mm a') || '-' }}</div>
           <div><strong>طريقة الدفع:</strong> {{ selectedInvoice ? paymentLabel(selectedInvoice.paymentMethod) : '' }}
