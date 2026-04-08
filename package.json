@@ -21,6 +21,7 @@
     "@fortawesome/fontawesome-free": "^7.1.0",
     "@microsoft/signalr": "^10.0.0",
     "@ng-bootstrap/ng-bootstrap": "^15.0.0",
+    "@ng-select/ng-select": "^11.2.0",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",

@@ -1,80 +1,9 @@
-
-
-// export class PurchaseInvoiceComponent {
-//   currentTab: 'list' | 'add' = 'list';
-
-//   // قيم الملخص المالي
-//   taxPercentage = 0;
-//   discountPercentage = 0;
-//   amountPaid = 0;
-
-//   // مصفوفة العناصر داخل الفاتورة
-//   invoiceItems = [
-//     { type: 'product', name: '', quantity: 1, purchasePrice: 0, sellingPrice: 0 }
-//   ];
-
-//   // إضافة سطر جديد
-//   addNewItem() {
-//     this.invoiceItems.push({
-//       type: 'product',
-//       name: '',
-//       quantity: 1,
-//       purchasePrice: 0,
-//       sellingPrice: 0
-//     });
-//   }
-
-//   // حذف سطر
-//   removeItem(index: number) {
-//     if (this.invoiceItems.length > 1) {
-//       this.invoiceItems.splice(index, 1);
-//     }
-//   }
-
-//   // 1. حساب إجمالي المنتجات قبل الضريبة والخصم
-//   get subTotal(): number {
-//     return this.invoiceItems.reduce((acc, item) => acc + (item.quantity * item.purchasePrice), 0);
-//   }
-
-//   // 2. حساب قيمة الضريبة
-//   get taxAmount(): number {
-//     return (this.subTotal * this.taxPercentage) / 100;
-//   }
-
-//   // 3. حساب قيمة الخصم
-//   get discountAmount(): number {
-//     return (this.subTotal * this.discountPercentage) / 100;
-//   }
-
-//   // 4. الإجمالي النهائي
-//   get finalTotal(): number {
-//     return this.subTotal + this.taxAmount - this.discountAmount;
-//   }
-
-//   // 5. المتبقي (الآجل)
-//   get remainingAmount(): number {
-//     return this.finalTotal - this.amountPaid;
-//   }
-
-//   // دالة فارغة فقط لمنع الخطأ في HTML لأننا نستخدم Getters للحساب اللحظي
-//   calculateTotal() { }
-
-//   previousInvoices = [
-//     { id: 'INV-5501', supplier: 'شركة الأمل للتوريدات', date: '2024-03-20', branch: 'فرع القاهرة', total: 15400, paid: 10000, remaining: 5400, status: 'partial' },
-//     { id: 'INV-5502', supplier: 'المركز العالمي للقطع', date: '2024-03-22', branch: 'فرع الجيزة', total: 8200, paid: 8200, remaining: 0, status: 'paid' },
-//     { id: 'INV-5503', supplier: 'مؤسسة النور الحديثة', date: '2024-03-25', branch: 'فرع الإسكندرية', total: 22000, paid: 0, remaining: 22000, status: 'unpaid' },
-//     { id: 'INV-5504', supplier: 'مصنع الشرق للأدوات', date: '2024-03-28', branch: 'فرع القاهرة', total: 1250, paid: 1250, remaining: 0, status: 'paid' }
-//   ];
-// // بياناتك التجريبية كما هي
-// }
-
-
-
-
-
-
-import { Component, OnInit } from '@angular/core';
+ 
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { ApiService } from '../../../services/api.service';
+import { AuthService } from '../../../services/auth.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
 
 @Component({
   selector: 'app-purchase-invoice',
@@ -82,127 +11,426 @@ import { ApiService } from '../../../services/api.service';
   styleUrls: ['./purchase-invoice.component.scss']
 })
 export class PurchaseInvoiceComponent implements OnInit {
+// الحالات والبيانات الأساسية
   currentTab: 'list' | 'add' = 'add';
-  previousInvoices: any[] = [];
-  suppliers: any[] = [];
-
   isLoading = false;
+  
+  // المصفوفات (تم تعريف filteredInvoices و searchTerm لحل أخطاء الـ Build)
+  previousInvoices: any[] = [];
+  filteredInvoices: any[] = []; 
+  suppliers: any[] = [];
+  allProducts: any[] = [];
+  allMaterials: any[] = [];
+  
+  // متغيرات البحث والفلترة
+  searchTerm: string = '';
+  filterDate: string = '';
+  
+  // تفاصيل الفاتورة المختارة للعرض
+  selectedInvoice: any = null;
+
+  // الحسابات المالية
   taxRate = 0;
   discount = 0;
   amountPaid = 0;
-
-  // تهيئة التاريخ بصيغة متوافقة مع input type="date"
   todayDate = new Date().toISOString().split('T')[0];
 
+  // هيكل الفاتورة الجديدة
   invoiceDetails = {
     supplierId: null,
-    branchId: 2549,
-    invoiceDate: this.todayDate,
-    paymentMethod: 1, // 1: Cash, 2: Visa, 3: Credit (آجل)
-    recordedByEmployeeId: 6827
+    branchId: 1, // تثبيت الفرع دائماً على 1
+    invoiceDate: new Date().toISOString().split('T')[0],
+    paymentMethod: 1,
+    recordedByEmployeeId: 0 
   };
 
-  invoiceItems = [
-    { lineKind: 0, productId: null, materialId: null, qty: 1, unitPurchasePrice: 0, unitSalePrice: 0 }
-  ];
+  invoiceItems: any[] = [];
 
-  constructor(private apiService: ApiService) {}
+  // دالة إضافة عنصر مخصص (Tag)
+  addCustomItem = (term: string) => ({ id: 0, name: term, isNew: true });
 
-  ngOnInit() {
-    this.loadInvoices();
-    this.loadSuppliers();
+  constructor(
+    private apiService: ApiService, 
+    private modalService: NgbModal, 
+    private authService: AuthService
+  ) 
+    {
+    this.initFirstItem();
   }
 
-loadSuppliers() {
-    this.apiService.getAllSuppliers().subscribe({
-      next: (res: any) => {
-        // 👇 التعديل هنا: إضافة .data أو .items حسب ما الباك إند بيرجع
-        this.suppliers = res.data ? res.data : res;
+ngOnInit() {
+  this.loadInvoices();
+  this.loadSuppliers();
+  this.loadInitialData();
+  this.setAutomaticData(); // دالة لجلب بيانات المستخدم الحالي
+}
+  // تهيئة السطر الأول بقيم رقمية بدلاً من null لتجنب أخطاء الـ Build
+initFirstItem() {
+    this.invoiceItems = [{ 
+      lineKind: 0, productId: 0, materialId: 0, customName: '', qty: 1, unitPurchasePrice: 0, unitSalePrice: 0 
+    }];
+  }
+  
 
-        // 💡 ملحوظة: لو فضلت المشكلة، افتح الكونسول وشوف السطر ده طابع إيه
-        console.log('شكل استجابة الموردين:', res);
-      },
+  loadSuppliers() {
+    this.apiService.getAllSuppliers().subscribe({
+      next: (res: any) => this.suppliers = res.data || res,
       error: (err) => console.error('خطأ في جلب الموردين', err)
     });
   }
 
-  loadInvoices() {
+loadInvoices() {
     this.isLoading = true;
     this.apiService.getAllPurchaseInvoices().subscribe({
       next: (res: any) => {
-        // 👇 التعديل هنا أيضاً
-        this.previousInvoices = res.data ? res.data : res;
+        this.previousInvoices = res.data || res;
+        this.applyFilter(); // تحديث القائمة المفلترة فور الوصول
         this.isLoading = false;
       },
       error: () => this.isLoading = false
     });
   }
 
-  saveInvoice() {
-    this.isLoading = true;
-
-    // بناء الـ Payload مع توزيع المبلغ المدفوع حسب وسيلة الدفع
-    const paymentType = Number(this.invoiceDetails.paymentMethod);
-
-    const payload = {
-      branchId: this.invoiceDetails.branchId,
-      items: this.invoiceItems,
-      paymentMethod: paymentType,
-      recordedByEmployeeId: this.invoiceDetails.recordedByEmployeeId,
-      supplierId: this.invoiceDetails.supplierId,
-      invoiceDate: new Date(this.invoiceDetails.invoiceDate).toISOString(), // تحويله لـ ISO للـ Backend
-      discount: this.discount,
-      taxRate: this.taxRate,
-      amountPaid: this.amountPaid,
-      // توجيه المبلغ المدفوع للخزنة الصحيحة
-      cashAmount: paymentType === 1 ? this.amountPaid : 0,
-      visaAmount: paymentType === 2 ? this.amountPaid : 0
-    };
-
-    this.apiService.createPurchaseInvoice(payload).subscribe({
-      next: () => {
-        alert('تم حفظ الفاتورة بنجاح!');
-        this.resetForm();
-        this.loadInvoices();
-        this.currentTab = 'list'; // العودة لقائمة الفواتير
-        this.isLoading = false;
-      },
-      error: (err) => {
-        alert('حدث خطأ أثناء حفظ الفاتورة');
-        console.error(err);
-        this.isLoading = false;
-      }
+applyFilter() {
+    this.filteredInvoices = this.previousInvoices.filter(invoice => {
+      // استخدام supplierDisplayName حسب ما ظهر في الـ API
+      const nameMatch = (invoice.supplierDisplayName || '').toLowerCase().includes(this.searchTerm.toLowerCase());
+      const dateMatch = this.filterDate ? (invoice.invoiceDate || '').includes(this.filterDate) : true;
+      return nameMatch && dateMatch;
     });
   }
 
+  loadInitialData() {
+    this.apiService.getProducts().subscribe((res: any) => this.allProducts = res.data || res);
+    this.apiService.getMaterials().subscribe((res: any) => this.allMaterials = res.data || res);
+  }
+
+get currentEmployeeName(): string {
+    return this.authService.getFullName() || 'موظف غير معروف';
+  }
+
+setAutomaticData() {
+    // جلب معرف الموظف من الـ AuthService
+    const empId = this.authService.getEmployeeId();
+    if (empId) {
+      this.invoiceDetails.recordedByEmployeeId = empId;
+    } else {
+      // قيمة احتياطية في حالة فشل الجلب
+      this.invoiceDetails.recordedByEmployeeId = 6827; 
+    }
+  }
+
+
+  // عرض التفاصيل باستخدام المودال
+  openDetails(content: TemplateRef<any>, invoice: any) {
+    this.selectedInvoice = invoice;
+    this.modalService.open(content, { size: 'xl', centered: true, scrollable: true });
+  }
+
+// 1. عند اختيار عنصر من القائمة
+onItemSelect(item: any, selectedData: any) {
+  if (selectedData) {
+    if (selectedData.isNew) {
+      // حالة إضافة جديد (Tag) - سنقوم بالحفظ الفوري في السيرفر
+      this.isLoading = true;
+
+      if (item.lineKind === 0) {
+        // نداء إضافة منتج
+        const productPayload = {
+          name: selectedData.name,
+          sku: 'SKU-' + Date.now(), // توليد SKU تلقائي بسيط
+          salePrice: Number(item.unitSalePrice || 0),
+          costPerUnit: Number(item.unitPurchasePrice || 0),
+          categoryId: 1, // تأكد من وجود Category بالرقم ده أو غيره
+          branchId: 1,
+          initialStockQty: Number(item.qty || 0),
+          reorderLevel: 5
+        };
+
+        this.apiService.createProduct(productPayload).subscribe({
+          next: (res: any) => {
+            const newProd = res.data || res;
+            item.productId = newProd.id;
+            item.selectedId = newProd.id;
+            item.customName = ''; // تم الحفظ، لم يعد مخصصاً
+            this.loadInitialData(); // لتحديث القائمة
+            this.isLoading = false;
+            alert(`تم إضافة المنتج "${selectedData.name}" بنجاح`);
+          },
+          error: () => (this.isLoading = false)
+        });
+
+      } else {
+        // نداء إضافة خامة
+        const materialPayload = {
+          name: selectedData.name,
+          unit: 1, // وحدة افتراضية
+          costPerUnit: Number(item.unitPurchasePrice || 0),
+          chargePerUnit: Number(item.unitSalePrice || 0),
+          branchId: 1,
+          initialStockQty: Number(item.qty || 0),
+          reorderLevel: 5
+        };
+
+        this.apiService.createMaterial(materialPayload).subscribe({
+          next: (res: any) => {
+            const newMat = res.data || res;
+            item.materialId = newMat.id;
+            item.selectedId = newMat.id;
+            item.customName = '';
+            this.loadInitialData();
+            this.isLoading = false;
+            alert(`تم إضافة الخامة "${selectedData.name}" بنجاح`);
+          },
+          error: () => (this.isLoading = false)
+        });
+      }
+
+    } else {
+      // حالة اختيار منتج موجود فعلياً
+      item.customName = '';
+      if (item.lineKind === 0) {
+        item.productId = selectedData.id;
+        item.materialId = 0;
+      } else {
+        item.materialId = selectedData.id;
+        item.productId = 0;
+      }
+      item.unitPurchasePrice = selectedData.purchasePrice || selectedData.costPerUnit || 0;
+      item.unitSalePrice = selectedData.salePrice || selectedData.chargePerUnit || 0;
+    }
+  }
+}
+
+// 2. تحديث دالة إضافة سطر جديد لتشمل selectedId
+addNewItem() {
+  this.invoiceItems.push({ 
+    lineKind: 0, 
+    productId: 0, 
+    materialId: 0, 
+    selectedId: null, // الحقل الوسيط للـ ng-select
+    customName: '', 
+    qty: 1, 
+    unitPurchasePrice: 0, 
+    unitSalePrice: 0 
+  });
+}
+  removeItem(index: number) {
+    if (this.invoiceItems.length > 1) {
+      this.invoiceItems.splice(index, 1);
+    } else {
+      this.initFirstItem();
+    }
+  }
+
+  // deleteInvoice(id: number) {
+  //   if (confirm('هل أنت متأكد من حذف هذه الفاتورة؟')) {
+  //     this.apiService.deletePurchaseInvoice(id).subscribe({
+  //       next: () => {
+  //         alert('تم الحذف بنجاح');
+  //         this.loadInvoices();
+  //       },
+  //       error: (err) => alert('فشل الحذف: ' + err.message)
+  //     });
+  //   }
+  // }
+
+  // saveInvoice() {
+  //   if (!this.invoiceDetails.supplierId) {
+  //     alert('من فضلك اختر المورد أولاً');
+  //     return;
+  //   }
+
+  //   this.isLoading = true;
+  //   this.setAutomaticData();
+  //      const payload = {
+  //          supplierId: Number(this.invoiceDetails.supplierId),
+  //          branchId: 1,
+  //          invoiceDate: new Date(this.todayDate).toISOString(),
+  //          paymentMethod: Number(this.invoiceDetails.paymentMethod),
+  //          recordedByEmployeeId: Number(this.invoiceDetails.recordedByEmployeeId), // تحويل لرقم
+  //          discount: Number(this.discount || 0),
+  //          taxRate: Number(this.taxRate || 0),
+  //          amountPaid: Number(this.amountPaid || 0),
+  //          // تغيير التسمية إلى lines كما يتوقع السيرفر في الصورة 508579
+  //          lines: this.invoiceItems.map(item => ({
+  //            lineKind: Number(item.lineKind),
+  //            productId: item.productId > 0 ? item.productId : null,
+  //            materialId: item.materialId > 0 ? item.materialId : null,
+  //            customName: item.customName || '',
+  //            qty: Number(item.qty),
+  //            unitPurchasePrice: Number(item.unitPurchasePrice)
+  //          }))
+  //        };
+  //   this.apiService.createPurchaseInvoice(payload).subscribe({
+  //     next: () => {
+  //       console.log(payload);
+        
+  //       alert('تم الحفظ بنجاح!');
+  //       this.resetForm();
+  //       this.loadInvoices();
+  //       this.currentTab = 'list';
+  //       this.isLoading = false;
+  //     },
+  //     error: (err) => {
+  //       console.log(payload);
+
+  //       this.isLoading = false;
+  //       alert('خطأ في الحفظ: ' + (err.error?.message || 'تأكد من الصلاحيات'));
+  //     }
+  //   });
+  // }
+
+// 2. إضافة دالة حفظ المنتج الجديد (الإصلاح لخطأ الصورة الأخيرة)
+saveNewItemQuickly(item: any) {
+  if (!item.customName) return;
+
+  this.isLoading = true;
+  
+  if (item.lineKind === 0) {
+    // تجهيز بيانات المنتج
+    const payload = {
+      name: item.customName,
+      sku: 'SKU-' + Date.now(),
+      salePrice: Number(item.unitSalePrice || 0),
+      costPerUnit: Number(item.unitPurchasePrice || 0),
+      categoryId: 1, // تأكد أن الرقم 1 موجود في السيستم
+      branchId: 1,
+      initialStockQty: Number(item.qty || 0),
+      reorderLevel: 5
+    };
+
+    this.apiService.createProduct(payload).subscribe({
+      next: (res: any) => {
+        const newProd = res.data || res;
+        item.productId = newProd.id;
+        item.selectedId = newProd.id;
+        item.customName = ''; // مسح الحالة "جديد" بعد الحفظ
+        this.loadInitialData(); // تحديث القائمة
+        this.isLoading = false;
+        alert('تم حفظ المنتج الجديد بنجاح');
+      },
+      error: (err) => {
+        this.isLoading = false;
+        alert('حدث خطأ أثناء حفظ المنتج');
+      }
+    });
+  } else {
+    // تجهيز بيانات الخامة
+    const payload = {
+      name: item.customName,
+      unit: 1,
+      costPerUnit: Number(item.unitPurchasePrice || 0),
+      chargePerUnit: Number(item.unitSalePrice || 0),
+      branchId: 1,
+      initialStockQty: Number(item.qty || 0),
+      reorderLevel: 5
+    };
+
+    this.apiService.createMaterial(payload).subscribe({
+      next: (res: any) => {
+        const newMat = res.data || res;
+        item.materialId = newMat.id;
+        item.selectedId = newMat.id;
+        item.customName = '';
+        this.loadInitialData();
+        this.isLoading = false;
+        alert('تم حفظ الخامة الجديدة بنجاح');
+      },
+      error: (err) => {
+        this.isLoading = false;
+        alert('حدث خطأ أثناء حفظ الخامة');
+      }
+    });
+  }
+}
+
+
+
+
+
+
+
+
+saveInvoice() {
+  if (!this.invoiceDetails.supplierId) {
+    alert('من فضلك اختر المورد أولاً');
+    return;
+  }
+
+  this.isLoading = true;
+  this.setAutomaticData(); // التأكد من جلب ID الموظف
+
+  const payload = {
+    supplierId: Number(this.invoiceDetails.supplierId),
+    branchId: 1,
+    invoiceDate: new Date(this.todayDate).toISOString(), // استخدام التاريخ المختار
+    paymentMethod: Number(this.invoiceDetails.paymentMethod),
+    recordedByEmployeeId: Number(this.invoiceDetails.recordedByEmployeeId),
+    discount: Number(this.discount || 0),
+    taxRate: Number(this.taxRate || 0),
+    amountPaid: Number(this.amountPaid || 0),
+    
+    // الحل الجذري هنا: إرسال الحقل المطلوب فقط للسيرفر
+    Items: this.invoiceItems.map(item => {
+      const line: any = {
+        lineKind: Number(item.lineKind),
+        qty: Number(item.qty),
+        unitPurchasePrice: Number(item.unitPurchasePrice),
+        customName: item.customName || ''
+      };
+
+      // إذا كان منتج (0) أرسل productId فقط
+      if (line.lineKind === 0) {
+        line.productId = item.productId > 0 ? item.productId : null;
+      } 
+      // إذا كان خامة (1) أرسل materialId فقط
+      else if (line.lineKind === 1) {
+        line.materialId = item.materialId > 0 ? item.materialId : null;
+      }
+
+      return line;
+    })
+  };
+
+  this.apiService.createPurchaseInvoice(payload).subscribe({
+    next: () => {
+      alert('تم الحفظ بنجاح!');
+      this.resetForm();
+      this.loadInvoices();
+      this.currentTab = 'list';
+      this.isLoading = false;
+    },
+    error: (err) => {
+      this.isLoading = false;
+      console.error('البيانات المرسلة (Payload):', payload);
+      console.error('خطأ السيرفر:', err.error);
+      alert('خطأ في الحفظ: ' + (err.error?.message || 'تأكد من صحة البيانات المرسلة'));
+    }
+  });
+}
+
+
   resetForm() {
-    this.invoiceItems = [{ lineKind: 0, productId: null, materialId: null, qty: 1, unitPurchasePrice: 0, unitSalePrice: 0 }];
+    this.initFirstItem();
     this.discount = 0;
     this.taxRate = 0;
     this.amountPaid = 0;
     this.invoiceDetails.supplierId = null;
     this.invoiceDetails.invoiceDate = this.todayDate;
-    this.invoiceDetails.paymentMethod = 1;
   }
 
-  // Getters للحسابات التلقائية
-  get subTotal() {
-    return this.invoiceItems.reduce((acc, item) => acc + (item.qty * item.unitPurchasePrice), 0);
+printInvoice(invoice?: any) {
+  // إذا مررنا فاتورة نستخدمها، وإذا لم نمرر نستخدم الفاتورة المختارة في المودال
+  const targetInvoice = invoice || this.selectedInvoice;
+  if (targetInvoice) {
+    console.log('طباعة الفاتورة رقم:', targetInvoice.id);
+    // هنا يمكنك استدعاء window.print() أو خدمة طباعة مخصصة
+    window.print();
   }
+}
 
-  get finalTotal() {
-    return this.subTotal + (this.subTotal * this.taxRate / 100) - (this.subTotal * this.discount / 100);
-  }
-
-  get remainingAmount() {
-    return this.finalTotal - this.amountPaid;
-  }
-
-  addNewItem() {
-    this.invoiceItems.push({ lineKind: 0, productId: null, materialId: null, qty: 1, unitPurchasePrice: 0, unitSalePrice: 0 });
-  }
-
-  removeItem(index: number) {
-    if (this.invoiceItems.length > 1) this.invoiceItems.splice(index, 1);
-  }
+  get subTotal() { return this.invoiceItems.reduce((acc, item) => acc + (item.qty * item.unitPurchasePrice), 0); }
+  get finalTotal() { return this.subTotal + (this.subTotal * this.taxRate / 100) - (this.subTotal * this.discount / 100); }
+  get remainingAmount() { return this.finalTotal - this.amountPaid; }
 }

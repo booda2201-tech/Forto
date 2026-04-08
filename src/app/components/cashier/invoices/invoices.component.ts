@@ -66,8 +66,8 @@ type InvoiceUi = {
 
 @Component({
   selector: 'app-invoices',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  standalone: false,
+  // imports: [CommonModule, FormsModule],
   templateUrl: './invoices.component.html',
   styleUrls: ['./invoices.component.scss'],
 })

@@ -267,3 +267,89 @@ $border-color: #e9ecef;
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+// لضمان ظهور القائمة فوق جميع العناصر عند استخدام appendTo="body"
+// ::ng-deep .ng-dropdown-panel {
+//     z-index: 9999 !important; 
+// }
+
+// // إذا كنت تريد تحسين شكل الجدول لمنع أي قص للحواف
+// .table-responsive {
+//     overflow: visible !important; // يساعد في ظهور القوائم إذا لم تستخدم appendTo
+// }
+
+
+
+.luxury-modal {
+  .modal-content {
+    border-radius: 20px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+  }
+  
+  .table {
+    thead th {
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .icon-box {
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+  }
+}
+
+
+
+::ng-deep .modal-content {
+  border-radius: 15px;
+  overflow: hidden;
+  border: none;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.icon-box {
+  transition: transform 0.3s ease;
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.modal-header {
+  // تدرج لوني بسيط يعطي عمقاً للون الداكن
+  background: linear-gradient(135deg, #212529 0%, #343a40 100%) !important;
+}
+
+.summary-item {
+  padding: 8px 0;
+  border-bottom: 1px dashed #dee2e6;
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+
+
+@media print {
+  // إخفاء كل شيء في الصفحة ما عدا المودال
+  body * {
+    visibility: hidden;
+  }
+  .modal-container, .modal-container * {
+    visibility: visible;
+  }
+  .modal-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  // إخفاء الأزرار أثناء الطباعة
+  .modal-footer, .btn-close, .action-btn {
+    display: none !important;
+  }
+}

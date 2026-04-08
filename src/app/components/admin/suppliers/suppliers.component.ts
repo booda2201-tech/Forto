@@ -1,216 +1,3 @@
-// import { Component, OnInit } from '@angular/core';
-// import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-
-// export interface Partner {
-//   id: number;
-//   nameAr: string;
-//   nameEn: string;
-//   categoryAr: string;
-//   categoryEn: string;
-//   phone: string;
-//   currentBalance: number;
-//   lastPaymentDate: string;
-//   lastPaymentAmount: number;
-//   type: 'supplier' | 'company';
-// }
-
-// declare var bootstrap: any;
-
-// @Component({
-//   selector: 'app-suppliers',
-//   templateUrl: './suppliers.component.html',
-//   styleUrls: ['./suppliers.component.scss']
-// })
-// export class SuppliersComponent implements OnInit {
-
-//   viewType: 'supplier' | 'company' = 'supplier';
-//   paymentForm!: FormGroup;
-//   selectedPartner: any;
-//   transactions: any[] = [];
-//   selectedInvoice: any;
-
-//   allPartners: Partner[] = [
-//     {
-//       id: 1,
-//       nameAr: 'مورد قطع الغيار الموثوق',
-//       nameEn: 'Reliable Parts Supplier',
-//       categoryAr: 'قطع غيار',
-//       categoryEn: 'Spare Parts',
-//       phone: '93456789',
-//       currentBalance: 5000,
-//       lastPaymentDate: '2026-03-30',
-//       lastPaymentAmount: 8000,
-//       type: 'supplier'
-//     },
-//     {
-//       id: 2,
-//       nameAr: 'شركة الأدوات والمعدات',
-//       nameEn: 'Tools & Equipment Co.',
-//       categoryAr: 'أدوات',
-//       categoryEn: 'Tools',
-//       phone: '91234567',
-//       currentBalance: 2500,
-//       lastPaymentDate: '2026-03-28',
-//       lastPaymentAmount: 5000,
-//       type: 'company'
-//     }
-//   ];
-
-//   filteredPartners: Partner[] = [];
-//   searchTerm: string = '';
-
-//   constructor(private fb: FormBuilder) {}
-
-//   ngOnInit(): void {
-//     this.filterByType();
-//     this.initPaymentForm();
-//   }
-
-//   initPaymentForm() {
-//     this.paymentForm = this.fb.group({
-//       amount: [null, [Validators.required, Validators.min(1)]],
-//       method: ['cash', Validators.required],
-//       cashAmount: [0],
-//       visaAmount: [{ value: 0, disabled: true }]
-//     });
-
-//     this.paymentForm.get('cashAmount')?.valueChanges.subscribe(() => this.calculateSplit());
-//     this.paymentForm.get('amount')?.valueChanges.subscribe(() => this.calculateSplit());
-//   }
-
-//   calculateSplit() {
-//     const total = this.paymentForm.get('amount')?.value || 0;
-//     const cash = this.paymentForm.get('cashAmount')?.value || 0;
-
-//     if (cash > total) {
-//       this.paymentForm.get('cashAmount')?.patchValue(total, { emitEvent: false });
-//       this.paymentForm.get('visaAmount')?.patchValue(0);
-//     } else {
-//       this.paymentForm.get('visaAmount')?.patchValue(total - cash);
-//     }
-//   }
-
-//   // --- دالة عرض الفاتورة المعدلة ---
-//   viewInvoice(transaction: any) {
-//     // نقوم بتجهيز بيانات الفاتورة كاملة مع المنتجات
-//     this.selectedInvoice = {
-//       ...transaction,
-//       supplierName: this.selectedPartner?.nameAr,
-//       branch: transaction.branch || 'الفرع الرئيسي',
-//       // إذا لم تكن هناك منتجات في الكائن المرسل، نضع مصفوفة فارغة
-//       items: transaction.items || [],
-//       tax: transaction.tax || 0,
-//       discount: transaction.discount || 0
-//     };
-
-//     const modalElement = document.getElementById('invoiceModal');
-//     if (modalElement) {
-//       const modal = new bootstrap.Modal(modalElement);
-//       modal.show();
-//     }
-//   }
-
-//   // --- محاكاة جلب كشف الحساب مع المنتجات ---
-//   viewStatement(partner: any) {
-//     this.selectedPartner = partner;
-
-//     // محاكاة البيانات القادمة من السيرفر
-//     this.transactions = [
-//       {
-//         id: '101',
-//         date: '2026-03-30',
-//         reference: 'فاتورة مشتريات #101',
-//         debit: 8000,
-//         credit: 0,
-//         balance: 8000,
-//         branch: 'فرع الجيزة',
-//         tax: 1120, // 14%
-//         discount: 0,
-//         items: [
-//           { name: 'فحمات فرامل خلفي', qty: 2, price: 1500, total: 3000 },
-//           { name: 'مساعدين أمامي KYB', qty: 2, price: 2500, total: 5000 }
-//         ]
-//       },
-//       {
-//         id: '202',
-//         date: '2026-04-01',
-//         reference: 'دفعة نقدية #202',
-//         debit: 0,
-//         credit: 3000,
-//         balance: 5000,
-//         method: 'نقدي'
-//       }
-//     ];
-
-//     const modalElement = document.getElementById('statementModal');
-//     const modal = new bootstrap.Modal(modalElement);
-//     modal.show();
-//   }
-
-//   // الدوال المساعدة الأخرى
-//   switchView(type: 'supplier' | 'company') {
-//     this.viewType = type;
-//     this.filterByType();
-//   }
-
-//   filterByType() {
-//     this.filteredPartners = this.allPartners.filter(p =>
-//       p.type === this.viewType &&
-//       (p.nameAr.includes(this.searchTerm) || p.nameEn.toLowerCase().includes(this.searchTerm.toLowerCase()))
-//     );
-//   }
-
-//   getTotalDebt(): number {
-//     return this.filteredPartners.reduce((acc, curr) => acc + curr.currentBalance, 0);
-//   }
-
-//   onPay(partner: any) {
-//     this.selectedPartner = partner;
-//     this.paymentForm.reset({ method: 'cash', amount: null, cashAmount: 0 });
-//     const modalElement = document.getElementById('payModal');
-//     const modal = new bootstrap.Modal(modalElement);
-//     modal.show();
-//   }
-
-//   confirmPayment() {
-//     if (this.paymentForm.valid) {
-//       const rawData = this.paymentForm.getRawValue();
-//       console.log('بيانات الدفع:', rawData);
-//       const modalElement = document.getElementById('payModal');
-//       bootstrap.Modal.getInstance(modalElement).hide();
-//     }
-//   }
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -249,17 +36,21 @@ declare var bootstrap: any;
 })
 export class SuppliersComponent implements OnInit {
 
-  viewType: 'supplier' | 'company' = 'supplier';
+  viewType: 'supplier' | 'company' = 'company';
   paymentForm!: FormGroup;
   addPartnerForm!: FormGroup; // نموذج إضافة مورد جديد
   selectedPartner: any;
   transactions: any[] = [];
+  invoicePayments: any[] = [];
   selectedInvoice: any;
+  selectedInvoiceData: any = null;
+  selectedInvoiceNumber: string = '';
 
   allPartners: any[] = [];
   filteredPartners: any[] = [];
   searchTerm: string = '';
   isLoading: boolean = false;
+  totalRecentPayments: number = 0;
 
   constructor(private fb: FormBuilder, private apiService: ApiService) {}
 
@@ -295,15 +86,17 @@ export class SuppliersComponent implements OnInit {
 loadSuppliers() {
   this.isLoading = true;
   this.apiService.getAllSuppliers().subscribe({
-    next: (data: any) => {
-      // هذا السطر يحمي الكود من الانهيار إذا لم تكن البيانات مصفوفة
-      this.allPartners = Array.isArray(data) ? data : (data.data || []);
+    next: (res: any) => {
+      this.allPartners = res.data || [];
       this.filterByType();
+      
+      // حساب إجمالي الدفعات الأخيرة إذا كان الحقل موجوداً في الـ API
+      // ملاحظة: في الصورة الحقل غير موجود، لذا سنفترض أنك ستضيفه أو تحسبه
+      this.calculateRecentPayments(); 
+      
       this.isLoading = false;
     },
-    error: (err: any) => { // إضافة : any هنا لحل مشكلة النوع في الصور
-      console.error('Error:', err);
-      this.allPartners = [];
+    error: (err) => {
       this.isLoading = false;
     }
   });
@@ -360,26 +153,20 @@ viewStatement(partner: any) {
   this.transactions = [];
   this.isLoading = true;
 
+  // استدعاء الخدمة اللي بتربط المورد بفواتيره
   this.apiService.getSupplierStatement(partner.id).subscribe({
-    next: (data: any) => {
-      // الحماية من البيانات الفارغة أو غير المتوافقة
-      if (data && Array.isArray(data)) {
-        this.transactions = data;
-      } else if (data && data.transactions) {
-        this.transactions = data.transactions;
-      } else {
-        this.transactions = [];
-      }
-
+    next: (res: any) => {
+      // بناءً على Postman، البيانات دايماً جوه res.data
+      this.transactions = res.data || []; 
+      
       const modalElement = document.getElementById('statementModal');
       if (modalElement) {
         const modal = new bootstrap.Modal(modalElement);
         modal.show();
       }
     },
-    error: (err: any) => {
-      console.error('Error fetching statement:', err);
-      alert('فشل في تحميل كشف الحساب');
+    error: (err) => {
+      console.error('حدث خطأ في جلب الفواتير:', err);
       this.isLoading = false;
     },
     complete: () => this.isLoading = false
@@ -392,25 +179,22 @@ printStatement() {
 
   // بقية الدوال (filterByType, switchView, calculateSplit, الخ...)
 filterByType() {
-  if (!Array.isArray(this.allPartners)) {
-    this.filteredPartners = [];
-    return;
-  }
-
+  const search = (this.searchTerm || '').toLowerCase();
+  
   this.filteredPartners = this.allPartners.filter(p => {
-    // منطق الفلترة الحالي الخاص بك...
-    const isCorrectType = this.viewType === 'company'
-      ? (p.companyNameAr || p.companyNameEn)
-      : (!p.companyNameAr && !p.companyNameEn);
+    const isCompany = !!(p.companyNameAr || p.companyNameEn);
+    const isCorrectType = this.viewType === 'company' ? isCompany : !isCompany;
 
-    const search = (this.searchTerm || '').toLowerCase();
     const matchSearch =
-      p.supplierNameAr?.includes(search) ||
-      p.supplierNameEn?.toLowerCase().includes(search) ||
-      p.phoneNumber?.includes(search);
+      (p.supplierNameAr?.includes(search)) ||
+      (p.supplierNameEn?.toLowerCase().includes(search)) ||
+      (p.phoneNumber?.includes(search));
 
     return isCorrectType && matchSearch;
   });
+
+  // استدعاء الحساب هنا ليتم تحديثه فوراً مع كل فلترة أو تغيير تبويب
+  this.calculateRecentPayments();
 }
 
   switchView(type: 'supplier' | 'company') {
@@ -418,19 +202,53 @@ filterByType() {
     this.filterByType();
   }
 
-getLastPaidDebt(): number {
-  return this.filteredPartners.reduce((acc, curr) => acc + (curr.lastPaymentAmount || 0), 0);
+
+calculateRecentPayments() {
+  this.totalRecentPayments = this.filteredPartners.reduce((acc, curr) => {
+    // تأكد من مبرمج الـ Backend من اسم الحقل الصحيح (مثلاً قد يكون lastPaymentValue)
+    return acc + (Number(curr.lastPaymentAmount) || 0); 
+  }, 0);
 }
-  getTotalDebt(): number {
-    return this.filteredPartners.reduce((acc, curr) => acc + (curr.currentBalance || 0), 0);
-  }
 
-  viewInvoice(transaction: any) {
-    this.selectedInvoice = { ...transaction, supplierName: this.selectedPartner?.supplierNameAr };
-    const modalElement = document.getElementById('invoiceModal');
-    new bootstrap.Modal(modalElement).show();
-  }
 
+getLastPaidDebt(): number {
+  return this.totalRecentPayments;
+}
+
+// إجمالي المديونية لجميع الموردين المعروضين حالياً
+getTotalDebt(): number {
+  return this.filteredPartners.reduce((acc, curr) => {
+    return acc + (curr.outstandingBalance || 0);
+  }, 0);
+}
+
+
+
+
+
+
+
+
+viewInvoice(transaction: any) {
+  this.isLoading = true;
+  // بننادي الـ ID بتاع الفاتورة عشان نجيب الـ Items
+  const invoiceId = transaction.id || transaction.purchaseInvoiceId;
+  
+  this.apiService.getPurchaseInvoiceById(invoiceId).subscribe({
+    next: (res: any) => {
+      // الـ API في Postman بيرجع البيانات في res.data
+      this.selectedInvoice = res.data; 
+      
+      const modalElement = document.getElementById('invoiceModal');
+      if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+      }
+    },
+    error: (err) => console.error('Error fetching invoice details:', err),
+    complete: () => this.isLoading = false
+  });
+}
   onPay(partner: any) {
     this.selectedPartner = partner;
     this.paymentForm.reset({ method: 'cash', amount: null, cashAmount: 0 });
@@ -438,11 +256,116 @@ getLastPaidDebt(): number {
     new bootstrap.Modal(modalElement).show();
   }
 
-  calculateSplit() {
-    const total = this.paymentForm.get('amount')?.value || 0;
-    const cash = this.paymentForm.get('cashAmount')?.value || 0;
-    this.paymentForm.get('visaAmount')?.setValue(total - cash, {emitEvent: false});
+calculateSplit() {
+  const total = this.paymentForm.get('amount')?.value || 0;
+  const cash = this.paymentForm.get('cashAmount')?.value || 0;
+  let visa = total - cash;
+  
+  if (visa < 0) visa = 0; // منع الأرقام السالبة
+  
+  this.paymentForm.patchValue({
+    visaAmount: visa
+  }, { emitEvent: false });
+}
+
+async confirmPayment() {
+  if (this.paymentForm.valid && this.selectedPartner) {
+    this.isLoading = true;
+    const formValue = this.paymentForm.getRawValue();
+    let totalToPay = Number(formValue.amount);
+
+try {
+  const invoices = await this.apiService.getSupplierInvoices(this.selectedPartner.id).toPromise();
+  
+  // التعديل هنا: نضمن أن invoices ليست undefined قبل الفلترة
+  const pendingInvoices = (invoices || []).filter(inv => inv.remainingAmount > 0);
+
+  if (pendingInvoices.length === 0) {
+    alert('لا توجد فواتير مستحقة لهذا المورد');
+    this.isLoading = false;
+    return;
   }
 
-  confirmPayment() { /* تنفيذ عملية الدفع عبر الـ API */ }
+      // 2. توزيع المبلغ على الفواتير
+      for (const invoice of pendingInvoices) {
+        if (totalToPay <= 0) break;
+
+        // المبلغ الذي سيتم دفعه لهذه الفاتورة هو الأقل بين (المبلغ المتبقي معنا) و (مديونية الفاتورة)
+        const amountForThisInvoice = Math.min(totalToPay, invoice.remainingAmount);
+
+        const payload = {
+          amount: amountForThisInvoice,
+          paymentMethod: this.mapPaymentMethod(formValue.method),
+          recordedByEmployeeId: 1, // تأكد من الـ ID الصحيح من الصورة (الموظف رقم 1 غير موجود كما يظهر في الخطأ)
+          cashAmount: formValue.method === 'cash' ? amountForThisInvoice : (formValue.method === 'custom' ? formValue.cashAmount : 0),
+          visaAmount: formValue.method === 'visa' ? amountForThisInvoice : (formValue.method === 'custom' ? formValue.visaAmount : 0),
+          notes: `سداد آلي - جزء من مبلغ ${formValue.amount}`,
+          paidAt: new Date().toISOString()
+        };
+
+        // إرسال طلب الدفع لهذه الفاتورة
+        await this.apiService.postPayment(invoice.id, payload).toPromise();
+
+        totalToPay -= amountForThisInvoice;
+      }
+
+      // 3. إنهاء العملية
+      alert('تم توزيع المبلغ بنجاح على الفواتير المستحقة');
+      this.closeModal('payModal');
+      this.loadSuppliers();
+
+    } catch (err: any) {
+      console.error('Payment Error:', err);
+      alert(err.error?.Message || 'حدث خطأ أثناء معالجة الدفع التلقائي');
+    } finally {
+      this.isLoading = false;
+    }
+  }
+}
+
+// دالة تحويل وسيلة الدفع لأرقام (حسب طلب الـ Backend في صورة بوستمان)
+private mapPaymentMethod(method: string): number {
+  const mapping: { [key: string]: number } = {
+    'cash': 1,
+    'bank': 2,
+    'visa': 3,
+    'custom': 4
+  };
+  return mapping[method] || 1;
+}
+
+viewInvoicePayments(transaction: any) {
+  this.isLoading = true;
+  this.selectedInvoiceNumber = transaction.purchaseNumber;
+  const invoiceId = transaction.id || transaction.purchaseInvoiceId;
+
+  this.apiService.getPurchaseInvoiceById(invoiceId).subscribe({
+    next: (res: any) => {
+      if (res.success) {
+        this.selectedInvoiceData = res.data; // حفظ البيانات الأساسية (Total, AmountPaid...)
+        this.invoicePayments = res.data?.payments || []; // حفظ مصفوفة الدفعات
+        
+        const modalElement = document.getElementById('paymentsListModal');
+        if (modalElement) {
+          const modal = new bootstrap.Modal(modalElement);
+          modal.show();
+        }
+      }
+    },
+    error: (err) => {
+      console.error('Error:', err);
+      alert('خطأ في جلب البيانات من السيرفر');
+    },
+    complete: () => this.isLoading = false
+  });
+}
+
+
+
+
+
+
+
+
+
 }

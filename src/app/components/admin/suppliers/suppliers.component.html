@@ -30,16 +30,17 @@
         <div class="stat-icon"><i class="bi-fill bi-people"></i></div>
       </div>
     </div>
-    <div class="col-md-4">
-      <div class="stat-card green">
-        <div class="stat-info">
-          <span>آخر دفعات مسددة</span>
-          <h3>{{ getLastPaidDebt() | number:'1.2-2' }} <small>ج.م</small></h3>
-          <p class="small mt-2">بناءً على آخر 3 عمليات</p>
-        </div>
-        <div class="stat-icon"><i class="bi-fill bi-file-text"></i></div>
-      </div>
+<div class="col-md-4">
+  <div class="stat-card green">
+<div class="stat-info">
+    <span>إجمالي المدفوعات الأخيرة</span>
+    <h3>{{ totalRecentPayments | number:'1.2-2' }} <small>ج.م</small></h3>
+      <p class="small mt-2">للموردين المحددين حالياً</p>
     </div>
+    <div class="stat-icon">
+      <i class="bi bi-check2-circle"></i> </div>
+  </div>
+</div>
   </div>
 
   <div class="row g-4" dir="ltr">
@@ -147,19 +148,29 @@
               </div>
             </div>
 
-            <div class="balance-section">
-              <div class="status-indicator">
-                <span class="status-dot" [ngClass]="{'bg-danger': partner.currentBalance > 0}"></span>
-                <span class="status-label">{{ partner.currentBalance > 0 ? 'مديونية' : 'رصيد دائن' }}</span>
-              </div>
-              <div class="text-end">
-                <span class="label-text">الرصيد الحالي</span>
-                <h4 class="amount">
-                  {{ (partner.currentBalance || 0) | number:'1.2-2' }}
-                  <small>ر.ع</small>
-                </h4>
-              </div>
-            </div>
+<div class="balance-section d-flex justify-content-between align-items-center">
+  
+  <div class="status-indicator">
+    <span class="status-dot" 
+          [ngClass]="{
+            'bg-danger': partner.outstandingBalance > 0, 
+            'bg-success': partner.outstandingBalance <= 0
+          }">
+    </span>
+    <span class="status-label">
+      {{ partner.outstandingBalance > 0 ? 'مديونية' : 'رصيد دائن' }}
+    </span>
+  </div>
+
+  <div class="text-end">
+    <span class="label-text">الرصيد الحالي</span>
+    <h4 class="amount" [class.text-danger]="partner.outstandingBalance > 0">
+      {{ (partner.outstandingBalance || 0) | number:'1.2-2' }}
+      <small>ج.م</small>
+    </h4>
+  </div>
+
+</div>
 
             <div class="card-footer-info">
               <div class="info-item">
@@ -184,11 +195,8 @@
             </div>
           </div>
         </div>
-
-
       </div>
     </main>
-
   </div>
 </div>
 
@@ -196,54 +204,6 @@
 
 <div class="modal fade" id="payModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <!-- <div class="modal-content custom-modal">
-      <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title fw-bold">تسجيل دفع مبلغ للمورد</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body p-4">
-        <div class="supplier-brief mb-4 p-3 rounded-4 bg-light">
-          <small class="text-muted d-block mb-1">المورد الحالي</small>
-          <h4 class="fw-bold mb-0 text-primary">{{ selectedPartner?.nameAr }}</h4>
-        </div>
-        <form [formGroup]="paymentForm" (ngSubmit)="confirmPayment()">
-          <div class="mb-3">
-            <label class="form-label fw-bold small">إجمالي المبلغ (ر.ع)</label>
-            <input type="number" class="form-control custom-input" placeholder="0.00" formControlName="amount">
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label fw-bold small">طريقة الدفع</label>
-            <select class="form-select custom-input" formControlName="method">
-              <option value="cash">كاش</option>
-              <option value="bank">تحويل بنكي</option>
-              <option value="visa">فيزا / ماستر كارد</option>
-              <option value="custom">مخصص (كاش + فيزا)</option>
-            </select>
-          </div>
-
-          <div class="row g-2 mb-3" *ngIf="paymentForm.get('method')?.value === 'custom'">
-            <div class="col-6">
-              <label class="form-label fw-bold small text-success">مبلغ الكاش</label>
-              <input type="number" class="form-control custom-input" formControlName="cashAmount" placeholder="0.00">
-            </div>
-            <div class="col-6">
-              <label class="form-label fw-bold small text-primary">مبلغ الفيزا</label>
-              <input type="number" class="form-control custom-input bg-light" formControlName="visaAmount" readonly>
-            </div>
-            <div class="col-12">
-                <div class="alert alert-info py-2 px-3 small border-0 rounded-3">
-                  سيتم تقسيم المبلغ: {{ paymentForm.get('cashAmount')?.value }} كاش و {{ paymentForm.get('visaAmount')?.value }} فيزا.
-                </div>
-            </div>
-          </div>
-
-          <button type="submit" [disabled]="paymentForm.invalid" class="btn btn-primary w-100 py-3 mt-3 shadow-sm fw-bold rounded-3">
-            تأكيد عملية الدفع
-          </button>
-        </form>
-      </div>
-    </div> -->
 
 <div class="modal-content custom-modal">
   <div class="modal-header border-0 pb-0">
@@ -258,7 +218,7 @@
 
     <form [formGroup]="paymentForm" (ngSubmit)="confirmPayment()">
       <div class="mb-3">
-        <label class="form-label fw-bold small">إجمالي المبلغ (ر.ع)</label>
+        <label class="form-label fw-bold small">إجمالي المبلغ (ج.م)</label>
         <input type="number" class="form-control custom-input" placeholder="0.00" formControlName="amount">
       </div>
 
@@ -302,50 +262,6 @@
 
 <div class="modal fade" id="statementModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
-    <!-- <div class="modal-content custom-modal overflow-hidden">
-      <div class="modal-header bg-dark text-white p-4">
-        <div>
-          <h5 class="modal-title fw-bold mb-1">كشف حساب المعاملات</h5>
-          <p class="small text-white-50 mb-0">سجل الفواتير والمدفوعات لـ {{ selectedPartner?.nameAr }}</p>
-        </div>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover mb-0 custom-table">
-            <thead class="bg-light">
-              <tr>
-                <th class="py-3 px-4">التاريخ</th>
-                <th class="py-3">البيان</th>
-                <th class="py-3">مدين</th>
-                <th class="py-3">دائن</th>
-                <th class="py-3">الرصيد</th>
-                <th class="py-3 text-center">عرض</th> </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let trans of transactions">
-                <td class="px-4 small text-muted">{{ trans.date }}</td>
-                <td><span class="fw-bold">{{ trans.reference }}</span></td>
-                <td class="text-danger fw-bold">{{ trans.debit | number:'1.2-2' }}</td>
-                <td class="text-success fw-bold">{{ trans.credit | number:'1.2-2' }}</td>
-                <td class="px-4 fw-black">{{ trans.balance | number:'1.2-2' }}</td>
-                  <td class="text-center">
-                    <button (click)="viewInvoice(trans)"
-                            class="btn btn-sm btn-light rounded-circle shadow-sm">
-                      <i class="bi bi-eye text-orange fs-4"></i>
-                    </button>
-                  </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="modal-footer border-0 p-4 bg-light">
-        <button class="btn btn-outline-dark px-4 rounded-3"><i class="bi bi-printer me-2"></i> طباعة الكشف</button>
-      </div>
-    </div> -->
-
-
 <div class="modal-content custom-modal overflow-hidden">
   <div class="modal-header bg-dark text-white p-4">
     <div>
@@ -379,12 +295,38 @@
           </tr>
 
 <tr *ngFor="let trans of transactions">
-  <td class="px-4 small text-muted">{{ trans.date | date:'yyyy-MM-dd' }}</td>
-  <td><span class="fw-bold">{{ trans.statementAr || trans.reference }}</span></td>
-  <td class="text-danger fw-bold">{{ trans.debit | number:'1.2-2' }}</td>
-  <td class="text-success fw-bold">{{ trans.credit | number:'1.2-2' }}</td>
-  <td class="px-4 fw-black">{{ trans.balance | number:'1.2-2' }}</td>
-  </tr>
+  <td class="px-4 small text-muted">
+    {{ trans.invoiceDate | date:'yyyy-MM-dd' }}
+  </td>
+
+  <td>
+    <span class="fw-bold">فاتورة شراء رقم {{ trans.purchaseNumber }}</span>
+  </td>
+
+  <td class="text-danger fw-bold">
+    {{ (trans.total || 0) | number:'1.2-2' }}
+  </td>
+
+  <td class="text-success fw-bold">
+    {{ (trans.amountPaid || 0) | number:'1.2-2' }}
+  </td>
+
+  <td class="px-4 fw-black">
+    {{ (trans.total - trans.amountPaid) | number:'1.2-2' }}
+  </td>
+
+<td class="text-center">
+  <div class="d-flex justify-content-center gap-2">
+    <button class="btn btn-sm btn-outline-primary" (click)="viewInvoice(trans)" title="عرض الفاتورة">
+      <i class="bi bi-eye"></i>
+    </button>
+    
+    <button class="btn btn-sm btn-outline-success" (click)="viewInvoicePayments(trans)" title="عرض الدفعات">
+      <i class="bi bi-cash-stack"></i>
+    </button>
+  </div>
+</td>
+</tr>
         </tbody>
       </table>
     </div>
@@ -401,80 +343,103 @@
 </div>
 
 
-
-
-<!-- <div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-md modal-dialog-centered">
-    <div class="modal-content custom-modal border-top-primary">
-      <div class="modal-header border-0">
-        <h5 class="modal-title fw-bold">تفاصيل الفاتورة</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<div class="modal fade" id="paymentsListModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content custom-modal">
+      <div class="modal-header border-0 bg-light p-4">
+        <div>
+          <h5 class="modal-title fw-bold mb-0">تفاصيل دفعات الفاتورة</h5>
+          <span class="badge bg-primary mt-2">رقم: {{ selectedInvoiceNumber }}</span>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+
       <div class="modal-body p-4">
-        <div class="d-flex justify-content-between mb-4 border-bottom pb-3">
-          <div>
-            <h6 class="text-muted mb-1">رقم الفاتورة</h6>
-            <p class="fw-bold mb-0">#INV-1025</p>
+        <div class="row g-3 mb-4" *ngIf="selectedInvoiceData">
+          <div class="col-md-4">
+            <div class="p-3 border rounded-3 bg-white shadow-sm">
+              <small class="text-muted d-block mb-1">إجمالي الفاتورة</small>
+              <h5 class="fw-bold mb-0 text-dark">{{ selectedInvoiceData.total | number:'1.2-2' }} ر.ع</h5>
+            </div>
           </div>
-          <div class="text-end">
-            <h6 class="text-muted mb-1">التاريخ</h6>
-            <p class="fw-bold mb-0">2026-03-30</p>
+          <div class="col-md-4">
+            <div class="p-3 border rounded-3 bg-white shadow-sm">
+              <small class="text-muted d-block mb-1">المبلغ المدفوع</small>
+              <h5 class="fw-bold mb-0 text-success">{{ selectedInvoiceData.amountPaid | number:'1.2-2' }} ر.ع</h5>
+            </div>
           </div>
-        </div>
-
-        <div class="invoice-items mb-4">
-          <div class="d-flex justify-content-between py-2 border-bottom small text-muted">
-            <span>الصنف</span>
-            <span>الإجمالي</span>
-          </div>
-          <div class="d-flex justify-content-between py-3 border-bottom">
-            <span>زيت محرك 5W30 (×10)</span>
-            <span class="fw-bold">45.00 ر.ع</span>
-          </div>
-          <div class="d-flex justify-content-between py-3 border-bottom">
-            <span>فلاتر هواء (×5)</span>
-            <span class="fw-bold">15.00 ر.ع</span>
+          <div class="col-md-4">
+            <div class="p-3 border rounded-3 bg-white shadow-sm border-danger-subtle bg-danger-subtle">
+              <small class="text-danger d-block mb-1">المتبقي</small>
+              <h5 class="fw-bold mb-0 text-danger">{{ (selectedInvoiceData.total - selectedInvoiceData.amountPaid) | number:'1.2-2' }} ر.ع</h5>
+            </div>
           </div>
         </div>
 
-        <div class="bg-light p-3 rounded-3 d-flex justify-content-between align-items-center">
-          <h5 class="mb-0 fw-bold">الإجمالي النهائي</h5>
-          <h4 class="mb-0 fw-black text-primary">60.00 <small>ر.ع</small></h4>
+        <h6 class="fw-bold mb-3 mt-4 border-bottom pb-2">سجل الحركات المالية (الدفعات)</h6>
+        
+        <div *ngIf="invoicePayments.length === 0" class="text-center py-5">
+          <i class="bi bi-wallet2 text-muted display-6"></i>
+          <p class="text-muted mt-2">لا يوجد سجل مدفوعات حالي لهذه الفاتورة.</p>
         </div>
-      </div>
-      <div class="modal-footer border-0">
-        <button class="btn btn-dark w-100 py-2 rounded-3"><i class="bi bi-printer me-2"></i> طباعة الفاتورة الآن</button>
+
+        <div class="table-responsive" *ngIf="invoicePayments.length > 0">
+          <table class="table table-hover border">
+            <thead class="bg-light">
+              <tr>
+                <th>التاريخ</th>
+                <th>المبلغ</th>
+                <th>طريقة الدفع</th>
+                <th>بواسطة</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let payment of invoicePayments">
+                <td class="small">{{ payment.paidAt | date:'yyyy-MM-dd HH:mm' }}</td>
+                <td class="fw-bold">{{ payment.amount | number:'1.2-2' }} ر.ع</td>
+                <td>
+                  <span class="badge bg-info text-dark">
+                    {{ payment.paymentMethod === 1 ? 'نقدي' : 'فيزا/أخرى' }}
+                  </span>
+                </td>
+                <td class="small text-muted">{{ payment.recordedByEmployeeId || 'النظام' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
-</div> -->
+</div>
+
+
+
+
 
 <div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-md modal-dialog-centered">
-    <div class="modal-content custom-modal" [ngClass]="selectedInvoice?.reference?.includes('فاتورة') ? 'border-top-primary' : 'border-top-success'">
-
-      <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title fw-bold">
-          {{ selectedInvoice?.reference?.includes('فاتورة') ? 'تفاصيل الفاتورة' : 'إيصال استلام نقدية' }}
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-content custom-modal overflow-hidden">
+      
+      <div class="modal-header bg-dark text-white p-4">
+        <h5 class="modal-title fw-bold">تفاصيل فاتورة المشتريات</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body p-4">
         <div class="d-flex justify-content-between mb-4 border-bottom pb-3">
           <div>
             <h6 class="text-muted mb-1 small">المورد / الشركة</h6>
-            <p class="fw-bold mb-0 text-dark">{{ selectedInvoice?.supplierName || '---' }}</p>
-            <small class="text-muted">{{ selectedInvoice?.branch }}</small>
+            <p class="fw-bold mb-0 text-dark">{{ selectedInvoice?.supplierDisplayName || '---' }}</p>
+            <small class="text-muted">فرع رقم: {{ selectedInvoice?.branchId }}</small>
           </div>
           <div class="text-end">
-            <h6 class="text-muted mb-1 small">{{ selectedInvoice?.reference?.includes('فاتورة') ? 'رقم الفاتورة' : 'رقم السند' }}</h6>
-            <p class="fw-bold mb-0 text-primary">#{{ selectedInvoice?.id || '---' }}</p>
-            <p class="small text-muted mb-0">{{ selectedInvoice?.date }}</p>
+            <h6 class="text-muted mb-1 small">رقم الفاتورة</h6>
+            <p class="fw-bold mb-0 text-primary">{{ selectedInvoice?.purchaseNumber || '---' }}</p>
+            <p class="small text-muted mb-0">{{ selectedInvoice?.invoiceDate | date:'yyyy-MM-dd' }}</p>
           </div>
         </div>
 
-        <div class="invoice-content" *ngIf="selectedInvoice?.reference?.includes('فاتورة')">
+        <div class="invoice-content">
           <div class="invoice-items mb-4">
             <div class="d-flex justify-content-between py-2 border-bottom mb-2 small text-muted text-uppercase fw-bold">
               <span style="flex: 2;">الصنف</span>
@@ -482,63 +447,60 @@
               <span style="flex: 1;" class="text-end">الإجمالي</span>
             </div>
 
-            <div *ngFor="let item of selectedInvoice?.items" class="d-flex justify-content-between py-3 border-bottom-dashed align-items-center">
-              <div style="flex: 2;" class="d-flex flex-column">
-                <span class="fw-bold text-dark">{{ item.name }}</span>
-                <small class="text-muted">سعر الوحدة: {{ item.price | number }} ج.م</small>
+              <div *ngFor="let item of selectedInvoice?.lines" class="d-flex justify-content-between py-3 border-bottom-dashed align-items-center">
+                <div style="flex: 2;" class="d-flex flex-column">
+                  <span class="fw-bold text-dark">{{ item.productName }}</span>
+                  <small class="text-muted">سعر الوحدة: {{ item.unitPurchasePrice | number }} ج.م</small>
+                </div>
+                
+                <span style="flex: 1;" class="text-center fw-bold">{{ item.qty }}</span>
+                
+                <span style="flex: 1;" class="text-end fw-bold text-dark">
+    {{ (item.qty * item.unitPurchasePrice) | number:'1.2-2' }} ج.م
+                </span>
               </div>
-              <span style="flex: 1;" class="text-center fw-bold">{{ item.qty }}</span>
-              <span style="flex: 1;" class="text-end fw-bold text-dark">{{ item.total | number:'1.2-2' }} ج.م</span>
-            </div>
           </div>
 
           <div class="calculations border-top pt-3 mt-3">
             <div class="d-flex justify-content-between mb-2 small">
-              <span class="text-muted">الإجمالي قبل الضريبة:</span>
-              <span class="text-dark fw-bold">{{ selectedInvoice?.debit | number:'1.2-2' }} ج.م</span>
+              <span class="text-muted">الإجمالي (قبل الخصم):</span>
+              <span class="text-dark fw-bold">{{ selectedInvoice?.subTotal | number:'1.2-2' }} ج.م</span>
+            </div>
+            <div *ngIf="selectedInvoice?.discount > 0" class="d-flex justify-content-between mb-2 small">
+              <span class="text-muted">الخصم:</span>
+              <span class="text-danger fw-bold">- {{ selectedInvoice?.discount | number:'1.2-2' }} ج.م</span>
             </div>
             <div class="d-flex justify-content-between mb-3 small">
-              <span class="text-muted">ضريبة القيمة المضافة (14%):</span>
-              <span class="text-dark fw-bold">{{ selectedInvoice?.tax | number:'1.2-2' }} ج.م</span>
+              <span class="text-muted">الضريبة ({{ (selectedInvoice?.taxRate || 0) }}%):</span>
+              <span class="text-dark fw-bold">{{ selectedInvoice?.taxAmount | number:'1.2-2' }} ج.م</span>
             </div>
 
             <div class="bg-light p-3 rounded-4 d-flex justify-content-between align-items-center shadow-sm border">
               <h6 class="mb-0 fw-bold">إجمالي مستحق الفاتورة</h6>
               <h4 class="mb-0 fw-black text-primary">
-                {{ (selectedInvoice?.debit + (selectedInvoice?.tax || 0)) | number:'1.2-2' }}
+                {{ selectedInvoice?.total | number:'1.2-2' }}
                 <span class="fs-6 fw-normal">ج.م</span>
               </h4>
             </div>
-          </div>
-        </div>
-
-        <div class="payment-content" *ngIf="selectedInvoice?.reference?.includes('دفعة')">
-          <div class="p-3 border border-2 rounded-4 mb-3 border-light">
-            <div class="d-flex justify-content-between mb-3">
-              <span class="text-muted small font-main">طريقة الدفع:</span>
-              <span class="badge bg-soft-success text-success px-3">{{ selectedInvoice?.method || 'نقدي' }}</span>
+            
+            <div class="mt-3 d-flex justify-content-between align-items-center px-2">
+                <span class="small text-success">المبلغ المدفوع: {{ selectedInvoice?.amountPaid | number:'1.2-2' }}</span>
+                <span class="small text-danger fw-bold">المتبقي: {{ (selectedInvoice?.total - selectedInvoice?.amountPaid) | number:'1.2-2' }}</span>
             </div>
-            <div class="d-flex justify-content-between py-2 border-top">
-              <span class="text-secondary"><i class="bi bi-cash-stack me-2"></i> المبلغ المحصل:</span>
-              <span class="fw-bold text-dark">{{ selectedInvoice?.credit | number:'1.2-2' }} ج.م</span>
-            </div>
-          </div>
-
-          <div class="bg-dark text-white p-3 rounded-4 d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 font-main">إجمالي السند</h6>
-            <h4 class="mb-0 fw-black text-warning">
-              {{ selectedInvoice?.credit | number:'1.2-2' }}
-              <span class="fs-6 fw-normal">ج.م</span>
-            </h4>
           </div>
         </div>
       </div>
 
       <div class="modal-footer border-0 p-4">
         <button onclick="window.print()" class="btn btn-dark w-100 py-3 rounded-3 fw-bold">
-          <i class="bi bi-printer-fill me-2"></i> طباعة المستند (A4)
+          <i class="bi bi-printer-fill me-2"></i> طباعة الفاتورة
         </button>
       </div>
     </div>
   </div>
 </div>
+
+
+
+
+

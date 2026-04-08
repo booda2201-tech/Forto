@@ -1023,13 +1023,21 @@ createPurchaseInvoice(payload: any): Observable<any> {
   return this.http.post(`${this.baseUrl}/api/purchase-invoices/Create`, payload);
 }
 
+
 // جلب فاتورة معينة بالتفاصيل (في حال أردت عرضها في المودال)
 getPurchaseInvoiceById(id: number | string): Observable<any> {
   return this.http.get(`${this.baseUrl}/api/purchase-invoices/GetById/${id}`);
 }
 
+postPayment(invoiceId: number, data: any) {
+  // الرابط بناءً على الصورة: /api/purchase-invoices/{id}/payments
+  return this.http.post(`${this.baseUrl}/api/purchase-invoices/${invoiceId}/payments`, data);
+}
 
 
-
+// جلب الفواتير غير المدفوعة للمورد
+getSupplierInvoices(supplierId: number) {
+  return this.http.get<any[]>(`/api/purchase-invoices/by-supplier/${supplierId}`);
+}
 
 }

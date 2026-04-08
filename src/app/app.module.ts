@@ -3,11 +3,12 @@ import { BrowserModule } from '@angular/platform-browser';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
-import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideToastr } from 'ngx-toastr';
+// import { provideAnimations } from '@angular/platform-browser/animations';
+// import { provideToastr } from 'ngx-toastr';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
 import { NgxPaginationModule } from 'ngx-pagination';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
 
@@ -21,9 +22,6 @@ import { RequestsComponent } from './components/admin/requests/requests.componen
 import { OrderInformationComponent } from './components/cashier/order-information/order-information.component';
 import { WorkerPageComponent } from './components/worker/worker-page/worker-page.component';
 import { CashierPageComponent } from './components/cashier/cashier-page/cashier-page.component';
-import { AddClientComponent } from './components/cashier/add-client/add-client.component';
-import { ReservationsComponent } from './components/cashier/reservations/reservations.component';
-import { FilterStatusPipe } from './pipes/filter-status.pipe';
 import { CustomersComponent } from './components/cashier/customers/customers.component';
 import { ServicesComponent } from './components/admin/services/services.component';
 import { InvoicesComponent } from './components/cashier/invoices/invoices.component';
@@ -75,33 +73,50 @@ import { ReturnsComponent } from './components/cashier/returns/returns.component
     PurchaseInvoiceComponent,
     SuppliersComponent,
     ReturnsComponent,
-  ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    ReactiveFormsModule,
-    BrowserAnimationsModule,
-    ToastrModule.forRoot(),
-    CommonModule,
-    FormsModule,
-    NgbModule,
-    HttpClientModule,
     TestComponent,
-    NgxPaginationModule,
     InvoicesComponent
+  ],
+  // imports: [
+  //   BrowserModule,
+  //   AppRoutingModule,
+  //   ReactiveFormsModule,
+  //   BrowserAnimationsModule,
+  //   ToastrModule.forRoot(),
+  //   CommonModule,
+  //   FormsModule,
+  //   NgbModule,
+  //   HttpClientModule,
+  //   NgxPaginationModule,
+  // ],
+  imports: [
+  BrowserModule,
+  AppRoutingModule,
+  ReactiveFormsModule,
+  BrowserAnimationsModule,
+  ToastrModule.forRoot({
+    timeOut: 3000,
+    positionClass: 'toast-top-left',
+    preventDuplicates: true,
+  }),
+  CommonModule,
+  FormsModule,
+  NgbModule,
+  HttpClientModule,
+  NgxPaginationModule,
+  NgSelectModule
 ],
   providers: [
     NotificationService,
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
-    provideAnimations(),
-    provideToastr({
-      timeOut: 3000,
-      positionClass: 'toast-top-left',
-      preventDuplicates: true,
-    }),
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
+    // provideAnimations(),
+    // provideToastr({
+    //   timeOut: 3000,
+    //   positionClass: 'toast-top-left',
+    //   preventDuplicates: true,
+    // }),
   ],
 
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }

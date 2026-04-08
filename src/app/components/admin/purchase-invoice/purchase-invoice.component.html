@@ -53,55 +53,55 @@
 
 <div class="forto-card">
   <div class="card-title">بيانات الفاتورة الأساسية</div>
-  <div class="row g-4">
-<div class="col-md-4">
-  <label class="form-label">المورد</label>
-  <select class="form-select" [(ngModel)]="invoiceDetails.supplierId" name="supplier">
-    <option [ngValue]="null" disabled>اختر المورد...</option>
+<div class="row g-4 mb-4">
+  <div class="col-md-4">
+    <label class="form-label fw-bold">المورد</label>
+    <select class="form-select border-primary shadow-sm" [(ngModel)]="invoiceDetails.supplierId">
+      <option [ngValue]="null" disabled>اختر المورد...</option>
+      <option *ngFor="let s of suppliers" [value]="s.id">{{ s.supplierNameAr }}</option>
+    </select>
+  </div>
 
-    <option *ngFor="let s of suppliers" [value]="s.id">
-      {{ s.supplierNameAr }} </option>
-  </select>
-</div>
+  <div class="col-md-4">
+    <label class="form-label fw-bold">التاريخ</label>
+    <input type="date" class="form-control" [(ngModel)]="invoiceDetails.invoiceDate">
+  </div>
 
-    <div class="col-md-4">
-      <label class="form-label">الفرع</label>
-      <input type="number" class="form-control" [(ngModel)]="invoiceDetails.branchId" placeholder="كود الفرع">
+  <div class="col-md-4">
+    <label class="form-label fw-bold">وسيلة الدفع</label>
+    <div class="d-flex gap-3 p-2 border rounded bg-light">
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="pay" [value]="1" [(ngModel)]="invoiceDetails.paymentMethod" id="p1">
+        <label class="form-check-label" for="p1">كاش</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="pay" [value]="3" [(ngModel)]="invoiceDetails.paymentMethod" id="p2">
+        <label class="form-check-label text-dark fw-bold" for="p2">فيزا / شبكة</label>
+      </div>
     </div>
+  </div>
 
-    <div class="col-md-4">
-      <label class="form-label">التاريخ</label>
-      <input type="date" class="form-control" [(ngModel)]="invoiceDetails.invoiceDate">
-    </div>
-
-    <div class="col-md-6">
-      <label class="form-label">الموظف المسؤول (ID)</label>
-      <input type="number" class="form-control" [(ngModel)]="invoiceDetails.recordedByEmployeeId" placeholder="رقم الموظف">
-    </div>
-
-    <div class="col-md-6">
-      <label class="form-label">وسيلة الدفع</label>
-      <div class="d-flex gap-4 mt-2">
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="payMethod" id="csh" [value]="1" [(ngModel)]="invoiceDetails.paymentMethod">
-          <label class="form-check-label" for="csh">كاش</label>
-        </div>
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="payMethod" id="vsa" [value]="2" [(ngModel)]="invoiceDetails.paymentMethod">
-          <label class="form-check-label" for="vsa">فيزا / شبكة</label>
-        </div>
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="payMethod" id="dfr" [value]="3" [(ngModel)]="invoiceDetails.paymentMethod">
-          <label class="form-check-label" for="dfr">آجل</label>
-        </div>
+  <div class="col-12 mt-4">
+    <div class="d-flex align-items-center gap-4 px-3 py-2 bg-primary-subtle rounded-3 border border-primary-subtle shadow-sm">
+      <div class="small">
+        <i class="bi bi-shop mx-2 text-primary"></i>
+        <span class="text-muted mx-2">الفرع:</span> 
+        <strong class="text-primary">الفرع الرئيسي (#1)</strong>
+      </div>
+      <div class="vr text-secondary opacity-25"></div>
+      <div class="small">
+        <i class="bi bi-person-badge mx-2 text-primary"></i>
+        <span class="text-muted mx-2">المسؤول الحالي:</span> 
+        <strong class="text-primary">{{ currentEmployeeName }} (ID: {{ invoiceDetails.recordedByEmployeeId }})</strong>
       </div>
     </div>
   </div>
 </div>
+</div>
 
 
 
-        <div class="forto-card">
+        <!-- <div class="forto-card">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div class="card-title mb-0">تفاصيل المنتجات</div>
 <button class="btn-add-product" (click)="addNewItem()">
@@ -112,7 +112,8 @@
 <table class="luxury-table">
   <thead>
     <tr>
-      <th style="width: 15%;">النوع</th> <th style="width: 25%;">البند (منتج / خامة)</th>
+      <th style="width: 18%;">البند (منتج / خامة)</th> 
+      <th style="width: 20%;">المنتج</th> 
       <th>الكمية</th>
       <th>سعر الشراء</th>
       <th>سعر البيع</th>
@@ -120,72 +121,62 @@
       <th></th>
     </tr>
   </thead>
-  <!-- <tbody>
-    <tr *ngFor="let item of invoiceItems; let i = index">
-      <td>
-        <select class="form-select form-select-sm" [(ngModel)]="item.type">
-          <option value="product">📦 منتج</option>
-          <option value="material">🧪 خامة</option>
-        </select>
-      </td>
-      <td>
-        <input type="text" class="form-control" [(ngModel)]="item.name"
-                [placeholder]="item.type === 'product' ? 'اسم المنتج' : 'اسم الخامة'">
-      </td>
-      <td>
-        <input type="number" class="form-control" [(ngModel)]="item.quantity" (input)="calculateTotal()">
-      </td>
-      <td>
-        <input type="number" class="form-control" [(ngModel)]="item.purchasePrice" (input)="calculateTotal()">
-      </td>
-      <td>
-        <input type="number" class="form-control" [(ngModel)]="item.sellingPrice"
-                [disabled]="item.type === 'material'"
-                [placeholder]="item.type === 'material' ? '---' : '0.00'">
-      </td>
-      <td class="fw-bold text-dark">
-        {{ (item.quantity * item.purchasePrice) | number:'1.2-2' }} ج.م
-      </td>
-      <td>
-        <button class="btn btn-link text-danger" (click)="removeItem(i)">
-          <i class="bi bi-trash3"></i>
-        </button>
-      </td>
-    </tr>
-  </tbody> -->
 
 <tbody>
   <tr *ngFor="let item of invoiceItems; let i = index">
     <td>
-      <select class="form-select form-select-sm" [(ngModel)]="item.lineKind">
+      <select class="form-select form-select-sm" [(ngModel)]="item.lineKind" 
+              (change)="item.productId = null; item.materialId = null; item.customName = null">
         <option [ngValue]="0">📦 منتج</option>
         <option [ngValue]="1">🧪 خامة</option>
       </select>
     </td>
 
-    <td>
-      <input *ngIf="item.lineKind === 0" type="number" class="form-control"
-              [(ngModel)]="item.productId" placeholder="رقم المنتج">
+    <td style="width: 30px;">
+      <ng-select *ngIf="item.lineKind === 0"
+                 [items]="allProducts"
+                 bindLabel="name"
+                 bindValue="id"
+                 [(ngModel)]="item.productId"
+                 [addTag]="addCustomItem"
+                 addTagText="إضافة منتج جديد: "
+                 appendTo="body" 
+                 (change)="onItemSelect(item, $event)"
+                 (clear)="item.customName = null"
+                 placeholder="ابحث عن منتج أو اكتب اسماً جديداً...">
+      </ng-select>
 
-      <input *ngIf="item.lineKind === 1" type="number" class="form-control"
-              [(ngModel)]="item.materialId" placeholder="رقم الخامة">
+      <ng-select *ngIf="item.lineKind === 1"
+                 [items]="allMaterials"
+                 bindLabel="name"
+                 bindValue="id"
+                 [(ngModel)]="item.materialId"
+                 [addTag]="addCustomItem"
+                 addTagText="إضافة خامة جديدة: "
+                 appendTo="body"
+                 (change)="onItemSelect(item, $event)"
+                 (clear)="item.customName = null"
+                 placeholder="ابحث عن خامة أو اكتب اسماً جديداً...">
+      </ng-select>
+      
+      <small *ngIf="item.customName" class="text-success d-block mt-1">
+        سيتم تسجيل: {{ item.customName }}
+      </small>
     </td>
 
     <td>
-      <input type="number" class="form-control" [(ngModel)]="item.qty">
+      <input type="number" class="form-control" [(ngModel)]="item.qty" placeholder="الكمية">
     </td>
-
+    
     <td>
-      <input type="number" class="form-control" [(ngModel)]="item.unitPurchasePrice">
+      <input type="number" class="form-control" [(ngModel)]="item.unitPurchasePrice" placeholder="سعر الشراء">
     </td>
-
+    
     <td>
-      <input type="number" class="form-control" [(ngModel)]="item.unitSalePrice"
-              [disabled]="item.lineKind === 1"
-              [placeholder]="item.lineKind === 1 ? '---' : '0.00'">
+      <input type="number" class="form-control" [(ngModel)]="item.unitSalePrice" placeholder="سعر البيع">
     </td>
 
-    <td class="fw-bold text-dark">
+    <td class="fw-bold text-dark" style="min-width: 100px;">
       {{ (item.qty * item.unitPurchasePrice) | number:'1.2-2' }} ج.م
     </td>
 
@@ -199,7 +190,98 @@
 
 </table>
           </div>
-        </div>
+        </div> -->
+
+
+<div class="forto-card mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 p-3 border-bottom">
+    <h5 class="card-title mb-0">
+              تفاصيل المنتجات
+    </h5>
+    <button class="btn btn-success btn-sm rounded-pill px-4" (click)="addNewItem()">
+      <i class="bi bi-plus-lg me-1"></i> إضافة بند جديد
+    </button>
+  </div>
+
+  <div class="table-responsive px-3">
+    <table class="table table-hover align-middle custom-invoice-table">
+      <thead>
+        <tr class="bg-light">
+          <th style="width: 150px;">النوع</th>
+          <th style="min-width: 250px;">المنتج / الخامة</th>
+          <th style="width: 100px;">الكمية</th>
+          <th style="width: 130px;">سعر الشراء</th>
+          <th style="width: 130px;">سعر البيع</th>
+          <th style="width: 130px;">الإجمالي</th>
+          <th style="width: 50px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+<tr *ngFor="let item of invoiceItems; let i = index">
+  <td>
+    <select class="form-select form-select-sm" [(ngModel)]="item.lineKind" 
+            (change)="item.productId = 0; item.materialId = 0; item.selectedId = null; item.customName = ''">
+      <option [ngValue]="0">📦 منتج</option>
+      <option [ngValue]="1">🧪 خامة</option>
+    </select>
+  </td>
+
+  <td>
+    <div class="d-flex flex-column gap-1">
+      <ng-select [items]="item.lineKind === 0 ? allProducts : allMaterials"
+                 bindLabel="name"
+                 bindValue="id"
+                 [(ngModel)]="item.selectedId" 
+                 [addTag]="addCustomItem"
+                 addTagText="إضافة جديد: "
+                 appendTo="body" 
+                 (change)="onItemSelect(item, $event)"
+                 placeholder="ابحث عن منتج أو خامة...">
+      </ng-select>
+
+      <div *ngIf="item.customName" class="d-flex justify-content-between align-items-center bg-success-subtle p-1 rounded border border-success">
+        <small class="text-success fw-bold ms-1">
+          <i class="bi bi-plus-circle-fill"></i> جديد: {{ item.customName }}
+        </small>
+        <button class="btn btn-success btn-sm py-0" (click)="saveNewItemQuickly(item)" 
+                [disabled]="isLoading || !item.unitPurchasePrice">
+          <i class="bi bi-save"></i> حفظ في السيستم
+        </button>
+      </div>
+    </div>
+  </td>
+
+  <td>
+    <input type="number" class="form-control form-control-sm text-center" 
+           [(ngModel)]="item.qty" (input)="item.qty = item.qty < 1 ? 1 : item.qty" placeholder="1">
+  </td>
+
+  <td>
+    <input type="number" class="form-control form-control-sm text-center" 
+           [(ngModel)]="item.unitPurchasePrice" placeholder="0.00">
+  </td>
+
+  <td>
+    <input type="number" class="form-control form-control-sm text-center" 
+           [(ngModel)]="item.unitSalePrice" placeholder="0.00">
+  </td>
+
+  <td class="text-end fw-bold text-dark">
+    {{ (item.qty * item.unitPurchasePrice) | number:'1.2-2' }} <small>ج.م</small>
+  </td>
+
+  <td class="text-center">
+    <button class="btn btn-outline-danger btn-sm border-0" (click)="removeItem(i)">
+      <i class="bi bi-trash3"></i>
+    </button>
+  </td>
+</tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
 
       <div class="forto-card">
   <div class="card-title">الإضافات والخصومات</div>
@@ -360,99 +442,225 @@
   </div>
 </div> -->
 
-    <div *ngIf="currentTab === 'list'">
-      <div class="forto-card mb-4">
-        <div class="row g-3 align-items-end">
-          <div class="col-md-5">
-            <label class="form-label">بحث باسم المورد</label>
-            <input type="text" class="form-control" placeholder="ابحث هنا...">
-          </div>
-          <div class="col-md-5">
-            <label class="form-label">من تاريخ</label>
-            <input type="date" class="form-control">
-          </div>
-          <div class="col-md-2">
-            <button class="btn btn-dark w-100 py-2" style="border-radius: 10px;">فلترة</button>
-          </div>
+<div *ngIf="currentTab === 'list'">
+  <div class="forto-card mb-4">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label fw-bold text-dark">بحث باسم المورد</label>
+        <div class="input-group">
+          <input type="text" class="form-control border-end-0" placeholder="اكتب اسم المورد للبحث..."
+                 [(ngModel)]="searchTerm" (input)="applyFilter()">
         </div>
       </div>
+      <div class="col-md-5">
+        <label class="form-label fw-bold text-dark">من تاريخ</label>
+        <input type="date" class="form-control" [(ngModel)]="filterDate" (change)="applyFilter()">
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-dark w-100 py-2 shadow-sm" style="border-radius: 10px;" (click)="applyFilter()">
+          <i class="fa fa-filter me-1"></i> فلترة
+        </button>
+      </div>
+    </div>
+  </div>
 
-      <div class="forto-card">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h5 class="card-title mb-0">سجل الفواتير السابقة</h5>
-          <span class="badge bg-light text-dark border p-2">إجمالي الفواتير: {{previousInvoices.length}}</span>
+  <div class="forto-card shadow-sm border-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div class="d-flex align-items-center">
+        <h5 class="card-title mb-0 fw-bold">سجل فواتير المشتريات</h5>
+      </div>
+      <span class="badge bg-light text-dark border p-2 fw-normal">
+        إجمالي الفواتير: <strong class="text-primary">{{filteredInvoices.length}}</strong>
+      </span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="luxury-table text-center align-middle">
+        <thead>
+          <tr>
+            <th>رقم الفاتورة</th>
+            <th>المورد</th>
+            <th>التاريخ</th>
+            <th>الفرع</th>
+            <th>الإجمالي</th>
+            <th>المدفوع</th>
+            <th>المتبقي</th>
+            <th>الحالة</th>
+            <th style="width: 150px;">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let invoice of filteredInvoices" class="invoice-row">
+            <td class="fw-bold text-primary">#{{invoice.id}}</td>
+            <td class="fw-semibold">{{invoice.supplierDisplayName || 'مورد غير معروف'}}</td>
+            <td>{{invoice.invoiceDate | date:'yyyy-MM-dd'}}</td>
+            <td>
+              <span class="text-muted">
+                <i class="fa fa-map-marker-alt me-1 small"></i>
+                {{invoice.branchId === 1 ? 'الفرع الرئيسي' : 'فرع ' + invoice.branchId}}
+              </span>
+            </td>
+            <td class="fw-bold text-dark">{{invoice.total | number}} ج.م</td>
+            <td class="text-success fw-bold">{{invoice.amountPaid | number}} ج.م</td>
+            <td [class.text-danger]="(invoice.total - invoice.amountPaid) > 0" class="fw-bold">
+                {{(invoice.total - invoice.amountPaid) | number}} ج.م
+            </td>
+            <td>
+              <span class="badge" 
+                    [ngClass]="invoice.total - invoice.amountPaid <= 0 ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'"
+                    style="padding: 8px 12px; border-radius: 8px; min-width: 90px;">
+                <i class="fa" [ngClass]="invoice.total - invoice.amountPaid <= 0 ? 'fa-check-circle' : 'fa-clock'"></i>
+                {{ invoice.total - invoice.amountPaid <= 0 ? 'مدفوعة' : 'متبقي مبلغ' }}
+              </span>
+            </td>
+<td>
+  <div class="dropdown" ngbDropdown container="body">
+    <button class="btn btn-sm btn-light border shadow-sm px-3" ngbDropdownToggle type="button" id="invoiceActions">
+      <i class="bi bi-gear-fill me-1"></i> إجراءات
+    </button>
+
+    <div ngbDropdownMenu aria-labelledby="invoiceActions" class="shadow-lg border-0 mt-2">
+      
+      <button ngbDropdownItem class="py-2" (click)="openDetails(detailsModal, invoice)">
+        <i class="bi bi-eye text-orange mx-2"></i>
+        <span>عرض التفاصيل</span>
+      </button>
+
+      <button ngbDropdownItem class="py-2" (click)="printInvoice(invoice)">
+        <i class="bi bi-printer-fill text-dark mx-2"></i>
+        <span>طباعة الفاتورة</span>
+      </button>
+
+    </div>
+  </div>
+</td>
+          </tr>
+
+          <tr *ngIf="filteredInvoices.length === 0">
+            <td colspan="9" class="py-5 text-muted bg-light-subtle">
+              <div class="d-flex flex-column align-items-center">
+                <i class="fa fa-search-minus fa-3x mb-3 text-secondary"></i>
+                <h6 class="fw-bold">لا توجد فواتير مطابقة</h6>
+                <p class="small mb-0">تأكد من اسم المورد أو نطاق التاريخ المختار</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+
+
+
+<ng-template #detailsModal let-modal>
+  <div class="modal-header border-0 bg-dark text-white p-4 d-flex flex-row-reverse align-items-center justify-content-between">
+    <button type="button" class="btn-close btn-close-white m-0" (click)="modal.dismiss()"></button>
+    <div class="d-flex align-items-center text-end">
+      <div class="ms-3"> 
+        <h5 class="modal-title fw-bold mb-0">مراجعة فاتورة شراء حقيقية</h5>
+        <small class="text-light-50">رقم الفاتورة: #{{selectedInvoice?.id}} | المرجع: {{selectedInvoice?.purchaseNumber}}</small>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal-body p-0" *ngIf="selectedInvoice">
+    <div class="p-4 bg-light border-bottom">
+      <div class="row g-4 text-center">
+        <div class="col-md-4 text-md-start border-start">
+          <label class="text-muted d-block small mb-1">المورد</label>
+          <span class="fw-bold fs-5 text-dark">{{selectedInvoice.supplierDisplayName || 'مورد غير معروف'}}</span>
         </div>
+        <div class="col-md-4 border-start">
+          <label class="text-muted d-block small mb-1">تاريخ الإصدار</label>
+          <span class="fw-bold fs-6">{{selectedInvoice.invoiceDate | date:'yyyy-MM-dd'}}</span>
+        </div>
+        <div class="col-md-4 text-md-end">
+          <label class="text-muted d-block small mb-1">الفرع</label>
+          <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill fw-medium">
+            {{selectedInvoice.branchId === 1 ? 'الفرع الرئيسي' : 'فرع رقم ' + selectedInvoice.branchId}}
+          </span>
+        </div>
+      </div>
+    </div>
 
-        <div class="table-responsive">
-          <table class="luxury-table text-center">
-            <thead>
-              <tr>
-                <th>رقم الفاتورة</th>
-                <th>المورد</th>
-                <th>التاريخ</th>
-                <th>الفرع</th>
-                <th>الإجمالي</th>
-                <th>المدفوع</th>
-                <th>المتبقي</th>
-                <th>الحالة</th>
-                <th style="width: 120px;">إجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let invoice of previousInvoices">
-                <td class="fw-bold text-primary">#{{invoice.id}}</td>
-                <td>{{invoice.supplier}}</td>
-                <td>{{invoice.date}}</td>
-                <td>{{invoice.branch}}</td>
-                <td class="fw-bold text-dark">{{invoice.total | number}} ج.م</td>
-                <td class="text-success fw-bold">{{invoice.paid | number}} ج.م</td>
-                <td [class.text-danger]="invoice.remaining > 0" class="fw-bold">
-                    {{invoice.remaining | number}} ج.م
-                </td>
-                <td>
-                  <span class="badge"
-                        [ngClass]="{
-                          'bg-success-subtle text-success': invoice.status === 'paid',
-                          'bg-warning-subtle text-warning': invoice.status === 'partial',
-                          'bg-danger-subtle text-danger': invoice.status === 'unpaid'
-                        }"
-                        style="padding: 8px 12px; border-radius: 8px;">
-                    {{ invoice.status === 'paid' ? 'مدفوعة' : invoice.status === 'partial' ? 'جزئي' : 'آجل' }}
-                  </span>
-                </td>
-                <td>
-                  <div class="dropdown" ngbDropdown container="body">
-                    <button class="btn action-btn" ngbDropdownToggle type="button">
-                      إجراءات
-                    </button>
+    <div class="px-4 py-3">
+      <h6 class="fw-bold mb-3 text-secondary"><i class="bi bi-box-seam me-2"></i>الأصناف المشتراة</h6>
+      <div class="table-responsive shadow-sm rounded-3">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="bg-primary text-white">
+            <tr>
+              <th class="ps-3 py-3 border-0 text-end">الصنف / البيان</th>
+              <th class="text-center py-3 border-0">الكمية</th>
+              <th class="text-center py-3 border-0">سعر الوحدة</th>
+              <th class="text-start pe-3 py-3 border-0">الإجمالي</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of selectedInvoice.lines" class="border-bottom">
+              <td class="ps-3 fw-medium text-dark py-3 text-end">
+                {{item.productName || item.materialName || item.customName || 'بدون اسم'}}
+              </td>
+              <td class="text-center fw-bold text-secondary">{{item.qty}}</td>
+              <td class="text-center text-muted">{{item.unitPurchasePrice | number}} ج.م</td>
+              <td class="text-start pe-3 fw-bold text-dark">{{(item.qty * item.unitPurchasePrice) | number}} ج.م</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-                    <div ngbDropdownMenu class="luxury-dropdown shadow-lg">
-
-                      <button ngbDropdownItem class="dropdown-item py-2">
-                        <i class="bi bi-eye text-dark me-2"></i>
-                        عرض التفاصيل
-                      </button>
-
-                      <button ngbDropdownItem class="dropdown-item py-2">
-                        <i class="bi bi-printer text-primary me-2"></i>
-                        طباعة
-                      </button>
-
-                      <div class="dropdown-divider"></div>
-
-                      <button ngbDropdownItem class="dropdown-item py-2 text-danger">
-                        <i class="bi bi-trash3 me-2"></i>
-                        حذف
-                      </button>
-
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+    <div class="row g-0 mt-2">
+      <div class="col-md-7 p-4 border-end">
+        <div class="alert alert-info border-0 bg-info-subtle d-flex align-items-center mb-0">
+          <i class="bi bi-person-badge-fill me-2 fs-5"></i>
+          <div>
+            <small class="d-block text-uppercase fw-bold opacity-75">الموظف المسؤول (ID)</small>
+            <span>{{selectedInvoice.recordedByEmployeeId || '6827'}}</span>
+          </div>
+        </div>
+        <div class="mt-3">
+          <small class="text-muted">وسيلة الدفع الأساسية: {{selectedInvoice.paymentMethod === 1 ? 'نقدي' : 'فيزا/شبكة'}}</small>
+        </div>
+      </div>
+      
+      <div class="col-md-5 p-4 bg-light">
+        <div class="summary-item d-flex justify-content-between mb-2">
+          <span class="text-muted">الإجمالي (قبل الخصم):</span>
+          <span class="fw-bold text-dark">{{selectedInvoice.subTotal | number}} ج.م</span>
+        </div>
+        <div class="summary-item d-flex justify-content-between mb-2 text-danger" *ngIf="selectedInvoice.discount > 0">
+          <span class="text-muted">الخصم ({{selectedInvoice.discount}}%):</span>
+          <span class="fw-bold">-{{(selectedInvoice.subTotal * selectedInvoice.discount / 100) | number}} ج.م</span>
+        </div>
+        <div class="summary-item d-flex justify-content-between mb-2 text-primary">
+          <span class="h6 mb-0">الإجمالي النهائي:</span>
+          <span class="h6 mb-0 fw-bold">{{selectedInvoice.total | number}} ج.م</span>
+        </div>
+        <div class="summary-item d-flex justify-content-between pt-2 mt-2 border-top text-success">
+          <span class="fw-bold">المبلغ المدفوع:</span>
+          <span class="fw-bold">{{selectedInvoice.amountPaid | number}} ج.م</span>
+        </div>
+        <div class="summary-item d-flex justify-content-between mt-1 text-danger" *ngIf="(selectedInvoice.total - selectedInvoice.amountPaid) > 0">
+          <span class="fw-bold">المتبقي (آجل):</span>
+          <span class="fw-bold">{{(selectedInvoice.total - selectedInvoice.amountPaid) | number}} ج.م</span>
         </div>
       </div>
     </div>
   </div>
-</div>
+
+  <div class="modal-footer border-0 p-4">
+    <button type="button" class="btn btn-light px-4" (click)="modal.close()">إغلاق</button>
+    <button type="button" class="btn btn-dark px-4 shadow-sm" (click)="printInvoice(selectedInvoice)">
+      <i class="bi bi-printer me-2"></i> طباعة الفاتورة
+    </button>
+  </div>
+</ng-template>
+
+
+
+
+
+
