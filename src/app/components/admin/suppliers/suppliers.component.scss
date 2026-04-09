@@ -685,10 +685,221 @@ $shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.05);
 
 // تنسيق الطباعة لعدم ظهور أزرار المودال عند الطباعة
 @media print {
-  .modal-footer, .btn-close {
-    display: none !important;
+  /* 1. إخفاء كل شيء ما عدا محتوى المودال */
+  body * {
+    visibility: hidden !important;
   }
+
+  /* 2. تحويل المودال إلى عنصر عادي في الصفحة لإلغاء التمرير */
+  #statementModal, #statementModal * {
+    visibility: visible !important;
+  }
+
+  #statementModal {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: auto !important; /* السماح للطول بالتمدد */
+    overflow: visible !important; /* أهم سطر لإظهار باقي الصفوف */
+    display: block !important;
+  }
+
+  /* 3. إلغاء تقييد الارتفاع في جسم المودال */
+  .modal-body {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .modal-dialog {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+
   .modal-content {
     border: none !important;
+    height: auto !important;
+    display: block !important;
+  }
+
+  /* 4. تنسيق الجدول ليمتد على عدة صفحات إذا لزم الأمر */
+  .table {
+    page-break-inside: auto !important;
+    width: 100% !important;
+    border: 1px solid #000 !important;
+  }
+
+  .table tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+
+  .table th, .table td {
+    border: 1px solid #000 !important;
+    color: #000 !important;
+    font-size: 12px !important; /* تصغير الخط قليلاً ليناسب العرض الطولي */
+  }
+
+  /* 5. إخفاء عمود "عرض" والأزرار */
+  th:last-child, td:last-child, .modal-footer, .btn-close {
+    display: none !important;
+  }
+
+  /* 6. تحسين رأس الصفحة المطبوعة */
+  .modal-header {
+    background: #f8f9fa !important;
+    color: #000 !important;
+    border-bottom: 2px solid #000 !important;
+    text-align: center;
+    padding: 20px !important;
+  }
+}
+
+
+@media print {
+  /* 1. إخفاء كل شيء افتراضياً */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* 2. تنسيق كشف الحساب (A4 Portrait) */
+  #statementModal {
+    @page { size: A4 portrait; margin: 10mm; }
+    visibility: visible !important;
+    position: fixed !important;
+    left: 0 !important; top: 0 !important;
+    width: 100% !important;
+
+    .modal-body { overflow: visible !important; height: auto !important; }
+    .modal-footer, .btn-close, th:last-child, td:last-child { display: none !important; }
+  }
+
+  /* 3. تنسيق فاتورة المشتريات (POS 80mm) */
+  #invoiceModal {
+    @page { 
+      size: 80mm auto; // تحديد مقاس ورق الكاشير
+      margin: 0 !important; 
+    }
+    
+    visibility: visible !important;
+    position: fixed !important; // يمنع الصفحة البيضاء
+    left: 0 !important;
+    top: 0 !important;
+    width: 80mm !important;
+    background: white !important;
+
+    .modal-content { 
+      border: none !important; 
+      width: 80mm !important;
+      box-shadow: none !important;
+    }
+    
+    .modal-header, .modal-footer, .btn-close { 
+      display: none !important; // إخفاء عناصر المودال التقليدية
+    }
+
+    .modal-body {
+      padding: 3mm !important;
+      font-size: 11px !important; // خط مناسب للطباعة الحرارية
+      font-family: 'Courier New', monospace !important;
+      line-height: 1.2;
+    }
+
+    /* تحسين شكل جدول الأصناف في الورق الحراري */
+    .invoice-items {
+      border-top: 1px solid #000;
+      padding-top: 5px;
+    }
+
+    .border-bottom-dashed { 
+      border-bottom: 1px dashed #000 !important; 
+    }
+
+    /* جعل السعر الإجمالي بارزاً في الفاتورة */
+    .bg-light {
+      background: #f0f0f0 !important;
+      border: 1px solid #000 !important;
+      -webkit-print-color-adjust: exact;
+    }
+
+    h4.text-primary {
+      color: #000 !important;
+      font-size: 14px !important;
+    }
+  }
+}
+
+@media print {
+  /* القاعدة العامة للإخفاء */
+  body * { visibility: hidden !important; }
+
+  // ------------------------------------------
+  // ثالثاً: إعدادات إيصال الدفعات (POS 80mm)
+  // ------------------------------------------
+  body.print-payments {
+    @page { 
+      size: 80mm auto; 
+      margin: 0 !important; 
+    }
+
+    #paymentsListModal {
+      visibility: visible !important;
+      position: fixed !important;
+      left: 0 !important; top: 0 !important;
+      width: 80mm !important;
+      display: block !important;
+
+      .modal-content { border: none !important; width: 80mm !important; background: white !important; }
+      
+      /* إخفاء الأزرار والهيدر التفاعلي */
+      .header-actions-side, .btn-close, .btn-success { display: none !important; }
+      
+      .modal-header {
+        border-bottom: 2px dashed #000 !important;
+        text-align: center;
+        padding: 5mm 0 !important;
+      }
+
+      .modal-body {
+        padding: 2mm !important;
+        font-family: 'Courier New', monospace !important;
+        font-size: 11px !important;
+      }
+
+      /* تنسيق مربعات الإجمالي لتصبح أسطر عادية */
+      .row.g-3.mb-4 {
+        display: block !important;
+        border-bottom: 1px solid #000 !important;
+        margin-bottom: 10px !important;
+      }
+      .col-md-4 { width: 100% !important; margin-bottom: 5px; }
+      .p-3.border { border: none !important; padding: 2px !important; box-shadow: none !important; }
+
+      /* تنسيق جدول الدفعات ليناسب الورق الصغير */
+      .table {
+        width: 100% !important;
+        font-size: 10px !important;
+        border-collapse: collapse !important;
+      }
+      .table thead { border-bottom: 1px solid #000 !important; }
+      .table th, .table td {
+        padding: 4px 2px !important;
+        border: none !important;
+        color: #000 !important;
+      }
+      
+      /* إخفاء عمود "بواسطة" لتوفير مساحة في العرض */
+      .table th:last-child, .table td:last-child { display: none !important; }
+
+      .badge {
+        background: none !important;
+        color: #000 !important;
+        border: none !important;
+        padding: 0 !important;
+      }
+    }
   }
 }

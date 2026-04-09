@@ -203,36 +203,36 @@
     </div>
 
     <form [formGroup]="addPartnerForm" (ngSubmit)="onSavePartner()">
+      
       <div class="mb-3">
         <label class="form-label small fw-bold gold-text-muted">اسم التاجر (عربي)</label>
-        <div class="input-group">
-          <input type="text" class="form-control luxury-input shadow-none"
-                  formControlName="supplierNameAr"
-                  placeholder="الاسم بالعربية"
-                  [class.is-invalid]="addPartnerForm.get('supplierNameAr')?.touched && addPartnerForm.get('supplierNameAr')?.invalid">
-        </div>
+        <input type="text" class="form-control luxury-input" 
+               formControlName="supplierNameAr" placeholder="الاسم بالعربية">
       </div>
 
       <div class="mb-3">
         <label class="form-label small fw-bold gold-text-muted">اسم التاجر (EN)</label>
-        <div class="input-group" dir="ltr">
-          <input type="text" class="form-control luxury-input shadow-none text-end"
-                  formControlName="supplierNameEn"
-                  placeholder="Partner Name (EN)"
-                  [class.is-invalid]="addPartnerForm.get('supplierNameEn')?.touched && addPartnerForm.get('supplierNameEn')?.invalid">
-        </div>
+        <input type="text" class="form-control luxury-input text-end" dir="ltr"
+               formControlName="supplierNameEn" placeholder="Supplier Name (EN)">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-bold gold-text-muted">اسم الشركة (عربي)</label>
+        <input type="text" class="form-control luxury-input" 
+               formControlName="companyNameAr" placeholder="اسم الشركة بالعربية">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-bold gold-text-muted">اسم الشركة (EN)</label>
+        <input type="text" class="form-control luxury-input text-end" dir="ltr"
+               formControlName="companyNameEn" placeholder="Company Name (EN)">
       </div>
 
       <div class="mb-3">
         <label class="form-label small fw-bold gold-text-muted">رقم الهاتف</label>
-        <div class="input-group" dir="ltr">
-          <input type="text" class="form-control luxury-input shadow-none text-end"
-                  formControlName="phoneNumber"
-                  placeholder="+968 0000 0000"
-                  [class.is-invalid]="addPartnerForm.get('phoneNumber')?.touched && addPartnerForm.get('phoneNumber')?.invalid">
-        </div>
+        <input type="text" class="form-control luxury-input text-end" dir="ltr"
+               formControlName="phoneNumber" placeholder="+968 0000 0000">
       </div>
-
 
       <button type="submit" class="btn btn-save w-100 mt-3 py-3 fw-bold shimmer-effect"
               [disabled]="isLoading || addPartnerForm.invalid">
@@ -274,15 +274,19 @@
             </div>
           </div>
 
-          <div class="card-footer-info d-flex justify-content-between border-top pt-3">
-            <div class="info-item">
-              <i class="bi bi-calendar3 small text-muted me-1"></i>
-              <span class="x-small text-muted">آخر دفعة: {{ partner.lastPaymentDate || 'لا يوجد' }}</span>
-            </div>
-            <div class="info-item fw-bold text-dark">
-              <span class="x-small">ح.م {{ (partner.lastPaymentAmount || 0) | number:'1.2-2' }}</span>
-            </div>
-          </div>
+<div class="card-footer-info d-flex justify-content-between border-top pt-3">
+  <div class="info-item">
+    <i class="bi bi-calendar3 small text-muted me-1"></i>
+    <span class="x-small text-muted">
+      آخر دفعة: {{ (partner.lastPaymentDate | date:'yyyy-MM-dd') || 'لا يوجد' }}
+    </span>
+  </div>
+  
+  <div class="info-item fw-bold text-dark">
+    <span class="text-success">{{ (partner.lastPaymentAmount || 0) | number:'1.2-2' }}</span>
+    <small class="ms-1">ر.ع</small>
+  </div>
+</div>
 
             <div class="card-actions">
               <button (click)="viewStatement(partner)" class="btn-action statement w-100">
@@ -316,63 +320,6 @@
 
 
 
-
-<!-- <div class="modal fade" id="payModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-
-<div class="modal-content custom-modal">
-  <div class="modal-header border-0 pb-0">
-    <h5 class="modal-title fw-bold">تسجيل دفع مبلغ للمورد</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-  </div>
-  <div class="modal-body p-4">
-    <div class="supplier-brief mb-4 p-3 rounded-4 bg-light">
-      <small class="text-muted d-block mb-1">المورد الحالي</small>
-      <h4 class="fw-bold mb-0 text-primary">{{ selectedPartner?.supplierNameAr }}</h4>
-    </div>
-
-    <form [formGroup]="paymentForm" (ngSubmit)="confirmPayment()">
-      <div class="mb-3">
-        <label class="form-label fw-bold small">إجمالي المبلغ (ج.م)</label>
-        <input type="number" class="form-control custom-input" placeholder="0.00" formControlName="amount">
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label fw-bold small">طريقة الدفع</label>
-        <select class="form-select custom-input" formControlName="method">
-          <option value="cash">كاش</option>
-          <option value="bank">تحويل بنكي</option>
-          <option value="visa">فيزا / ماستر كارد</option>
-          <option value="custom">مخصص (كاش + فيزا)</option>
-        </select>
-      </div>
-
-      <div class="row g-2 mb-3" *ngIf="paymentForm.get('method')?.value === 'custom'">
-        <div class="col-6">
-          <label class="form-label fw-bold small text-success">مبلغ الكاش</label>
-          <input type="number" class="form-control custom-input" formControlName="cashAmount" placeholder="0.00">
-        </div>
-        <div class="col-6">
-          <label class="form-label fw-bold small text-primary">مبلغ الفيزا</label>
-          <input type="number" class="form-control custom-input bg-light" formControlName="visaAmount" readonly>
-        </div>
-        <div class="col-12">
-            <div class="alert alert-info py-2 px-3 small border-0 rounded-3">
-              سيتم تقسيم المبلغ: {{ paymentForm.get('cashAmount')?.value || 0 }} كاش و {{ paymentForm.get('visaAmount')?.value || 0 }} فيزا.
-            </div>
-        </div>
-      </div>
-
-      <button type="submit" [disabled]="paymentForm.invalid || isLoading" class="btn btn-primary w-100 py-3 mt-3 shadow-sm fw-bold rounded-3">
-        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-        {{ isLoading ? 'جاري التأكيد...' : 'تأكيد عملية الدفع' }}
-      </button>
-    </form>
-  </div>
-</div>
-
-  </div>
-</div> -->
 
 <div class="modal fade" id="confirmPayModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -496,11 +443,17 @@
 
 <td class="text-center">
   <div class="d-flex justify-content-center gap-2">
-    <button class="btn btn-sm btn-outline-primary" (click)="viewInvoice(trans)" title="عرض الفاتورة">
+    <button class="btn btn-sm btn-outline-primary" 
+            (click)="viewInvoice(trans)" 
+            data-bs-dismiss="modal" 
+            title="عرض الفاتورة">
       <i class="bi bi-eye"></i>
     </button>
 
-    <button class="btn btn-sm btn-outline-success" (click)="viewInvoicePayments(trans)" title="عرض الدفعات">
+    <button class="btn btn-sm btn-outline-success" 
+            (click)="viewInvoicePayments(trans)" 
+            data-bs-dismiss="modal" 
+            title="عرض الدفعات">
       <i class="bi bi-cash-stack"></i>
     </button>
   </div>
@@ -512,7 +465,7 @@
   </div>
 
   <div class="modal-footer border-0 p-4 bg-light">
-    <button class="btn btn-outline-dark px-4 rounded-3" (click)="printStatement()">
+    <button class="btn btn-outline-dark px-4 rounded-3" (click)="printDocument('a4')">
       <i class="bi bi-printer me-2"></i> طباعة الكشف
     </button>
   </div>
@@ -525,16 +478,27 @@
 <div class="modal fade" id="paymentsListModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content custom-modal">
-      <div class="modal-header border-0 bg-light p-4">
-        <div>
-          <h5 class="modal-title fw-bold mb-0">تفاصيل دفعات الفاتورة</h5>
-          <span class="badge bg-primary mt-2">رقم: {{ selectedInvoiceNumber }}</span>
-        </div>
-        <button (click)="onPayFromInvoice()" class="btn btn-success shadow-sm px-4 fw-bold">
-          <i class="bi bi-plus-circle me-2"></i> دفع دفعة جديدة لهذه الفاتورة
-        </button>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+<div class="modal-header border-0 bg-light p-4 d-flex justify-content-between align-items-center">
+  <div class="header-title-side">
+    <h5 class="modal-title fw-bold mb-0 text-dark">تفاصيل دفعات الفاتورة</h5>
+    <div class="mt-2">
+       <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
+         رقم: {{ selectedInvoiceNumber }}
+       </span>
+    </div>
+  </div>
+
+  <div class="header-actions-side d-flex align-items-center gap-3 mt-5">
+<button (click)="onPayFromInvoice()" 
+        class="btn btn-success d-flex align-items-center gap-2 px-3 py-2 shadow-sm fw-bold border-0 transition-all"
+        style="border-radius: 10px;">
+  <i class="bi bi-plus-circle fs-5"></i>
+  <span>دفع دفعة جديدة</span>
+</button>
+    
+    <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+</div>
 
       <div class="modal-body p-4">
         <div class="row g-3 mb-4" *ngIf="selectedInvoiceData">
@@ -589,6 +553,14 @@
             </tbody>
           </table>
         </div>
+
+<button (click)="printDocument('payments')" 
+        class="btn btn-outline-dark d-flex align-items-center gap-2 px-3 py-2 shadow-sm fw-bold border-1 transition-all"
+        style="border-radius: 10px;">
+  <i class="bi bi-printer fs-5"></i>
+  <span>طباعة الإيصال</span>
+</button>
+
       </div>
     </div>
   </div>
@@ -638,7 +610,7 @@
                 <span style="flex: 1;" class="text-center fw-bold">{{ item.qty }}</span>
 
                 <span style="flex: 1;" class="text-end fw-bold text-dark">
-    {{ (item.qty * item.unitPurchasePrice) | number:'1.2-2' }} ج.م
+                   {{ (item.qty * item.unitPurchasePrice) | number:'1.2-2' }} ج.م
                 </span>
               </div>
           </div>
@@ -673,7 +645,7 @@
         </div>
       </div>
 
-      <div class="modal-footer border-0 p-4">
+      <div class="modal-footer border-0 p-4 d-print-none">
         <button onclick="window.print()" class="btn btn-dark w-100 py-3 rounded-3 fw-bold">
           <i class="bi bi-printer-fill me-2"></i> طباعة الفاتورة
         </button>

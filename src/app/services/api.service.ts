@@ -7,8 +7,8 @@ import { Observable } from 'rxjs';
 })
 export class ApiService {
   /** استخدم server أو local حسب أين شغّال الباك — الـ API و SignalR هيستخدموا نفس الـ base */
-  private baseUrl = 'https://api.fortolaundry.com';   // سيرفر
-  // private baseUrl = 'https://localhost:7179';      // local (للتطوير لو الباك على نفس الجهاز)
+  // private baseUrl = 'https://api.fortolaundry.com';   // سيرفر
+  private baseUrl = 'https://localhost:7179';      // local (للتطوير لو الباك على نفس الجهاز)
 
   constructor(private http: HttpClient) {}
 
@@ -1036,6 +1036,24 @@ postPayment(invoiceId: number, data: any) {
 getSupplierInvoices(supplierId: number) {
   return this.http.get<any[]>(`/api/purchase-invoices/by-supplier/${supplierId}`);
 }
+
+/** جلب جميع المرتجعات - GET /api/returns/GetAll */
+// api.service.ts
+getReturns(branchId: number): Observable<any> {
+  return this.http.get(`${this.baseUrl}/api/returns/GetAll?branchId=${branchId}`);
+}
+
+getReturnById(id: number): Observable<any> {
+  // بناءً على صورة البوستمان GetById
+  return this.http.get(`${this.baseUrl}/api/returns/GetById/${id}`);
+}
+
+
+deleteReturn(id: number): Observable<any> {
+  // التأكد من أن المسار يطابق تماماً صورة بوستمان (Delete/:id)
+  return this.http.delete(`${this.baseUrl}/api/returns/Delete/${id}`);
+}
+
 
 
 

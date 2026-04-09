@@ -1,9 +1,12 @@
 
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { ApiService } from '../../../services/api.service';
 import { AuthService } from '../../../services/auth.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
+
+declare var bootstrap: any;
 
 @Component({
   selector: 'app-purchase-invoice',
@@ -48,7 +51,9 @@ export class PurchaseInvoiceComponent implements OnInit {
   };
 
   invoiceItems: any[] = [];
-
+  selectedPartner: any = null;
+paymentForm!: FormGroup;
+  
   // دالة إضافة عنصر مخصص (Tag)
   addCustomItem = (term: string) => ({ id: 0, name: term, isNew: true });
 
@@ -56,9 +61,11 @@ export class PurchaseInvoiceComponent implements OnInit {
     private apiService: ApiService,
     private modalService: NgbModal,
     private authService: AuthService,
+    private fb: FormBuilder
   )
     {
     this.initFirstItem();
+    this.initPaymentForm();
   }
 
 ngOnInit() {
@@ -67,6 +74,37 @@ ngOnInit() {
   this.loadInitialData();
   this.setAutomaticData(); // دالة لجلب بيانات المستخدم الحالي
 }
+
+initPaymentForm() {
+    this.paymentForm = this.fb.group({
+      method: ['cash', Validators.required],
+      amount: [0, [Validators.required, Validators.min(1)]],
+      cashAmount: [0],
+      visaAmount: [0]
+    });
+
+    // ميزة إضافية: عند تغيير مبلغ الكاش في الدفع المخصص، يتم حساب الفيزا تلقائياً
+    this.paymentForm.get('cashAmount')?.valueChanges.subscribe(cash => {
+      if (this.paymentForm.get('method')?.value === 'custom') {
+        const totalAmount = this.paymentForm.get('amount')?.value || 0;
+        const visa = totalAmount - cash;
+        this.paymentForm.patchValue({ visaAmount: visa > 0 ? visa : 0 }, { emitEvent: false });
+      }
+    });
+
+    // تصفير الكاش والفيزا عند تغيير طريقة الدفع
+    this.paymentForm.get('method')?.valueChanges.subscribe(method => {
+      if (method !== 'custom') {
+        this.paymentForm.patchValue({ cashAmount: 0, visaAmount: 0 }, { emitEvent: false });
+      }
+    });
+  }
+
+
+
+
+
+
   // تهيئة السطر الأول بقيم رقمية بدلاً من null لتجنب أخطاء الـ Build
 initFirstItem() {
   this.invoiceItems = [{
@@ -126,11 +164,15 @@ setAutomaticData() {
 
 
   // عرض التفاصيل باستخدام المودال
-  openDetails(content: TemplateRef<any>, invoice: any) {
-    this.selectedInvoice = invoice;
-    this.modalService.open(content, { size: 'xl', centered: true, scrollable: true });
-  }
-
+openDetails(content: TemplateRef<any>, invoice: any) {
+  this.selectedInvoice = invoice;
+  this.modalService.open(content, { 
+    // حذفنا size: 'xl'
+    windowClass: 'invoice-slim-modal', // الكلاس السحري بتاعنا
+    centered: true, 
+    scrollable: true 
+  });
+}
 // 1. عند اختيار عنصر من القائمة
 // onItemSelect(item: any, selectedData: any) {
 //   if (selectedData) {
@@ -495,11 +537,136 @@ openPayments(content: any, invoice: any) {
   });
 }
 
+onPayFromInvoice() {
+  if (!this.selectedInvoiceData) return;
+
+  // 1. تعبئة بيانات المورد والفاتورة
+  this.selectedPartner = {
+    id: this.selectedInvoiceData.supplierId,
+    supplierNameAr: this.selectedInvoiceData.supplierDisplayName
+  };
+  this.selectedInvoiceNumber = this.selectedInvoiceData.invoiceNumber || this.selectedInvoiceData.id;
+
+  const total = this.selectedInvoiceData.total || 0;
+  const paid = this.selectedInvoiceData.amountPaid || 0;
+  const remaining = total - paid;
+
+  // 2. تصفير النموذج بالقيم الجديدة
+  if (this.paymentForm.patchValue) { // تأكد أنه FormGroup حقيقي
+    this.paymentForm.patchValue({
+      method: 'cash',
+      amount: remaining > 0 ? remaining : 0,
+      cashAmount: 0,
+      visaAmount: 0
+    });
+  }
+
+  this.paymentForm.reset({
+    method: 'cash',
+    amount: remaining, // وضع المتبقي هنا
+    cashAmount: 0,
+    visaAmount: 0
+  });
+
+  // 3. إغلاق مودال "سجل الدفعات" وفتح مودال "تأكيد الدفع"
+  this.modalService.dismissAll(); 
+  
+  this.modalService.open(this.confirmPayModal, {
+    centered: true,
+    backdrop: 'static' // يمنع إغلاق المودال عند الضغط خارجه بالخطأ أثناء الدفع
+  });
+}
+
+async confirmPayment() {
+  if (this.paymentForm.invalid || !this.selectedInvoiceData) {
+    alert('يرجى التأكد من إدخال البيانات بشكل صحيح.');
+    return;
+  }
+
+  const formValue = this.paymentForm.getRawValue();
+  const targetInvoiceId = this.selectedInvoiceData.id;
+  const amountToPay = Number(formValue.amount);
+
+  // 1. حساب المتبقي مرة أخرى للتحقق قبل الإرسال (حماية إضافية)
+  const total = this.selectedInvoiceData.total || 0;
+  const paid = this.selectedInvoiceData.amountPaid || 0;
+  const remaining = total - paid;
+
+  if (amountToPay > remaining) {
+    alert(`عفواً، المبلغ المدخل (${amountToPay}) أكبر من المبلغ المتبقي للفاتورة (${remaining}).`);
+    return;
+  }
+
+  // تحديد مبالغ الكاش والفيزا بناءً على الطريقة
+  let finalCash = 0;
+  let finalVisa = 0;
+
+  if (formValue.method === 'cash') {
+    finalCash = amountToPay;
+  } else if (formValue.method === 'visa') {
+    finalVisa = amountToPay;
+  } else if (formValue.method === 'custom') {
+    finalCash = Number(formValue.cashAmount);
+    finalVisa = Number(formValue.visaAmount);
+    
+    // التحقق من أن مجموع المخصص يساوي الإجمالي
+    if ((finalCash + finalVisa) !== amountToPay) {
+      alert('يجب أن يكون مجموع الكاش والفيزا مساوياً لإجمالي المبلغ المطلوب دفعه!');
+      return;
+    }
+  }
+
+  this.isLoading = true;
+
+  const payload = {
+    amount: amountToPay,
+    paymentMethod: this.mapPaymentMethod(formValue.method),
+    recordedByEmployeeId: this.authService.getEmployeeId() || 1, // جلب ID الموظف بشكل صحيح
+    cashAmount: finalCash,
+    visaAmount: finalVisa,
+    notes: `سداد للفاتورة رقم ${this.selectedInvoiceNumber}`,
+    paidAt: new Date().toISOString()
+  };
+
+  // 2. إرسال الدفعة للـ API
+  this.apiService.postPayment(targetInvoiceId, payload).subscribe({
+    next: () => {
+      alert('تم تسجيل الدفعة بنجاح!');
+      this.modalService.dismissAll();
+      
+      // 3. الأهم: إعادة تحميل الفواتير من السيرفر. 
+      // السيرفر سيقوم بإرجاع الفواتير بعد تحديث الـ amountPaid الخاص بها.
+      this.loadInvoices(); 
+      
+      this.isLoading = false;
+    },
+    error: (err) => {
+      console.error('Error details:', err);
+      alert(err.error?.Message || 'خطأ في عملية الدفع');
+      this.isLoading = false;
+    }
+  });
+}
+
+  private mapPaymentMethod(method: string): number {
+  const mapping: { [key: string]: number } = {
+    'cash': 1,
+    'bank': 2,
+    'visa': 2,
+    'custom': 3
+  };
+  return mapping[method] || 1;
+}
+
+
+closeModal() {
+    this.modalService.dismissAll();
+  }
 
 
 
 
-
+@ViewChild('confirmPayModal') confirmPayModal!: TemplateRef<any>;
 
 
 

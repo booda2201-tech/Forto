@@ -571,10 +571,10 @@
 
 
 <ng-template #paymentsListModal let-modal>
-  <div class="modal-header border-0 bg-light p-4 d-flex flex-row-reverse align-items-center justify-content-between">
-    <button type="button" class="btn-close m-0" (click)="modal.dismiss()"></button>
+  <div class="modal-header border-0 bg-light p-4 d-flex align-items-center justify-content-between flex-row-reverse">
+    <button type="button" class="btn-close m-0 text-white" (click)="modal.dismiss()"></button>
     <div>
-      <h5 class="modal-title fw-bold mb-0">تفاصيل دفعات الفاتورة</h5>
+      <h5 class="modal-title fw-bold mb-0 text-white">تفاصيل دفعات الفاتورة</h5>
       <span class="badge bg-primary mt-2">رقم: {{ selectedInvoiceNumber }}</span>
     </div>
   </div>
@@ -601,9 +601,14 @@
       </div>
     </div>
 
-    <h6 class="fw-bold mb-3 mt-4 border-bottom pb-2 text-secondary">
-      <i class="bi bi-clock-history me-2"></i>سجل الحركات المالية
-    </h6>
+    <div class="d-flex justify-content-between align-items-center mb-3 mt-4 border-bottom pb-2">
+      <button (click)="onPayFromInvoice()" class="btn btn-sm btn-success shadow-sm px-3 fw-bold">
+        <i class="bi bi-plus-circle ms-1"></i> دفع دفعة جديدة
+      </button>
+      <h6 class="fw-bold mb-0 text-secondary">
+        سجل الحركات المالية <i class="bi bi-clock-history ms-2"></i>
+      </h6>
+    </div>
 
     <div *ngIf="invoicePayments.length === 0" class="text-center py-5">
       <div class="mb-3">
@@ -613,12 +618,12 @@
     </div>
 
     <div class="table-responsive rounded-3 border" *ngIf="invoicePayments.length > 0">
-      <table class="table table-hover mb-0">
+      <table class="table table-hover mb-0 text-end">
         <thead class="bg-light">
           <tr>
             <th class="py-3 text-end">التاريخ</th>
             <th class="py-3 text-center">المبلغ</th>
-            <th class="py-3 text-center">طريقة الدفع</th>
+            <th class="py-3 text-center">الطريقة</th>
             <th class="py-3 text-start">بواسطة</th>
           </tr>
         </thead>
@@ -627,7 +632,8 @@
             <td class="small text-end">{{ payment.paidAt | date:'yyyy-MM-dd HH:mm' }}</td>
             <td class="fw-bold text-center text-primary">{{ payment.amount | number:'1.2-2' }} ج.م</td>
             <td class="text-center">
-              <span class="badge rounded-pill" [ngClass]="payment.paymentMethod === 1 ? 'bg-info-subtle text-info' : 'bg-secondary-subtle text-secondary'">
+              <span class="badge rounded-pill" 
+                [ngClass]="payment.paymentMethod === 1 ? 'bg-info-subtle text-info' : 'bg-secondary-subtle text-secondary'">
                 {{ payment.paymentMethod === 1 ? 'نقدي' : 'فيزا/شبكة' }}
               </span>
             </td>
@@ -646,6 +652,55 @@
 
 
 
+<ng-template #confirmPayModal let-modal>
+  <div class="modal-header border-0 bg-light p-4 d-flex align-items-center justify-content-between flex-row-reverse">
+    <button type="button" class="btn-close m-0 text-white" (click)="modal.dismiss()"></button>
+    <div>
+      <h5 class="modal-title fw-bold mb-0 text-white"> تسجيل دفعات الفاتورة </h5>
+      <span class="badge bg-primary mt-2">رقم: {{ selectedInvoiceNumber }}</span>
+    </div>
+  </div>
+  
+  <div class="modal-body p-4 text-end" dir="rtl">
+    <div class="supplier-brief mb-4 p-3 rounded-4 bg-light border-start border-primary border-4">
+      <small class="text-muted d-block mb-1">المورد: {{ selectedPartner?.supplierNameAr }}</small>
+      <h5 class="fw-bold mb-0 text-primary">فاتورة رقم: {{ selectedInvoiceNumber }}</h5>
+    </div>
+
+    <form [formGroup]="paymentForm" (ngSubmit)="confirmPayment()">
+      <div class="mb-3">
+        <label class="form-label fw-bold small">إجمالي المبلغ المطلوب دفعه (ج.م)</label>
+        <input type="number" class="form-control custom-input py-2" placeholder="0.00" formControlName="amount">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold small">طريقة الدفع</label>
+        <select class="form-select custom-input py-2" formControlName="method">
+          <option value="cash">نقداً (Cash)</option>
+          <option value="visa">فيزا (Visa/MasterCard)</option>
+          <option value="bank">تحويل بنكي (Bank Transfer)</option>
+          <option value="custom">دفع مخصص (كاش + فيزا)</option>
+        </select>
+      </div>
+
+      <div class="row g-2 mb-3 px-2 py-3 rounded-3 bg-primary-subtle" *ngIf="paymentForm.get('method')?.value === 'custom'">
+        <div class="col-6">
+          <label class="form-label fw-bold small text-success">مبلغ الكاش</label>
+          <input type="number" class="form-control" formControlName="cashAmount" placeholder="0.00">
+        </div>
+        <div class="col-6">
+          <label class="form-label fw-bold small text-primary">مبلغ الفيزا</label>
+          <input type="number" class="form-control bg-white" formControlName="visaAmount" readonly>
+        </div>
+      </div>
+
+      <button type="submit" [disabled]="paymentForm.invalid || isLoading" class="btn btn-primary w-100 py-3 mt-3 shadow-sm fw-bold rounded-3">
+        <span *ngIf="isLoading" class="spinner-border spinner-border-sm ms-2"> دفع </span>
+        {{ isLoading ? 'جاري المعالجة...' : 'تأكيد عملية الدفع' }}
+      </button>
+    </form>
+  </div>
+</ng-template>
 
 
 
@@ -662,9 +717,7 @@
 
 
 
-
-
-<ng-template #detailsModal let-modal>
+<!-- <ng-template #detailsModal let-modal>
   <div class="modal-header border-0 bg-dark text-white p-4 d-flex flex-row-reverse align-items-center justify-content-between">
     <button type="button" class="btn-close btn-close-white m-0" (click)="modal.dismiss()"></button>
     <div class="d-flex align-items-center text-end">
@@ -766,10 +819,108 @@
       <i class="bi bi-printer me-2"></i> طباعة الفاتورة
     </button>
   </div>
+</ng-template> -->
+
+
+
+
+
+
+<ng-template #detailsModal let-modal>
+  <div class="modal-header bg-dark text-white border-0 position-relative justify-content-center py-3">
+    <button type="button" class="btn-close btn-close-white position-absolute start-0 ms-3" (click)="modal.dismiss()"></button>
+    <h5 class="modal-title fw-bold">تفاصيل فاتورة المشتريات</h5>
+  </div>
+
+  <div class="modal-body p-4" *ngIf="selectedInvoice">
+    <div class="row mb-4 text-end">
+      <div class="col-6">
+        <div class="mb-3">
+          <small class="text-muted d-block">المورد / الشركة</small>
+          <span class="fw-bold fs-5">{{selectedInvoice.supplierDisplayName}}</span>
+          <small class="d-block text-muted">فرع رقم: {{selectedInvoice.branchId}}</small>
+        </div>
+      </div>
+      <div class="col-6 text-start">
+        <div class="mb-3">
+          <small class="text-muted d-block">رقم الفاتورة</small>
+          <span class="fw-bold text-primary">{{selectedInvoice.purchaseNumber}}</span>
+          <small class="d-block text-muted">{{selectedInvoice.invoiceDate | date:'yyyy-MM-dd'}}</small>
+        </div>
+      </div>
+
+
+      
+    </div>
+
+    <div class="row mb-4 pb-3 border-bottom text-end bg-light p-2 rounded-3 g-0">
+      <div class="col-6">
+        <label class="text-muted small d-block">الموظف المسؤول</label>
+        <span class="fw-medium small">
+          <i class="bi bi-person-circle me-1"></i>
+          {{selectedInvoice.recordedByEmployeeName || 'موظف رقم ' + selectedInvoice.recordedByEmployeeId}}
+        </span>
+      </div>
+      <div class="col-6 text-start border-end pe-3">
+        <label class="text-muted small d-block">طريقة الدفع</label>
+        <span class="badge" [ngClass]="selectedInvoice.paymentMethod === 1 ? 'bg-success-subtle text-success' : 'bg-info-subtle text-info'">
+          <i class="bi" [ngClass]="selectedInvoice.paymentMethod === 1 ? 'bi-cash' : 'bi-credit-card'"></i>
+          {{selectedInvoice.paymentMethod === 1 ? 'نقدي' : 'فيزا / شبكة'}}
+        </span>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table custom-modal-table border-top">
+        <thead>
+          <tr class="text-muted small">
+            <th class="border-0 text-end">الصنف</th>
+            <th class="border-0 text-center">الكمية</th>
+            <th class="border-0 text-start">الإجمالي</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of selectedInvoice.lines">
+            <td class="text-end py-3">
+              <div class="fw-bold text-dark">{{item.productName || item.materialName}}</div>
+              <small class="text-muted">سعر الوحدة: {{item.unitPurchasePrice | number}} ج.م</small>
+            </td>
+            <td class="text-center fw-bold align-middle">{{item.qty}}</td>
+            <td class="text-start fw-bold align-middle">{{(item.qty * item.unitPurchasePrice) | number}} ج.م</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-3 border-top pt-3">
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-muted">الإجمالي (قبل الخصم):</span>
+        <span class="fw-bold">{{selectedInvoice.subTotal | number}} ج.م</span>
+      </div>
+      <div class="d-flex justify-content-between mb-3">
+        <span class="text-muted">الضريبة (0%):</span>
+        <span class="fw-bold">0.00 ج.م</span>
+      </div>
+
+      <div class="total-banner d-flex justify-content-between align-items-center p-3 rounded-3 mb-3">
+        <span class="h5 mb-0 fw-bold">إجمالي مستحق الفاتورة</span>
+        <span class="h4 mb-0 fw-bold">{{selectedInvoice.total | number}} ج.م</span>
+      </div>
+
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-muted">المبلغ المدفوع:</span>
+        <span class="fw-bold text-success">{{selectedInvoice.amountPaid | number}}</span>
+      </div>
+      <div class="d-flex justify-content-between">
+        <span class="text-danger fw-bold">المتبقي:</span>
+        <span class="text-danger fw-bold">{{(selectedInvoice.total - selectedInvoice.amountPaid) | number}}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer border-0 p-4">
+    <button type="button" class="btn btn-dark w-100 py-2 fs-5 fw-bold" (click)="printInvoice(selectedInvoice)">
+      <i class="bi bi-printer ms-2"></i> طباعة الفاتورة
+    </button>
+  </div>
 </ng-template>
-
-
-
-
-
-

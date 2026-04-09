@@ -74,11 +74,12 @@ export class SuppliersComponent implements OnInit {
 
     // نموذج إضافة مورد/شركة جديد (مطابق للـ API)
 this.addPartnerForm = this.fb.group({
-      supplierNameAr: ['', [Validators.required]],
-      supplierNameEn: ['', [Validators.required]],
-      phoneNumber: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
-      openingBalance: [0]
-    });
+  supplierNameAr: [''], // اختياري
+  supplierNameEn: [''], // اختياري
+  companyNameAr: [''],  // اختياري
+  companyNameEn: [''],  // اختياري
+  phoneNumber: ['', [Validators.required, Validators.pattern('^[0-9]+$')]] // إجباري
+});
 
     this.paymentForm.get('cashAmount')?.valueChanges.subscribe(() => this.autoCalculateVisa());
     this.paymentForm.get('amount')?.valueChanges.subscribe(() => this.autoCalculateVisa());
@@ -129,35 +130,49 @@ loadSuppliers() {
   // --- حفظ بيانات مورد جديد ---
 // --- حفظ بيانات مورد جديد ---
 onSavePartner() {
-  if (this.addPartnerForm.valid) {
-    this.isLoading = true; // الزر يتحول لـ "جاري الحفظ"
+  const formValue = this.addPartnerForm.value;
 
-    const formValue = this.addPartnerForm.value;
+  // التحقق: هل يوجد اسم واحد على الأقل (تاجر أو شركة) وهل رقم الهاتف موجود؟
+  const hasName = !!(formValue.supplierNameAr || formValue.supplierNameEn || 
+                     formValue.companyNameAr || formValue.companyNameEn);
+  const hasPhone = !!formValue.phoneNumber;
+
+  if (hasName && hasPhone) {
+    this.isLoading = true;
+
+    // بناء الـ Payload
+    // المنطق: إذا كان أحد الحقول فارغاً، نضع قيمة الحقل الآخر فيه لضمان اكتمال البيانات
     const payload = {
-      supplierNameAr: formValue.supplierNameAr,
-      supplierNameEn: formValue.supplierNameEn,
-      companyNameAr: this.viewType === 'company' ? formValue.supplierNameAr : "",
-      companyNameEn: this.viewType === 'company' ? formValue.supplierNameEn : "",
+      supplierNameAr: formValue.supplierNameAr || formValue.companyNameAr || "غير محدد",
+      supplierNameEn: formValue.supplierNameEn || formValue.companyNameEn || "Not Specified",
+      companyNameAr: formValue.companyNameAr || formValue.supplierNameAr || "غير محدد",
+      companyNameEn: formValue.companyNameEn || formValue.supplierNameEn || "Not Specified",
       phoneNumber: formValue.phoneNumber
     };
 
     this.apiService.createSupplier(payload).subscribe({
       next: (res) => {
         alert('تمت إضافة البيانات بنجاح');
-        this.addPartnerForm.reset({ openingBalance: 0 });
+        this.addPartnerForm.reset();
         this.loadSuppliers();
-        this.isLoading = false; // فك تعليق الزر عند النجاح
+        this.isLoading = false;
       },
       error: (err) => {
         console.error('Error saving:', err);
-        alert('حدث خطأ أثناء الاتصال بالخادم');
-        this.isLoading = false; // هام جداً: فك تعليق الزر حتى في حالة الخطأ
+        alert(err.error?.message || 'حدث خطأ أثناء الاتصال بالخادم');
+        this.isLoading = false;
       },
       complete: () => {
-        this.isLoading = false; // للتأكد الإضافي
+        this.isLoading = false;
       }
     });
   } else {
+    // إظهار تنبيه في حال عدم إدخال الحد الأدنى من البيانات
+    if (!hasPhone) {
+      alert('يرجى إدخال رقم الهاتف.');
+    } else if (!hasName) {
+      alert('يرجى إدخال اسم التاجر أو اسم الشركة على الأقل.');
+    }
     this.addPartnerForm.markAllAsTouched();
   }
 }
@@ -207,10 +222,18 @@ viewStatement(partner: any) {
   });
 }
 // دالة الطباعة (بسيطة)
-printStatement() {
-  window.print();
+printDocument(type: 'pos' | 'a4' | 'payments') {
+  // إضافة الكلاس المناسب بناءً على الاختيار
+  const className = type === 'pos' ? 'print-pos' : (type === 'payments' ? 'print-payments' : 'print-a4');
+  
+  document.body.classList.add(className);
+  
+  // تأخير بسيط لضمان رندر التنسيق قبل فتح نافذة الطباعة
+  setTimeout(() => {
+    window.print();
+    document.body.classList.remove('print-pos', 'print-a4', 'print-payments');
+  }, 50);
 }
-
   // بقية الدوال (filterByType, switchView, calculateSplit, الخ...)
 filterByType() {
   const search = (this.searchTerm || '').toLowerCase();
@@ -237,11 +260,22 @@ filterByType() {
   }
 
 
+// تعديل دالة حساب الدفعات لتجلب آخر دفعة لكل مورد
 calculateRecentPayments() {
   this.totalRecentPayments = this.filteredPartners.reduce((acc, curr) => {
-    // تأكد من مبرمج الـ Backend من اسم الحقل الصحيح (مثلاً قد يكون lastPaymentValue)
+    // نبحث عن الحقل الذي يحتوي على مبلغ آخر دفعة من الـ API
+    // بناءً على تصميمك، سنفترض وجود حقل اسمه lastPaymentAmount
     return acc + (Number(curr.lastPaymentAmount) || 0);
   }, 0);
+}
+
+// دالة لجلب آخر مبلغ مدفوع لمورد معين لعرضه في الكارت
+getLastPaymentForPartner(partner: any): number {
+  if (partner.lastPaymentAmount) {
+    return partner.lastPaymentAmount;
+  }
+  // إذا لم يكن الحقل موجوداً في الكائن المباشر، يمكن حسابه من كشف الحساب إذا تم تحميله
+  return 0;
 }
 
 
@@ -264,22 +298,26 @@ getTotalDebt(): number {
 
 
 viewInvoice(transaction: any) {
+  // 1. إغلاق المودال الحالي يدوياً للتأكيد
+  this.closeModal('statementModal');
+
   this.isLoading = true;
-  // بننادي الـ ID بتاع الفاتورة عشان نجيب الـ Items
   const invoiceId = transaction.id || transaction.purchaseInvoiceId;
 
   this.apiService.getPurchaseInvoiceById(invoiceId).subscribe({
     next: (res: any) => {
-      // الـ API في Postman بيرجع البيانات في res.data
       this.selectedInvoice = res.data;
 
-      const modalElement = document.getElementById('invoiceModal');
-      if (modalElement) {
-        const modal = new bootstrap.Modal(modalElement);
-        modal.show();
-      }
+      // 2. الانتظار قليلاً لضمان اختفاء الـ backdrop القديم
+      setTimeout(() => {
+        const modalElement = document.getElementById('invoiceModal');
+        if (modalElement) {
+          const modal = new bootstrap.Modal(modalElement);
+          modal.show();
+        }
+      }, 400); 
     },
-    error: (err) => console.error('Error fetching invoice details:', err),
+    error: (err) => console.error(err),
     complete: () => this.isLoading = false
   });
 }
@@ -291,43 +329,48 @@ viewInvoice(transaction: any) {
 onPayFromInvoice() {
   if (!this.selectedInvoiceData) return;
 
-  // إغلاق مودال قائمة الدفعات
-  this.closeModal('paymentsListModal');
+  const total = this.selectedInvoiceData.total || 0;
+  const paid = this.selectedInvoiceData.amountPaid || 0;
+  const remaining = total - paid;
 
-  // تعبئة بيانات المورد للمودال القادم
+  if (remaining <= 0) {
+    alert('هذه الفاتورة مسددة بالكامل ولا يوجد مبلغ متبقي.');
+    return;
+  }
+
+  // إعداد البيانات
   this.selectedPartner = {
     id: this.selectedInvoiceData.supplierId,
-    supplierNameAr: this.selectedInvoiceData.supplierDisplayName
+    supplierNameAr: this.selectedInvoiceData.supplierDisplayName || this.selectedPartner?.supplierNameAr
   };
-
-  const remaining = this.selectedInvoiceData.total - this.selectedInvoiceData.amountPaid;
 
   this.paymentForm.reset({
     method: 'cash',
-    amount: remaining > 0 ? remaining : null,
-    cashAmount: 0
+    amount: remaining,
+    cashAmount: 0,
+    visaAmount: 0
   });
 
-  // فتح مودال الدفع
-  const modalElement = document.getElementById('payModal');
-  if (modalElement) {
-    const modal = new bootstrap.Modal(modalElement);
-    modal.show();
+  // 1. إغلاق المودال الحالي (قائمة الدفعات) برمجياً
+  const currentModalEl = document.getElementById('paymentsListModal');
+  if (currentModalEl) {
+    const currentModal = bootstrap.Modal.getInstance(currentModalEl);
+    if (currentModal) currentModal.hide();
   }
+
+  // 2. الانتظار قليلاً لضمان انتهاء أنيميشن الإغلاق
+  setTimeout(() => {
+    this.clearBackdrops(); // تنظيف نهائي لأي بقايا
+
+    const nextModalEl = document.getElementById('confirmPayModal');
+    if (nextModalEl) {
+      const nextModal = new bootstrap.Modal(nextModalEl);
+      nextModal.show();
+    }
+  }, 400); // زيادة المهلة قليلاً لضمان السلاسة
 }
 
 
-  // onPay(partner: any) {
-  //   this.selectedPartner = partner;
-  //   this.paymentForm.reset({
-  //     method: 'cash',
-  //     amount: remaining > 0 ? remaining : null,
-  //     cashAmount: 0
-  //   });
-  //   const remaining = this.selectedInvoiceData.total - this.selectedInvoiceData.amountPaid;
-  //   const modalElement = document.getElementById('payModal');
-  //   new bootstrap.Modal(modalElement).show();
-  // }
 
 calculateSplit() {
   const total = this.paymentForm.get('amount')?.value || 0;
@@ -341,111 +384,79 @@ calculateSplit() {
   }, { emitEvent: false });
 }
 
-// async confirmPayment() {
-//   if (this.paymentForm.valid && this.selectedPartner) {
-//     this.isLoading = true;
-//     const formValue = this.paymentForm.getRawValue();
-//     let totalToPay = Number(formValue.amount);
-
-// try {
-//   const invoices = await this.apiService.getSupplierInvoices(this.selectedPartner.id).toPromise();
-
-//   // التعديل هنا: نضمن أن invoices ليست undefined قبل الفلترة
-//   const pendingInvoices = (invoices || []).filter(inv => inv.remainingAmount > 0);
-
-//   if (pendingInvoices.length === 0) {
-//     alert('لا توجد فواتير مستحقة لهذا المورد');
-//     this.isLoading = false;
-//     return;
-//   }
-
-//       // 2. توزيع المبلغ على الفواتير
-//       for (const invoice of pendingInvoices) {
-//         if (totalToPay <= 0) break;
-
-//         // المبلغ الذي سيتم دفعه لهذه الفاتورة هو الأقل بين (المبلغ المتبقي معنا) و (مديونية الفاتورة)
-//         const amountForThisInvoice = Math.min(totalToPay, invoice.remainingAmount);
-
-//         const payload = {
-//           amount: amountForThisInvoice,
-//           paymentMethod: this.mapPaymentMethod(formValue.method),
-//           recordedByEmployeeId: 1, // تأكد من الـ ID الصحيح من الصورة (الموظف رقم 1 غير موجود كما يظهر في الخطأ)
-//           cashAmount: formValue.method === 'cash' ? amountForThisInvoice : (formValue.method === 'custom' ? formValue.cashAmount : 0),
-//           visaAmount: formValue.method === 'visa' ? amountForThisInvoice : (formValue.method === 'custom' ? formValue.visaAmount : 0),
-//           notes: `سداد آلي - جزء من مبلغ ${formValue.amount}`,
-//           paidAt: new Date().toISOString()
-//         };
-
-//         // إرسال طلب الدفع لهذه الفاتورة
-//         await this.apiService.postPayment(invoice.id, payload).toPromise();
-
-//         totalToPay -= amountForThisInvoice;
-//       }
-
-//       // 3. إنهاء العملية
-//       alert('تم توزيع المبلغ بنجاح على الفواتير المستحقة');
-//       this.closeModal('payModal');
-//       this.loadSuppliers();
-
-//     } catch (err: any) {
-//       console.error('Payment Error:', err);
-//       alert(err.error?.Message || 'حدث خطأ أثناء معالجة الدفع التلقائي');
-//     } finally {
-//       this.isLoading = false;
-//     }
-//   }
-// }
-
-
-
-
-
-
-// دالة تحويل وسيلة الدفع لأرقام (حسب طلب الـ Backend في صورة بوستمان)
 
 async confirmPayment() {
-    if (this.paymentForm.valid && this.selectedInvoiceData) {
-      this.isLoading = true;
-      const formValue = this.paymentForm.getRawValue();
-      const targetInvoiceId = this.selectedInvoiceData.id;
+  if (this.paymentForm.invalid || !this.selectedInvoiceData) {
+    alert('يرجى التأكد من إدخال البيانات بشكل صحيح.');
+    return;
+  }
 
-      // تحديد مبالغ الكاش والفيزا بناءً على الطريقة
-      let finalCash = 0;
-      let finalVisa = 0;
+  const formValue = this.paymentForm.getRawValue();
+  const targetInvoiceId = this.selectedInvoiceData.id;
+  const amountToPay = Number(formValue.amount);
 
-      if (formValue.method === 'cash') {
-        finalCash = Number(formValue.amount);
-      } else if (formValue.method === 'visa') {
-        finalVisa = Number(formValue.amount);
-      } else if (formValue.method === 'custom') {
-        finalCash = Number(formValue.cashAmount);
-        finalVisa = Number(formValue.visaAmount);
-      }
+  // 1. حساب المتبقي مرة أخرى للحماية قبل الإرسال
+  const total = this.selectedInvoiceData.total || 0;
+  const paid = this.selectedInvoiceData.amountPaid || 0;
+  const remaining = total - paid;
 
-      const payload = {
-        amount: Number(formValue.amount),
-        paymentMethod: this.mapPaymentMethod(formValue.method),
-        recordedByEmployeeId: 1,
-        cashAmount: finalCash,
-        visaAmount: finalVisa,
-        notes: `سداد للفاتورة رقم ${this.selectedInvoiceNumber}`,
-        paidAt: new Date().toISOString()
-      };
+  if (amountToPay > remaining) {
+    alert(`عفواً، المبلغ المدخل (${amountToPay}) أكبر من المبلغ المتبقي للفاتورة (${remaining}).`);
+    return;
+  }
 
-      this.apiService.postPayment(targetInvoiceId, payload).subscribe({
-        next: () => {
-          alert('تم تسجيل الدفعة بنجاح');
-          this.closeModal('confirmPayModal');
-          this.loadSuppliers();
-          this.isLoading = false;
-        },
-        error: (err) => {
-          alert(err.error?.Message || 'خطأ في عملية الدفع');
-          this.isLoading = false;
-        }
-      });
+  // 2. تحديد مبالغ الكاش والفيزا بناءً على الطريقة المختارة
+  let finalCash = 0;
+  let finalVisa = 0;
+
+  if (formValue.method === 'cash') {
+    finalCash = amountToPay;
+  } else if (formValue.method === 'visa') {
+    finalVisa = amountToPay;
+  } else if (formValue.method === 'custom') {
+    finalCash = Number(formValue.cashAmount);
+    finalVisa = Number(formValue.visaAmount);
+    
+    // التحقق من أن مجموع المخصص يساوي الإجمالي
+    if ((finalCash + finalVisa) !== amountToPay) {
+      alert('يجب أن يكون مجموع الكاش والفيزا مساوياً لإجمالي المبلغ المطلوب دفعه!');
+      return;
     }
   }
+
+  this.isLoading = true;
+
+  const payload = {
+    amount: amountToPay,
+    paymentMethod: this.mapPaymentMethod(formValue.method),
+    recordedByEmployeeId: 1, // يمكنك تغييره ليجلب ID الموظف من الـ AuthService لو متوفر
+    cashAmount: finalCash,
+    visaAmount: finalVisa,
+    notes: `سداد للفاتورة رقم ${this.selectedInvoiceNumber}`,
+    paidAt: new Date().toISOString()
+  };
+
+  // 3. إرسال الدفعة للـ API
+  this.apiService.postPayment(targetInvoiceId, payload).subscribe({
+    next: () => {
+      alert('تم تسجيل الدفعة بنجاح');
+      this.closeModal('confirmPayModal');
+      
+      // تحديث قائمة الموردين والأرصدة
+      this.loadSuppliers(); 
+      
+      // (اختياري) إذا أردت تحديث كشف الحساب المفتوح في الخلفية:
+      // if (this.selectedPartner) this.viewStatement(this.selectedPartner);
+
+      this.isLoading = false;
+    },
+    error: (err) => {
+      console.error('Payment Error:', err);
+      alert(err.error?.Message || 'حدث خطأ في عملية الدفع');
+      this.isLoading = false;
+    }
+  });
+}
 
 
 
@@ -453,13 +464,24 @@ private mapPaymentMethod(method: string): number {
   const mapping: { [key: string]: number } = {
     'cash': 1,
     'bank': 2,
-    'visa': 3,
-    'custom': 4
+    'visa': 2,
+    'custom': 3
   };
   return mapping[method] || 1;
 }
 
+private clearBackdrops() {
+  document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+  document.body.classList.remove('modal-open');
+  document.body.style.overflow = '';
+  document.body.style.paddingRight = '';
+}
+
+
 viewInvoicePayments(transaction: any) {
+  // 1. إغلاق مودال كشف الحساب أولاً
+  this.closeModal('statementModal');
+
   this.isLoading = true;
   this.selectedInvoiceNumber = transaction.purchaseNumber;
   const invoiceId = transaction.id || transaction.purchaseInvoiceId;
@@ -470,18 +492,17 @@ viewInvoicePayments(transaction: any) {
         this.selectedInvoiceData = res.data;
         this.invoicePayments = res.data?.payments || [];
 
-        // التعديل هنا: نفتح مودال قائمة الدفعات وليس مودال الدفع مباشرة
-        const modalElement = document.getElementById('paymentsListModal');
-        if (modalElement) {
-          const modal = new bootstrap.Modal(modalElement);
-          modal.show();
-        }
+        // 2. فتح مودال قائمة الدفعات بعد مهلة قصيرة
+        setTimeout(() => {
+          const modalElement = document.getElementById('paymentsListModal');
+          if (modalElement) {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+          }
+        }, 400);
       }
     },
-    error: (err) => {
-      console.error('Error:', err);
-      alert('خطأ في جلب البيانات من السيرفر');
-    },
+    error: (err) => console.error(err),
     complete: () => this.isLoading = false
   });
 }

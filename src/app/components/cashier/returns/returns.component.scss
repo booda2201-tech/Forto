@@ -1,0 +1,93 @@
+.returns-container {
+  background-color: #f8f9fa;
+  max-width: 1200px;
+  margin: auto;
+  min-height: 100vh;
+  direction: rtl;
+
+  .stat-card {
+    transition: transform 0.2s ease;
+    &:hover {
+      transform: translateY(-3px);
+    }
+    h5 {
+      font-size: 1.1rem;
+    }
+    small {
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+  }
+
+  .table {
+    thead th {
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 15px;
+      border-bottom: 2px solid #eee;
+    }
+    tbody td {
+      padding: 12px 15px;
+      font-size: 0.9rem;
+    }
+  }
+
+  .badge {
+    font-weight: 500;
+    font-size: 0.75rem;
+  }
+
+  .form-control, .form-select {
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    &:focus {
+      box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.1); // ظل أحمر خفيف للتركيز
+      border-color: #dc3545;
+    }
+  }
+
+  .btn-danger {
+    background-color: #dc3545;
+    border: none;
+    font-weight: 600;
+    &:hover {
+      background-color: #c82333;
+    }
+  }
+}
+
+// تعديلات بسيطة للطباعة
+@media print {
+  .btn, .input-group, select, .dropdown {
+    display: none !important;
+  }
+}
+
+
+
+/* أضف هذه التعديلات في ملف returns.component.scss */
+
+.table-responsive {
+    // هذه الخاصية تمنع قطع القائمة المنسدلة وتجعلها تظهر فوق العناصر الأخرى
+    overflow: visible !important; 
+    padding-bottom: 60px; // مساحة إضافية لضمان عدم حدوث تمرير غير مرغوب فيه
+}
+
+// تنسيق إضافي لزر الإجراءات ليكون مطابقاً للصورة الأولى تماماً
+.dropdown-menu {
+    text-align: right;
+    border-radius: 12px;
+    margin-top: 5px !important;
+    z-index: 1050; // لضمان ظهورها فوق كل شيء
+    
+    .dropdown-item {
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+        
+        &:hover {
+            background-color: #f8f9fa;
+            color: #dc3545; // تغيير اللون للأحمر عند التمرير (هوية المرتجعات)
+        }
+    }
+}
