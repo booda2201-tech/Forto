@@ -344,7 +344,7 @@
   <button class="btn-save w-100 py-3 fw-bold"
           (click)="saveInvoice()"
           [disabled]="isLoading || !invoiceDetails.supplierId">
-    <i class="bi bi-check-circle me-2" *ngIf="!isLoading"></i>
+    <i class="bi bi-check-circle mx-2" *ngIf="!isLoading"></i>
     <span *ngIf="!isLoading">حفظ الفاتورة نهائياً</span>
 
     <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -541,10 +541,10 @@
     <span>سجل المدفوعات</span>
   </button>
 
-  <button ngbDropdownItem class="py-2" (click)="printInvoice(invoice)">
+  <!-- <button ngbDropdownItem class="py-2" (click)="printInvoice(invoice)">
     <i class="bi bi-printer-fill text-dark mx-2"></i>
     <span>طباعة الفاتورة</span>
-  </button>
+  </button> -->
 
 </div>
 
@@ -918,9 +918,9 @@
     </div>
   </div>
 
-  <div class="modal-footer border-0 p-4">
+  <!-- <div class="modal-footer border-0 p-4">
     <button type="button" class="btn btn-dark w-100 py-2 fs-5 fw-bold" (click)="printInvoice(selectedInvoice)">
       <i class="bi bi-printer ms-2"></i> طباعة الفاتورة
     </button>
-  </div>
+  </div> -->
 </ng-template>

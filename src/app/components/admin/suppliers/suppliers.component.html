@@ -166,7 +166,7 @@
   </header>
 
   <div class="row g-4 mb-5">
-    <div class="col-md-4">
+    <div class="col-md-6">
       <div class="stat-card red">
         <div class="stat-info">
           <span>إجمالي المديونية المستحقة</span>
@@ -175,7 +175,7 @@
         <div class="stat-icon"><i class="bi bi-credit-card-2-back"></i></div>
       </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-6">
       <div class="stat-card orange">
         <div class="stat-info">
           <span>عدد الجهات النشطة</span>
@@ -184,15 +184,17 @@
         <div class="stat-icon"><i class="bi bi-building"></i></div>
       </div>
     </div>
-    <div class="col-md-4">
+    <!-- <div class="col-md-4">
       <div class="stat-card green">
         <div class="stat-info">
           <span>إجمالي المدفوعات المسددة</span>
-          <h3>{{ totalRecentPayments | number:'1.2-2' }} <small>ج.م</small></h3>
+          <h3>{{ getTotalAllSuppliersPayments() | number:'1.2-2' }} <small>ج.م</small></h3>
         </div>
-        <div class="stat-icon"><i class="bi bi-check2-all"></i></div>
+        <div class="stat-icon">
+          <i class="bi bi-check2-all"></i>
+        </div>
       </div>
-    </div>
+    </div> -->
   </div>
 
 <div class="row g-4" dir="ltr">
@@ -274,7 +276,7 @@
             </div>
           </div>
 
-<div class="card-footer-info d-flex justify-content-between border-top pt-3">
+<!-- <div class="card-footer-info d-flex justify-content-between border-top pt-3">
   <div class="info-item">
     <i class="bi bi-calendar3 small text-muted me-1"></i>
     <span class="x-small text-muted">
@@ -286,7 +288,7 @@
     <span class="text-success">{{ (partner.lastPaymentAmount || 0) | number:'1.2-2' }}</span>
     <small class="ms-1">ر.ع</small>
   </div>
-</div>
+</div> -->
 
             <div class="card-actions">
               <button (click)="viewStatement(partner)" class="btn-action statement w-100">
@@ -554,12 +556,12 @@
           </table>
         </div>
 
-<button (click)="printDocument('payments')" 
+<!-- <button (click)="printDocument('payments')" 
         class="btn btn-outline-dark d-flex align-items-center gap-2 px-3 py-2 shadow-sm fw-bold border-1 transition-all"
         style="border-radius: 10px;">
   <i class="bi bi-printer fs-5"></i>
   <span>طباعة الإيصال</span>
-</button>
+</button> -->
 
       </div>
     </div>
@@ -645,11 +647,11 @@
         </div>
       </div>
 
-      <div class="modal-footer border-0 p-4 d-print-none">
+      <!-- <div class="modal-footer border-0 p-4 d-print-none">
         <button onclick="window.print()" class="btn btn-dark w-100 py-3 rounded-3 fw-bold">
           <i class="bi bi-printer-fill me-2"></i> طباعة الفاتورة
         </button>
-      </div>
+      </div> -->
     </div>
   </div>
 </div>

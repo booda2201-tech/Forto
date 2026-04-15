@@ -208,10 +208,8 @@
     </div>
 
     <!-- Optional: show summary breakdown if you want -->
-    <div class="reports-container mt-4" *ngIf="summary">
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <div class="forto-card p-4 h-100 text-center">
+    <div class="sacand-content-grid mt-3" *ngIf="summary">
+          <div class="forto-card p-4 text-center">
             <h5 class="section-title mb-3">تفاصيل التكاليف</h5>
             <div class="text-muted small">
               <div>مواد مستهلكة: {{ summary.materialsConsumeCost | number:'1.0-2' }} ج.م</div>
@@ -219,19 +217,15 @@
               <div>هدايا: {{ summary.giftsCost | number:'1.0-2' }} ج.م</div>
             </div>
           </div>
-        </div>
 
-        <div class="col-md-6 mb-3">
-          <div class="forto-card p-4 h-100 text-center">
+          <div class="forto-card p-4 text-center">
             <h5 class="section-title mb-3">صافي الربح</h5>
-            <div style="height: 200px; display:flex; align-items:center; justify-content:center; background:#f9f9f9; border-radius:15px;">
+            <div style="height: 100px; display:flex; align-items:center; justify-content:center; background:#f9f9f9; border-radius:10px;">
               <span class="fw-bold text-orange" style="font-size: 28px;">
                 {{ netProfit | number:'1.0-2' }} ج.م
               </span>
             </div>
           </div>
-        </div>
-      </div>
     </div>
 
   </div>

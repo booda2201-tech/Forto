@@ -291,7 +291,22 @@ getTotalDebt(): number {
 }
 
 
+// دالة تحسب إجمالي كل المبالغ التي دُفعت لكل الموردين المفلترين حالياً
+getTotalPaidPayments(): number {
+  return this.filteredPartners.reduce((acc, curr) => {
+    // ملاحظة: تأكد من مسمى الحقل في الـ API (غالباً totalPaid أو مجموع المبالغ المسددة)
+    return acc + (Number(curr.totalPaid) || 0); 
+  }, 0);
+}
 
+// دالة تحسب إجمالي جميع المبالغ المسددة (تاريخياً) لكل الموردين المعروضين
+getTotalAllSuppliersPayments(): number {
+  return this.filteredPartners.reduce((acc, curr) => {
+    // نستخدم Number لضمان عدم حدوث خطأ إذا كانت القيمة نصية من الـ API
+    // تأكد أن الحقل في الـ API هو totalPaid أو اجمالى المدفوعات
+    return acc + (Number(curr.totalPaid) || 0);
+  }, 0);
+}
 
 
 

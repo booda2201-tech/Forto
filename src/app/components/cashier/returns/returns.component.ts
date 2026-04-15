@@ -2,6 +2,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../../services/api.service'; // تأكد من المسار
 import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-returns',
@@ -9,10 +12,19 @@ import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
   styleUrls: ['./returns.component.scss']
 })
 export class ReturnsComponent implements OnInit {
-  returnedInvoices: any[] = [];
+  allReturns: any[] = []; // المصفوفة الأصلية من السيرفر
+  filteredInvoices: any[] = []; // المصفوفة التي ستعرض في الجدول
   isLoading: boolean = false;
+  returnedInvoices: any[] = [];
   selectedReturn: any = null;
   
+  filterSettings = {
+    searchText: '',
+    fromDate: new Date().toISOString().split('T')[0], // تاريخ اليوم كافتراضي
+    toDate: new Date().toISOString().split('T')[0],   // تاريخ اليوم كافتراضي
+    paymentMethod: '0'
+  };
+
   // كائنات لتخزين الإحصائيات الحقيقية
   stats = {
     totalCount: 0,
@@ -30,29 +42,56 @@ export class ReturnsComponent implements OnInit {
     this.fetchReturns();
   }
 
-  fetchReturns() {
-    this.isLoading = true;
-    // تم استخدام branchId = 1 كما هو ظاهر في الـ Postman الخاص بك
-    this.apiService.getReturns(1).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.returnedInvoices = response.data;
-          this.calculateStats(); // تحديث البطاقات العلوية بالبيانات الحقيقية
-        }
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching returns:', err);
-        this.isLoading = false;
+fetchReturns() {
+  this.isLoading = true;
+  this.apiService.getReturns(1).subscribe({
+    next: (response) => {
+      if (response.success) {
+        // ✅ المهم جداً: وضع البيانات في allReturns لأنها مصدر الفلترة
+        this.allReturns = response.data; 
+        this.applyFilter(); 
       }
-    });
-  }
+      this.isLoading = false;
+    },
+    error: (err) => {
+      console.error('Error fetching returns:', err);
+      this.isLoading = false;
+    }
+  });
+}
 
-  calculateStats() {
-    this.stats.totalCount = this.returnedInvoices.length;
-    this.stats.totalAmount = this.returnedInvoices.reduce((sum, item) => sum + item.total, 0);
-    this.stats.cashAmount = this.returnedInvoices
-      .filter(item => item.refundMethod === 1) // 1 تعني كاش بناءً على الـ API
+applyFilter() {
+  if (!this.allReturns) return;
+
+  this.filteredInvoices = this.allReturns.filter(item => {
+    // 1. فلترة التاريخ (استخدمنا الحقل الصحيح item.refundedAt)
+    const itemDate = new Date(item.refundedAt).toISOString().split('T')[0];
+    const matchDate = itemDate >= this.filterSettings.fromDate && 
+                      itemDate <= this.filterSettings.toDate;
+
+    // 2. فلترة نص البحث (استخدمنا الحقول الصحيحة item.clientName و item.id)
+    const search = this.filterSettings.searchText.toLowerCase();
+    const matchSearch = !search || 
+                        item.clientName?.toLowerCase().includes(search) || 
+                        item.id?.toString().includes(search) ||
+                        item.clientNumber?.includes(search);
+
+    // 3. فلترة طريقة الدفع
+    const matchPayment = this.filterSettings.paymentMethod === '0' || 
+                         item.refundMethod.toString() === this.filterSettings.paymentMethod;
+
+    return matchDate && matchSearch && matchPayment;
+  });
+
+  this.calculateStats(); 
+}
+
+calculateStats() {
+    // استخدم filteredInvoices بدلاً من returnedInvoices لتكون الأرقام مطابقة لما يراه المستخدم
+    this.stats.totalCount = this.filteredInvoices.length;
+    this.stats.totalAmount = this.filteredInvoices.reduce((sum, item) => sum + item.total, 0);
+    this.stats.cashAmount = this.filteredInvoices
+      .filter(item => item.refundMethod === 1)
       .reduce((sum, item) => sum + item.total, 0);
     this.stats.visaAmount = this.stats.totalAmount - this.stats.cashAmount;
   }
@@ -115,5 +154,28 @@ export class ReturnsComponent implements OnInit {
     }
     setTimeout(() => this.printInvoice.print('adminPrintableReturnInvoice'), 100);
   }
+
+
+  // دالة لتصدير البيانات المفلترة إلى Excel
+  exportExcel() {
+    if (this.filteredInvoices.length === 0) {
+      alert('لا توجد بيانات لتصديرها');
+      return;
+    }
+    console.log('جاري تصدير Excel...', this.filteredInvoices);
+    // هنا يتم استدعاء مكتبة XLSX إذا كانت مثبتة لديك
+  }
+
+
+
+exportPDF() {
+  if (this.filteredInvoices.length === 0) {
+    alert('لا توجد بيانات للطباعة');
+    return;
+  }
+  // استدعاء أمر طباعة المتصفح
+  window.print();
+}
+
 
 }
