@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { RoleGuard } from './guards/role.guard';
 import { CashierShiftGuard } from './guards/cashier-shift.guard';
-
 import { LoginComponent } from './components/login/login.component';
 import { HomeComponent } from './components/admin/home/home.component';
 import { CashierPageComponent } from './components/cashier/cashier-page/cashier-page.component';
@@ -28,7 +27,6 @@ import { StartShiftComponent } from './components/cashier/start-shift/start-shif
 import { CategoriesComponent } from './components/admin/categories/categories.component';
 import { AdminInvoicesComponent } from './components/admin/invoices/invoices.component';
 import { PurchaseInvoiceComponent } from './components/admin/purchase-invoice/purchase-invoice.component';
-
 import { SuppliersComponent } from './components/admin/suppliers/suppliers.component';
 import { ReturnsComponent } from './components/cashier/returns/returns.component';
 
@@ -52,6 +50,7 @@ const routes: Routes = [
       { path: 'invoices', component: AdminInvoicesComponent, data: { title: 'الفواتير' } },
       { path: 'purchase-invoice', component: PurchaseInvoiceComponent, data: { title: 'فاتورة شراء' } },
       { path: 'suppliers', component: SuppliersComponent, data: { title: 'الموردين' } },
+      { path: 'returns', component: ReturnsComponent, data: { title: 'المرتجعات' } },
 
       { path: '', redirectTo: 'home', pathMatch: 'full' },
     ],

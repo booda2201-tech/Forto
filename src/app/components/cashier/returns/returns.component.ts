@@ -1,6 +1,7 @@
 // returns.component.ts
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../../services/api.service'; // تأكد من المسار
+import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
 
 @Component({
   selector: 'app-returns',
@@ -20,7 +21,10 @@ export class ReturnsComponent implements OnInit {
     visaAmount: 0
   };
 
-  constructor(private apiService: ApiService) { }
+  constructor(
+    private apiService: ApiService,
+    private printInvoice: PrintInvoiceService
+  ) { }
 
   ngOnInit(): void {
     this.fetchReturns();
@@ -91,9 +95,25 @@ export class ReturnsComponent implements OnInit {
   // ولكن حالياً سنعرض البيانات الموجودة بالفعل في الكائن
   }
 
-  // 4. دالة الطباعة
-   downloadReturnInvoice() {
-     window.print();
-   }
+  /** إظهار رقم الفاتورة الأصلي (Invoice Number) بدل الـ ID */
+  originalInvoiceNumber(item: any): string {
+    return String(
+      item?.originalInvoiceNumber ??
+      item?.invoiceNumber ??
+      item?.originalInvoiceNo ??
+      item?.originalInvoiceId ??
+      '-'
+    );
+  }
+
+  // طباعة بنفس شكل فاتورة النظام مع توضيح أنها مرتجع
+  downloadReturnInvoice(item?: any) {
+    if (item) this.selectedReturn = item;
+    if (!this.selectedReturn) {
+      alert('لا توجد بيانات مرتجع للطباعة');
+      return;
+    }
+    setTimeout(() => this.printInvoice.print('adminPrintableReturnInvoice'), 100);
+  }
 
 }

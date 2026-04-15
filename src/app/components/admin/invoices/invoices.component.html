@@ -1,7 +1,6 @@
-<div class="contt">
+<!-- <div class="contt">
   <div class="invoices-page p-2 p-md-4" dir="rtl">
 
-    <!-- Stats -->
     <div class="row g-3 mb-4 no-print stats-row-five">
       <div class="col-6 col-stat">
         <div class="card stat-card border-0 shadow-sm p-3">
@@ -38,7 +37,6 @@
       </div>
     </div>
 
-    <!-- Filters -->
     <div class="filter-bar card border-0 shadow-sm p-3 mb-4 no-print">
       <div class="row g-2">
         <div class="col-lg-4 col-md-6">
@@ -108,7 +106,6 @@
       </div>
     </div>
 
-    <!-- Table -->
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0 text-center">
@@ -177,15 +174,7 @@
                     <span *ngIf="payingInvoiceId !== invoice.invoiceId"><i class="bi bi-cash-coin"></i> دفع</span>
                     <span *ngIf="payingInvoiceId === invoice.invoiceId">جاري...</span>
                   </button>
-                  <!-- <button
-                    *ngIf="invoice.status !== 3 && invoice.status !== 4 && invoice.status !== 5"
-                    class="btn btn-sm btn-outline-warning rounded-3"
-                    (click)="openAdjustPriceModal(invoice)"
-                    [disabled]="isSavingAdjust"
-                    title="زيادة السعر / تعديل المبلغ"
-                  >
-                    <i class="bi bi-currency-exchange"></i> زيادة السعر
-                  </button> -->
+
                   <button class="btn btn-sm btn-orange text-white rounded-3 shadow-sm" (click)="openInvoice(invoice)"
                     data-bs-toggle="modal" data-bs-target="#adminInvoiceModal">
                     <i class="bi bi-printer"></i>
@@ -214,7 +203,6 @@
         </table>
       </div>
 
-      <!-- Pagination -->
       <div
         class="pagination-container p-3 border-top bg-light d-flex justify-content-between align-items-center flex-wrap gap-3"
         *ngIf="totalPages > 1">
@@ -265,7 +253,6 @@
   </div>
 </div>
 
-<!-- Modal عرض الفاتورة -->
 <div class="modal fade" id="adminInvoiceModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
     <div class="modal-content border-0 shadow-lg">
@@ -284,7 +271,7 @@
         <div class="client-data mb-3 fw-bold" style="font-size: 12px;">
           <div><strong>العميل:</strong> {{ selectedInvoice?.customerName || 'Walk-in' }}</div>
           <div><strong>الهاتف:</strong> {{ selectedInvoice?.phone || '-' }}</div>
-          <!-- <div><strong>نوع العربية:</strong> {{ selectedInvoice?.brand || '-' }}</div> -->
+          <div><strong>نوع العربية:</strong> {{ selectedInvoice?.brand || '-' }}</div>
           <div><strong>رقم العربية:</strong> {{ selectedInvoice?.plateNumber || '-' }}</div>
           <div><strong>التاريخ : </strong> {{ (selectedInvoice?.paidAt | date:'yyyy/M/d - h:mm a') || '-' }}</div>
           <div><strong>طريقة الدفع:</strong> {{ selectedInvoice ? paymentLabel(selectedInvoice.paymentMethod) : '' }}
@@ -343,7 +330,6 @@
   </div>
 </div>
 
-<!-- طريقة الدفع -->
 <div class="modal fade" id="adminPayMethodModal" tabindex="-1" aria-hidden="true" dir="rtl">
   <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
     <div class="modal-content border-0 shadow-lg">
@@ -386,7 +372,6 @@
   </div>
 </div>
 
-<!-- طلب حذف الفاتورة -->
 <div class="modal fade" id="adminDeleteInvoiceModal" tabindex="-1" aria-hidden="true" dir="rtl">
   <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
     <div class="modal-content border-0 shadow-lg">
@@ -411,7 +396,6 @@
   </div>
 </div>
 
-<!-- زيادة السعر -->
 <div class="modal fade" id="adminAdjustPriceModal" tabindex="-1" aria-hidden="true" dir="rtl">
   <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
     <div class="modal-content border-0 shadow-lg">
@@ -440,7 +424,6 @@
   </div>
 </div>
 
-<!-- محتوى تقرير تفاصيل اليوم للـ PDF (مخفي، يُلتقط بـ html2canvas) -->
 <div id="dailySummaryPdfContent" class="daily-summary-pdf-source " *ngIf="dailySummaryForPdf">
   <div class="daily-summary-inner p-0">
     <p class="daily-summary-brand">Forto Car Care Center</p>
@@ -466,18 +449,11 @@
     </div>
     <hr class="daily-summary-hr" />
     <table class="daily-summary-table">
-      <!-- <tr>
-        <td class="daily-summary-label">نقد في اليد (عهدة + كاش)</td>
-        <td class="daily-summary-value">{{ ((dailySummaryForPdf.totalCashForDay || 0) + (dailySummaryForPdf.totalReceivedPledgeForDay || 0)) | number:'1.2-2' }}</td>
-      </tr> -->
       <tr>
         <td class="daily-summary-label">دفع نقداً (Cash)</td>
         <td class="daily-summary-value ">{{ (dailySummaryForPdf.totalCashForDay || 0) | number:'1.2-2' }}</td>
       </tr>
-      <!-- <tr>
-        <td class="daily-summary-label">العهدة المستلمة</td>
-        <td class="daily-summary-value">{{ (dailySummaryForPdf.totalReceivedPledgeForDay || 0) | number:'1.2-2' }}</td>
-      </tr> -->
+
       <tr>
         <td class="daily-summary-label">دفع فيزا (Visa)</td>
         <td class="daily-summary-value">{{ (dailySummaryForPdf.totalVisaForDay || 0) | number:'1.2-2' }}</td>
@@ -491,6 +467,1153 @@
         <td class="daily-summary-value">{{ (dailySummaryForPdf.totalAmountIncludingTips || 0) | number:'1.2-2' }}</td>
       </tr>
 
+    </table>
+    <hr class="daily-summary-hr" />
+    <p class="daily-summary-footer">نظام فورتو - مراجعة الخزينة</p>
+  </div>
+</div> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="contt">
+  <div class="invoices-page p-2 p-md-4" dir="rtl">
+    <!-- Stats -->
+    <div class="row g-3 mb-4 no-print stats-row-five">
+      <div class="col-6 col-stat">
+        <div class="card stat-card border-0 shadow-sm p-3">
+          <span class="text-muted small">عدد العمليات</span>
+          <h4 class="fw-bold mb-0">{{ totalInvoicesCount }}</h4>
+        </div>
+      </div>
+
+      <div class="col-6 col-stat">
+        <div
+          class="card stat-card border-0 shadow-sm p-3 bg-orange-light text-orange"
+        >
+          <span class="small">إجمالي الدخل </span>
+          <h4 class="fw-bold mb-0">
+            {{ totalDailyAmount | number: "1.0-0" }} ج.م
+          </h4>
+        </div>
+      </div>
+
+      <!-- <div class="col-6 col-stat">
+        <div class="card stat-card border-0 shadow-sm p-3">
+          <span class="text-muted small">إجمالي الكاش</span>
+          <h4 class="fw-bold mb-0 text-success">
+            {{ totalCashAmount | number: "1.0-0" }} ج.م
+          </h4>
+        </div>
+      </div> -->
+      <div class="col-6 col-stat">
+        <div class="card stat-card border-0 shadow-sm p-3">
+          <span class="text-muted small">إجمالي الكاش</span>
+          <h4 class="fw-bold mb-0 text-success">
+            {{ finalCash | number: "1.0-0" }} ج.م
+          </h4>
+        </div>
+      </div>
+
+      <div class="col-6 col-stat">
+        <div class="card stat-card border-0 shadow-sm p-3">
+          <span class="text-muted small">إجمالي الفيزا</span>
+          <h4 class="fw-bold mb-0 text-primary">
+            {{ totalVisaAmount | number: "1.0-0" }} ج.م
+          </h4>
+        </div>
+      </div>
+      <div class="col-6 col-stat">
+        <div class="card stat-card border-0 shadow-sm p-3">
+          <span class="text-muted small">خدمات أخرى</span>
+          <h4 class="fw-bold mb-0 text-secondary">
+            {{ totalOtherAmounts | number: "1.0-0" }} ج.م
+          </h4>
+        </div>
+      </div>
+      <div class="col-6 col-stat">
+        <div
+          class="card stat-card border-0 shadow-sm p-3 bg-danger-subtle text-danger"
+          routerLink="/admin/returns"
+        >
+          <span class="small fw-medium">إجمالي المرتجع</span>
+          <h4 class="fw-bold mb-0">
+            {{ totalReturnsAmountValue | number: "1.0-0" }} ج.م
+          </h4>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar card border-0 shadow-sm p-3 mb-4 no-print">
+      <div class="row g-2">
+        <div class="col-lg-4 col-md-6">
+          <input
+            type="text"
+            class="form-control custom-input"
+            placeholder="رقم الفاتورة، اسم العميل، التليفون..."
+            [(ngModel)]="filterSearch"
+            (ngModelChange)="onSearch($event)"
+          />
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <input
+            type="date"
+            class="form-control custom-input"
+            [(ngModel)]="filterFrom"
+            (ngModelChange)="onFromChange($event)"
+          />
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <input
+            type="date"
+            class="form-control custom-input"
+            [(ngModel)]="filterTo"
+            (ngModelChange)="onToChange($event)"
+          />
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <select
+            class="form-select custom-input"
+            [(ngModel)]="filterMethod"
+            (ngModelChange)="onMethodChange($event)"
+          >
+            <option value="all">كل طرق الدفع</option>
+            <option value="cash">كاش</option>
+            <option value="visa">فيزا / ماستر كارد</option>
+            <option value="custom">مخصص</option>
+          </select>
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <select
+            class="form-select custom-input"
+            [(ngModel)]="filterStatus"
+            (ngModelChange)="onStatusFilterChange($event)"
+          >
+            <option value="">كل الفواتير</option>
+            <option value="unpaid">غير مدفوعة</option>
+            <option value="paid">مدفوعة</option>
+            <option value="cancelled">ملغاة</option>
+            <option value="pending_deletion">منتظر تأكيد الحذف</option>
+            <option value="deleted">محذوفة</option>
+          </select>
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <button
+            class="btn btn-light w-100 text-danger fw-bold"
+            (click)="exportFilteredToExcel()"
+          >
+            تصدير الفواتير
+          </button>
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <button
+            type="button"
+            class="btn btn-outline-primary w-100 fw-bold"
+            (click)="exportBubbleHopeInvoices()"
+            [disabled]="isLoadingBubbleExport"
+          >
+            <span *ngIf="!isLoadingBubbleExport"
+              ><i class="bi bi-cup-hot me-1"></i> فواتير البابل</span
+            >
+            <span *ngIf="isLoadingBubbleExport">جاري التحميل...</span>
+          </button>
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <button
+            type="button"
+            class="btn btn-orange text-white w-100 fw-bold"
+            (click)="downloadDailyDetailsPdf()"
+            [disabled]="isLoadingDailyPdf"
+          >
+            <span *ngIf="!isLoadingDailyPdf"
+              ><i class="bi bi-file-earmark-pdf me-1"></i> تفاصيل اليوم
+              PDF</span
+            >
+            <span *ngIf="isLoadingDailyPdf">جاري التحميل...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card  border-0 shadow-sm rounded-4 ">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 text-center">
+          <thead class="bg-light">
+            <tr class="text-muted small">
+              <th>رقم الفاتورة</th>
+              <th class="text-end">العميل</th>
+              <th>رقم العربية</th>
+              <th class="d-none d-md-table-cell">البنود</th>
+              <th>المبلغ</th>
+              <th>طريقة الدفع</th>
+              <th>حالة الدفع</th>
+              <th class="d-none d-lg-table-cell">التاريخ</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let invoice of invoices$ | async">
+              <td class="fw-bold text-orange">#{{ invoice.id }}</td>
+
+              <td class="text-end">
+                <div class="fw-bold text-truncate" style="max-width: 150px">
+                  {{ invoice.customerName || "Walk-in" }}
+                </div>
+                <small class="text-muted d-none d-sm-block">{{
+                  invoice.phone || "-"
+                }}</small>
+              </td>
+
+              <td class="small">
+                {{ invoice.plateNumber || "-" }}
+              </td>
+
+              <td class="d-none d-md-table-cell">
+                <span class="text-muted small">{{
+                  invoice.itemsText || "-"
+                }}</span>
+              </td>
+
+              <td>
+                <span class="fw-bold text-success">
+                  {{ invoice.total | number: "1.1-1" }} <small>ج.م</small>
+                </span>
+              </td>
+
+              <td>
+                <span
+                  [class]="
+                    invoice.paymentMethod === 1 ? 'text-primary' : 'text-purple'
+                  "
+                >
+                  <i [class]="paymentIcon(invoice.paymentMethod)"></i>
+                  {{ paymentLabel(invoice.paymentMethod) }}
+                </span>
+              </td>
+
+              <td>
+                <span
+                  *ngIf="invoice.status === 1"
+                  class="badge bg-warning text-dark"
+                  >غير مدفوعة</span
+                >
+                <span *ngIf="invoice.status === 2" class="badge bg-success"
+                  >مدفوعة</span
+                >
+                <span *ngIf="invoice.status === 3" class="badge bg-secondary"
+                  >ملغاة</span
+                >
+                <span *ngIf="invoice.status === 4" class="badge bg-info"
+                  >منتظر تأكيد الحذف</span
+                >
+                <span *ngIf="invoice.status === 5" class="badge bg-danger"
+                  >محذوفة</span
+                >
+              </td>
+
+              <td class="small text-muted d-none d-lg-table-cell">
+                {{ invoice.date }}
+              </td>
+
+              <td>
+                <!-- <div class="d-flex justify-content-center gap-2 flex-wrap">
+                  <button
+                    *ngIf="invoice.status === 1"
+                    class="btn btn-sm btn-success rounded-3"
+                    (click)="payInvoice(invoice)"
+                    [disabled]="payingInvoiceId !== null"
+                  >
+                    <span *ngIf="payingInvoiceId !== invoice.invoiceId"><i class="bi bi-cash-coin"></i> دفع</span>
+                    <span *ngIf="payingInvoiceId === invoice.invoiceId">جاري...</span>
+                  </button>
+                  <button
+                    *ngIf="invoice.status !== 3 && invoice.status !== 4 && invoice.status !== 5"
+                    class="btn btn-sm btn-outline-warning rounded-3"
+                    (click)="openAdjustPriceModal(invoice)"
+                    [disabled]="isSavingAdjust"
+                    title="زيادة السعر / تعديل المبلغ"
+                  >
+                    <i class="bi bi-currency-exchange"></i> زيادة السعر
+                  </button>
+                  <button
+                    class="btn btn-sm btn-orange text-white rounded-3 shadow-sm"
+                    (click)="openInvoice(invoice)"
+                    data-bs-toggle="modal"
+                    data-bs-target="#adminInvoiceModal"
+                  >
+                    <i class="bi bi-printer"></i>
+                  </button>
+                  <button
+                    *ngIf="invoice.status !== 4 && invoice.status !== 5"
+                    class="btn btn-sm btn-outline-danger rounded-3"
+                    (click)="openDeleteModal(invoice)"
+                    [disabled]="deletingInvoiceId !== null"
+                    title="طلب حذف الفاتورة"
+                  >
+                    <span *ngIf="deletingInvoiceId !== invoice.invoiceId"><i class="bi bi-trash"></i> </span>
+                    <span *ngIf="deletingInvoiceId === invoice.invoiceId">جاري...</span>
+                  </button>
+                  <button
+                    *ngIf="invoice.status === 2"
+                    class="btn btn-sm btn-outline-info rounded-3"
+                    (click)="openRefundModal(invoice)"
+                    title="استرجاع فاتورة"
+                  >
+                    <i class="bi bi-arrow-counterclockwise"></i> استرجاع
+                  </button>
+                </div> -->
+
+                <div class="dropdown text-center position-relative">
+                  <button
+                    class="btn btn-sm btn-light border-0 shadow-sm dropdown-toggle custom-dropdown-btn"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    data-bs-display="static"
+                    aria-expanded="false"
+                  >
+                    إجراءات
+                  </button>
+
+                  <ul
+                    class="dropdown-menu dropdown-menu-end shadow border-0 animate slideIn"
+                  >
+                    <li *ngIf="invoice.status === 1">
+                      <button
+                        class="dropdown-item py-2 text-success"
+                        (click)="payInvoice(invoice)"
+                      >
+                        <i class="bi bi-cash-coin me-2"></i> دفع الفاتورة
+                      </button>
+                    </li>
+                    <li
+                      *ngIf="
+                        invoice.status !== 3 &&
+                        invoice.status !== 4 &&
+                        invoice.status !== 5
+                      "
+                    >
+                      <button
+                        class="dropdown-item py-2 text-warning"
+                        (click)="openAdjustPriceModal(invoice)"
+                      >
+                        <i class="bi bi-currency-exchange me-2"></i> تعديل السعر
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="dropdown-item py-2"
+                        (click)="openInvoice(invoice)"
+                        data-bs-toggle="modal"
+                        data-bs-target="#adminInvoiceModal"
+                      >
+                        <i class="bi bi-printer me-2 text-orange"></i> طباعة
+                        الفاتورة
+                      </button>
+                    </li>
+                    <li *ngIf="invoice.status === 2">
+                      <button
+                        class="dropdown-item py-2 text-info"
+                        (click)="openRefundModal(invoice)"
+                      >
+                        <i class="bi bi-arrow-counterclockwise me-2"></i> طلب
+                        استرجاع
+                      </button>
+                    </li>
+                    <li><hr class="dropdown-divider opacity-50" /></li>
+                    <li *ngIf="invoice.status !== 4 && invoice.status !== 5">
+                      <button
+                        class="dropdown-item py-2 text-danger"
+                        (click)="openDeleteModal(invoice)"
+                      >
+                        <i class="bi bi-trash3 me-2"></i> حذف
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </td>
+            </tr>
+
+            <tr *ngIf="((invoices$ | async)?.length || 0) === 0">
+              <td colspan="9" class="py-5 text-muted">
+                <i class="bi bi-inbox h1 d-block mb-2"></i>
+                لا توجد فواتير مطابقة للبحث
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div
+        class="pagination-container p-3 border-top bg-light d-flex justify-content-between align-items-center flex-wrap gap-3"
+        *ngIf="totalPages > 1"
+      >
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">عرض:</span>
+          <select
+            class="form-select form-select-sm"
+            style="width: auto"
+            [value]="pageSize"
+            (change)="changePageSize(+$any($event.target).value)"
+          >
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+            <option [value]="50">50</option>
+            <option [value]="100">100</option>
+          </select>
+          <span class="text-muted small"
+            >من {{ totalInvoicesCount }} فاتورة</span
+          >
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">
+            عرض {{ startIndex }} - {{ endIndex }} من {{ totalInvoicesCount }}
+          </span>
+        </div>
+
+        <nav>
+          <ul class="pagination mb-0 pagination-sm">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <a
+                class="page-link"
+                href="javascript:void(0)"
+                (click)="previousPage()"
+                aria-label="السابق"
+              >
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+
+            <li
+              class="page-item"
+              *ngFor="let pageNum of getPageNumbers()"
+              [class.active]="pageNum === currentPage"
+              [class.disabled]="pageNum === -1"
+            >
+              <a
+                class="page-link"
+                href="javascript:void(0)"
+                *ngIf="pageNum !== -1"
+                (click)="goToPage(pageNum)"
+              >
+                {{ pageNum }}
+              </a>
+              <span class="page-link" *ngIf="pageNum === -1">...</span>
+            </li>
+
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <a
+                class="page-link"
+                href="javascript:void(0)"
+                (click)="nextPage()"
+                aria-label="التالي"
+              >
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal عرض الفاتورة -->
+<div class="modal fade" id="adminInvoiceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 400px">
+    <div class="modal-content border-0 shadow-lg">
+      <div
+        class="modal-body p-4 forto-invoice-container"
+        id="adminPrintableInvoice"
+      >
+        <div class="text-center mb-3">
+          <img
+            src="../../../../assets/imeg/logoforto.jpeg"
+            class="brand-logo mb-1"
+            style="
+              width: 70px !important;
+              height: auto !important;
+              max-width: 70px !important;
+            "
+          />
+          <h5 class="fw-bold m-0">FORTO CAR CARE CENTER</h5>
+          <div class="">#{{ selectedInvoice?.id }}</div>
+        </div>
+
+        <hr class="my-2" style="border-top: 1px dashed #000" />
+
+        <div class="client-data mb-3 fw-bold" style="font-size: 12px">
+          <div>
+            <strong>العميل:</strong>
+            {{ selectedInvoice?.customerName || "Walk-in" }}
+          </div>
+          <div>
+            <strong>الهاتف:</strong> {{ selectedInvoice?.phone || "-" }}
+          </div>
+          <!-- <div>
+            <strong>نوع العربية:</strong> {{ selectedInvoice?.brand || "-" }}
+          </div> -->
+          <div>
+            <strong>رقم العربية:</strong>
+            {{ selectedInvoice?.plateNumber || "-" }}
+          </div>
+          <div>
+            <strong>التاريخ : </strong>
+            {{ (selectedInvoice?.paidAt | date: "yyyy/M/d - h:mm a") || "-" }}
+          </div>
+          <div>
+            <strong>طريقة الدفع:</strong>
+            {{
+              selectedInvoice ? paymentLabel(selectedInvoice.paymentMethod) : ""
+            }}
+          </div>
+        </div>
+
+        <table
+          class="table table-sm invoice-table mb-2"
+          style="font-size: 12px"
+        >
+          <thead class="border-bottom">
+            <tr>
+              <th class="text-end">البند</th>
+              <th class="text-center"></th>
+              <th class="text-center">سعر الوحدة</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let line of selectedInvoice?.lines">
+              <td class="text-end">{{ line.description }}</td>
+              <td class="text-center">
+                <span *ngIf="line.qty != null && line.qty !== undefined"
+                  >x{{ line.qty }}</span
+                >
+              </td>
+              <td class="text-center fw-bold">{{ line.unitPrice }} ج.م</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <hr class="my-2" style="border-top: 1px dashed #000" />
+
+        <div style="font-size: 13px; font-weight: bold">
+          <div class="d-flex justify-content-between">
+            <span>المجموع:</span>
+            <span>{{ selectedInvoice?.subTotal | number: "1.2-2" }} ج.م</span>
+          </div>
+          <div class="d-flex justify-content-between fw-bold">
+            <span
+              >الضريبة ({{
+                selectedInvoice?.taxRate | number: "1.2-2"
+              }}%):</span
+            >
+            <span>{{ selectedInvoice?.taxAmount | number: "1.2-2" }} ج.م</span>
+          </div>
+          <div
+            class="d-flex justify-content-between fw-bold mt-1"
+            style="font-size: 15px"
+          >
+            <span>الإجمالي:</span>
+            <span>{{ selectedInvoice?.total | number: "1.2-2" }} ج.م</span>
+          </div>
+        </div>
+
+        <div class="text-center mt-4" style="font-size: 11px">
+          <div>شكراً لزيارتكم فورتو</div>
+          <div class="mt-1">نظام فورتو لإدارة المغاسل</div>
+        </div>
+      </div>
+
+      <div class="modal-footer no-print justify-content-center bg-light">
+        <button
+          type="button"
+          class="btn btn-warning text-white px-5 rounded-pill shadow-sm fw-bold print-btn"
+          (click)="downloadInvoice()"
+        >
+          <i class="bi bi-printer me-2"></i> طباعة الفاتورة
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== مودال الاسترجاع ===== -->
+<div
+  class="modal fade"
+  id="adminRefundModal"
+  tabindex="-1"
+  aria-labelledby="refundModalLabel"
+  aria-hidden="true"
+  dir="rtl"
+>
+  <div
+    class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+  >
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <!-- Header -->
+      <div
+        class="modal-header bg-danger text-white rounded-top-4 d-flex align-items-center px-4 py-3"
+        style="
+          justify-content: space-between !important;
+          flex-direction: row-reverse !important;
+        "
+      >
+        <button
+          type="button"
+          class="btn-close btn-close-white m-0 shadow-none"
+          (click)="closeRefundModal()"
+          aria-label="Close"
+        ></button>
+
+        <h5
+          class="modal-title fw-bold m-0 d-flex align-items-center"
+          id="refundModalLabel"
+          style="flex-grow: 1"
+        >
+          <i class="bi bi-arrow-counterclockwise me-2 fs-4"></i>
+          <span>استرجاع فاتورة رقم</span>
+          <span class="text-warning ms-2">#{{ invoiceToRefund?.id }}</span>
+        </h5>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body p-4">
+        <!-- بيانات الفاتورة الأصلية -->
+        <div class="alert alert-light border rounded-3 mb-4 p-3">
+          <div class="row g-2 text-end small">
+            <div class="col-6 col-md-3">
+              <div class="text-muted">العميل</div>
+              <div class="fw-bold">
+                {{ invoiceToRefund?.customerName || "Walk-in" }}
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="text-muted">رقم السيارة</div>
+              <div class="fw-bold">
+                {{ invoiceToRefund?.plateNumber || "-" }}
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="text-muted">التاريخ</div>
+              <div class="fw-bold">{{ invoiceToRefund?.date }}</div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="text-muted">إجمالي الفاتورة</div>
+              <div class="fw-bold text-success">
+                {{ invoiceToRefund?.total | number: "1.1-1" }} ج.م
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- تعليمات -->
+        <p class="text-muted small mb-3">
+          <i class="bi bi-info-circle text-info me-1"></i>
+          اختر الأصناف المراد استرجاعها وحدد الكمية لكل صنف.
+        </p>
+
+        <!-- جدول الأصناف -->
+        <div class="table-responsive rounded-3 border">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+              <tr class="text-center">
+                <th style="width: 48px">اختيار</th>
+                <th class="text-end">الصنف</th>
+                <th>الكمية الأصلية</th>
+                <th>كمية الاسترجاع</th>
+                <th>سعر الوحدة</th>
+                <th>إجمالي الاسترجاع</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let line of refundLines"
+                [class.table-danger]="line.selected"
+                [style.opacity]="line.isProduct ? '1' : '0.6'"
+                [style.cursor]="line.isProduct ? 'pointer' : 'not-allowed'"
+                (click)="line.isProduct ? toggleRefundLine(line) : null"
+              >
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <div
+                    class="form-check d-flex justify-content-center"
+                    *ngIf="line.isProduct"
+                  >
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      [checked]="line.selected"
+                      (change)="toggleRefundLine(line)"
+                      style="width: 1.3em; height: 1.3em; cursor: pointer"
+                    />
+                  </div>
+                  <i
+                    *ngIf="!line.isProduct"
+                    class="bi bi-slash-circle text-muted"
+                    title="خدمة غير قابلة للمرتجع"
+                  ></i>
+                </td>
+
+                <td class="text-end fw-semibold">
+                  {{ line.description }}
+                  <span
+                    *ngIf="!line.isProduct"
+                    class="badge bg-light text-dark border ms-2 small"
+                    style="font-size: 0.65rem"
+                    >خدمة</span
+                  >
+                </td>
+
+                <td class="text-center">
+                  <span class="badge bg-secondary">{{ line.qty }}</span>
+                </td>
+
+                <td class="text-center" (click)="$event.stopPropagation()">
+                <input
+                  *ngIf="line.isProduct"
+                  type="number"
+                  class="form-control form-control-sm text-center mx-auto"
+                  style="width: 80px"
+                  [disabled]="!line.selected"
+                  [ngModel]="line.refundQty"
+                  (input)="onQtyInputChange($event, line)"
+                  [min]="1"
+                  [max]="line.qty"
+                />
+                  <span *ngIf="!line.isProduct" class="text-muted">—</span>
+                </td>
+
+                <td class="text-center text-muted small">
+                  {{ line.unitPrice | number: "1.1-1" }} ج.م
+                </td>
+
+                <td class="text-center">
+                  <span
+                    *ngIf="line.selected && line.isProduct"
+                    class="fw-bold text-danger"
+                  >
+                    -
+                    {{ line.unitPrice * line.refundQty | number: "1.1-1" }} ج.م
+                  </span>
+                  <span
+                    *ngIf="!line.selected || !line.isProduct"
+                    class="text-muted"
+                    >—</span
+                  >
+                </td>
+              </tr>
+
+              <!-- فارغ -->
+              <tr *ngIf="refundLines.length === 0">
+                <td colspan="6" class="text-center text-muted py-4">
+                  <i class="bi bi-inbox h4 d-block mb-2"></i>
+                  لا توجد أصناف في هذه الفاتورة
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+<div class="mb-3 mt-4 text-end" *ngIf="refundSelectedCount > 0">
+  <label for="refundReason" class="form-label fw-bold small text-muted">
+    <i class="bi bi-chat-left-text me-1"></i> سبب الاسترجاع
+  </label>
+  <textarea
+    class="form-control border-danger-subtle focus-ring focus-ring-danger"
+    id="refundReason"
+    rows="2"
+    [(ngModel)]="refundReason"
+    placeholder="اكتب سبب الاسترجاع هنا (اختياري)..."
+    style="font-size: 0.9rem;"
+  ></textarea>
+</div>
+
+        <!-- ملخص الاسترجاع -->
+        <div
+          class="mt-4 p-3 rounded-3 border border-danger bg-danger bg-opacity-10 text-end"
+          *ngIf="refundSelectedCount > 0"
+        >
+          <div
+            class="d-flex justify-content-between align-items-center flex-wrap gap-2"
+          >
+            <div class="text-muted small">
+              <i class="bi bi-check2-square me-1"></i>
+              {{ refundSelectedCount }} صنف مختار
+            </div>
+            <div class="fs-5 fw-bold text-danger">
+              إجمالي المرتجع:
+              <span class="fs-4"
+                >- {{ refundTotal | number: "1.1-1" }} ج.م</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div
+        class="modal-footer border-0 px-4 pb-4 d-flex justify-content-between"
+      >
+        <button
+          type="button"
+          class="btn btn-outline-secondary rounded-3 px-4"
+          (click)="closeRefundModal()"
+        >
+          إلغاء
+        </button>
+        <button
+          type="button"
+            class="btn btn-danger rounded-3 px-4 fw-bold"
+            (click)="confirmRefund()"
+            [disabled]="isProcessingRefund || refundSelectedCount === 0 || !refundReason.trim()"
+          >
+          <span *ngIf="!isProcessingRefund">
+            <i class="bi bi-arrow-counterclockwise me-2"></i>
+            تأكيد الاسترجاع (- {{ refundTotal | number: "1.1-1" }} ج.م)
+          </span>
+          <span *ngIf="isProcessingRefund">
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            جاري الاسترجاع...
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- طريقة الدفع -->
+<div
+  class="modal fade"
+  id="adminPayMethodModal"
+  tabindex="-1"
+  aria-hidden="true"
+  dir="rtl"
+>
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 380px">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-wallet2 me-2"></i> طريقة الدفع
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="closePayModal()"
+        ></button>
+      </div>
+      <div class="modal-body" *ngIf="invoiceToPay">
+        <p class="mb-3">
+          الإجمالي:
+          <strong class="text-success"
+            >{{ payModalTotal | number: "1.2-2" }} ج.م</strong
+          >
+        </p>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <button
+            type="button"
+            class="btn rounded-3"
+            [class.btn-primary]="payMethod === 'cash'"
+            [class.btn-outline-primary]="payMethod !== 'cash'"
+            (click)="payMethod = 'cash'"
+          >
+            <i class="bi bi-cash-coin me-1"></i> كاش
+          </button>
+          <button
+            type="button"
+            class="btn rounded-3"
+            [class.btn-primary]="payMethod === 'visa'"
+            [class.btn-outline-secondary]="payMethod !== 'visa'"
+            (click)="payMethod = 'visa'"
+          >
+            <i class="bi bi-credit-card me-1"></i> فيزا
+          </button>
+          <button
+            type="button"
+            class="btn rounded-3"
+            [class.btn-primary]="payMethod === 'custom'"
+            [class.btn-outline-secondary]="payMethod !== 'custom'"
+            (click)="payMethod = 'custom'"
+          >
+            <i class="bi bi-cash-stack me-1"></i> مخصص
+          </button>
+        </div>
+        <div class="mb-3" *ngIf="payMethod === 'custom'">
+          <label class="form-label">مبلغ الكاش (ج.م)</label>
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="payCustomCashAmount"
+            min="0"
+            [max]="payModalTotal"
+            step="0.01"
+          />
+          <small class="text-muted"
+            >الباقي فيزا:
+            <strong
+              >{{ payModalVisaAmount | number: "1.2-2" }} ج.م</strong
+            ></small
+          >
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button
+          type="button"
+          class="btn btn-outline-secondary rounded-3"
+          (click)="closePayModal()"
+        >
+          إلغاء
+        </button>
+        <button
+          type="button"
+          class="btn btn-success rounded-3"
+          (click)="confirmPay()"
+          [disabled]="payingInvoiceId !== null"
+        >
+          <span *ngIf="payingInvoiceId !== invoiceToPay?.invoiceId"
+            >تأكيد الدفع</span
+          >
+          <span *ngIf="payingInvoiceId === invoiceToPay?.invoiceId"
+            >جاري...</span
+          >
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- طلب حذف الفاتورة -->
+<div
+  class="modal fade"
+  id="adminDeleteInvoiceModal"
+  tabindex="-1"
+  aria-hidden="true"
+  dir="rtl"
+>
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 420px">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold text-danger">
+          <i class="bi bi-trash me-2"></i> طلب حذف الفاتورة
+        </h5>
+      </div>
+      <div class="modal-body" *ngIf="invoiceToDelete">
+        <p class="mb-2">
+          فاتورة: <strong>{{ invoiceToDelete.id }}</strong>
+        </p>
+        <label class="form-label"
+          >سبب طلب الحذف <span class="text-danger">*</span></label
+        >
+        <textarea
+          class="form-control"
+          [(ngModel)]="deletionReason"
+          rows="3"
+          placeholder="مثال: خطأ في الإدخال، طلب العميل..."
+        ></textarea>
+      </div>
+      <div class="modal-footer border-0">
+        <button
+          type="button"
+          class="btn btn-outline-secondary rounded-3"
+          (click)="closeDeleteModal()"
+        >
+          إلغاء
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger rounded-3"
+          (click)="confirmRequestDeletion()"
+          [disabled]="deletingInvoiceId !== null || !deletionReason.trim()"
+        >
+          <span *ngIf="deletingInvoiceId === null">إرسال طلب الحذف</span>
+          <span *ngIf="deletingInvoiceId !== null">جاري...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- زيادة السعر -->
+<div
+  class="modal fade"
+  id="adminAdjustPriceModal"
+  tabindex="-1"
+  aria-hidden="true"
+  dir="rtl"
+>
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 380px">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold text-warning">
+          <i class="bi bi-currency-exchange me-2"></i> زيادة السعر
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="closeAdjustPriceModal()"
+        ></button>
+      </div>
+      <div class="modal-body" *ngIf="invoiceToAdjust">
+        <p class="mb-2">
+          رقم الفاتورة: <strong>#{{ invoiceToAdjust.id }}</strong>
+        </p>
+        <p class="text-muted small mb-2">
+          المبلغ الحالي:
+          <strong>{{ invoiceToAdjust.total | number: "1.2-2" }} ج.م</strong>
+        </p>
+        <label class="form-label fw-bold">المبلغ الجديد (بعد الزيادة)</label>
+        <input
+          type="number"
+          class="form-control"
+          min="0"
+          step="0.01"
+          [(ngModel)]="adjustTotalValue"
+          placeholder="0"
+        />
+        <small class="text-muted"
+          >يتم إرسال هذا المبلغ إلى الفاتورة كـ adjusted total.</small
+        >
+      </div>
+      <div class="modal-footer border-0">
+        <button
+          type="button"
+          class="btn btn-outline-secondary rounded-3"
+          (click)="closeAdjustPriceModal()"
+        >
+          إلغاء
+        </button>
+        <button
+          type="button"
+          class="btn btn-warning text-dark rounded-3 fw-bold"
+          (click)="confirmAdjustPrice()"
+          [disabled]="isSavingAdjust || adjustTotalValue < 0"
+        >
+          <span *ngIf="!isSavingAdjust">تأكيد</span>
+          <span *ngIf="isSavingAdjust">جاري الحفظ...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- محتوى تقرير تفاصيل اليوم للـ PDF (مخفي، يُلتقط بـ html2canvas) -->
+<div
+  id="dailySummaryPdfContent"
+  class="daily-summary-pdf-source"
+  *ngIf="dailySummaryForPdf"
+>
+  <div class="daily-summary-inner p-0">
+    <p class="daily-summary-brand">Forto Car Care Center</p>
+    <h2 class="daily-summary-title">سجل المعاملات والمدفوعات</h2>
+    <p class="daily-summary-meta">
+      كاشير مسؤول:
+      {{
+        dailySummaryForPdf.shifts?.[0]?.responsibleEmployeeName || "ملخص اليوم"
+      }}
+    </p>
+    <p class="daily-summary-meta">
+      وردية رقم: {{ dailySummaryForPdf.shifts?.[0]?.cashierShiftId ?? "-" }}
+    </p>
+    <p class="daily-summary-meta">
+      وردية بدأت:
+      {{
+        dailySummaryForPdf.shifts?.[0]?.openedAt
+          ? (dailySummaryForPdf.shifts[0].openedAt | date: "yyyy-MM-dd h:mm a")
+          : "-"
+      }}
+    </p>
+    <p class="daily-summary-meta">
+      وردية انتهت:
+      {{
+        dailySummaryForPdf.shifts?.[0]?.closedAt
+          ? (dailySummaryForPdf.shifts[0].closedAt | date: "yyyy-MM-dd h:mm a")
+          : "لم تنتهِ"
+      }}
+    </p>
+    <p class="daily-summary-meta">
+      التاريخ: {{ (dailySummaryForPdf.date | date: "yyyy-MM-dd") || "-" }}
+    </p>
+    <div
+      class="daily-summary-invoices"
+      *ngIf="dailySummaryForPdf.paidInvoices?.length"
+    >
+      <p class="daily-summary-invoices-title">فواتير اليوم المدفوعة</p>
+      <ng-container
+        *ngFor="let inv of dailySummaryForPdf.paidInvoices; let last = last"
+      >
+        <div class="daily-summary-invoice-row">
+          <span>رقم الفاتورة: {{ inv.invoiceNumber }}</span>
+          <span>رقم العربية: {{ inv.plateNumber }}</span>
+          <span>السعر المدفوع: {{ inv.total | number: "1.2-2" }} ج.م</span>
+        </div>
+        <hr class="daily-summary-invoice-hr" *ngIf="!last" />
+      </ng-container>
+    </div>
+    <hr class="daily-summary-hr" />
+    <table class="daily-summary-table">
+      <!-- <tr>
+        <td class="daily-summary-label">نقد في اليد (عهدة + كاش)</td>
+        <td class="daily-summary-value">{{ ((dailySummaryForPdf.totalCashForDay || 0) + (dailySummaryForPdf.totalReceivedPledgeForDay || 0)) | number:'1.2-2' }}</td>
+      </tr> -->
+      <tr>
+        <td class="daily-summary-label">دفع نقداً (Cash)</td>
+        <td class="daily-summary-value">
+          {{ dailySummaryForPdf.totalCashForDay || 0 | number: "1.2-2" }}
+        </td>
+      </tr>
+      <!-- <tr>
+        <td class="daily-summary-label">العهدة المستلمة</td>
+        <td class="daily-summary-value">{{ (dailySummaryForPdf.totalReceivedPledgeForDay || 0) | number:'1.2-2' }}</td>
+      </tr> -->
+      <tr>
+        <td class="daily-summary-label">دفع فيزا (Visa)</td>
+        <td class="daily-summary-value">
+          {{ dailySummaryForPdf.totalVisaForDay || 0 | number: "1.2-2" }}
+        </td>
+      </tr>
+      <tr>
+        <td class="daily-summary-label">خدمات أخرى</td>
+        <td class="daily-summary-value">
+          {{ dailySummaryForPdf.totalTipsForDay || 0 | number: "1.2-2" }}
+        </td>
+      </tr>
+      <tr>
+        <td class="daily-summary-label">المجموع</td>
+        <td class="daily-summary-value">
+          {{
+            dailySummaryForPdf.totalAmountIncludingTips || 0 | number: "1.2-2"
+          }}
+        </td>
+      </tr>
     </table>
     <hr class="daily-summary-hr" />
     <p class="daily-summary-footer">نظام فورتو - مراجعة الخزينة</p>

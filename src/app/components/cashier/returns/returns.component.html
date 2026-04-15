@@ -79,7 +79,7 @@
             <div class="fw-bold text-dark">{{item.clientName}}</div>
             <small class="text-muted">{{item.phone}}</small>
           </td>
-          <td><span class="badge bg-secondary-subtle text-secondary border">#{{item.originalInvoiceId}}</span></td>
+          <td><span class="badge bg-secondary-subtle text-secondary border">{{ originalInvoiceNumber(item) }}</span></td>
           <td class="small text-muted text-wrap" style="max-width: 200px;">{{item.items}}</td>
           <td class="fw-bold text-danger">{{item.total | number:'1.2-2'}} ج.م</td>
           <td>
@@ -100,7 +100,7 @@
               
               <ul class="dropdown-menu shadow-sm border-0">
                 <li><a class="dropdown-item py-2"><i class="bi bi-eye me-2"></i> عرض التفاصيل</a></li>
-                <li><a class="dropdown-item py-2"><i class="bi bi-printer me-2"></i> طباعة إيصال</a></li>
+                <li><a class="dropdown-item py-2" (click)="downloadReturnInvoice(item)"><i class="bi bi-printer me-2"></i> طباعة إيصال</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" (click)="deleteInvoice(item.id)"><i class="bi bi-trash me-2"></i> حذف الفاتوره</a></li>
               </ul>
@@ -249,7 +249,7 @@
                         <i class="bi bi-eye me-2"></i> عرض التفاصيل
                       </a>
                 </li>
-                <li><a class="dropdown-item py-2"><i class="bi bi-printer me-2"></i> طباعة إيصال</a></li>
+                <li><a class="dropdown-item py-2" (click)="downloadReturnInvoice(item)"><i class="bi bi-printer me-2"></i> طباعة إيصال</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item py-2 text-danger" (click)="deleteInvoice(item.id)"><i class="bi bi-trash me-2"></i> حذف الفاتورة</a></li>
               </ul>
@@ -359,61 +359,62 @@
 </div> -->
 
 <div class="modal fade" id="adminReturnInvoiceModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-md">
-    <div class="modal-content border-0 shadow-lg rounded-4">
-<div class="modal-header border-0 bg-light rounded-top-4 d-flex flex-row-reverse justify-content-between align-items-center">
-  <button type="button" class="btn-close m-0" data-bs-dismiss="modal"></button>
-  <h5 class="modal-title fw-bold text-danger">تفاصيل مرتجع</h5>
-</div>
-      
-      <div class="modal-body p-4" *ngIf="selectedReturn">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 430px;">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-body p-4 forto-invoice-container" id="adminPrintableReturnInvoice">
         <div class="text-center mb-3">
-          <h6 class="fw-bold">FORTO CAR CARE</h6>
-          <div class="badge bg-danger-subtle text-danger">#RET-{{ selectedReturn.id }}</div>
+          <img src="../../../../assets/imeg/logoforto.jpeg" class="brand-logo mb-1" style="width: 70px !important; height: auto !important; max-width: 70px !important;">
+          <h5 class="fw-bold m-0">FORTO CAR CARE CENTER</h5>
+          <div class="fw-semibold text-danger mt-1">فاتورة مرتجع</div>
+          <div>#RET-{{ selectedReturn?.id }}</div>
         </div>
 
-           <div class="small mb-3 border-bottom pb-2">
-             <div class="row g-2">
-               <div class="col-6">
-                 <strong>العميل:</strong> {{ selectedReturn?.clientName }}
-               </div>
-               <div class="col-6 text-start">
-                 <strong>الهاتف:</strong> {{ selectedReturn?.clientNumber }}
-               </div>
-               
-               <div class="col-6">
-                 <strong>التاريخ:</strong> {{ selectedReturn?.refundedAt | date:'yyyy-MM-dd HH:mm' }}
-               </div>
-               <div class="col-6 text-start">
-                 <strong>الطريقة:</strong> {{ paymentLabel(selectedReturn?.refundMethod) }}
-               </div>
-             </div>
-           </div>
+        <hr class="my-2" style="border-top: 1px dashed #000;">
 
-        <table class="table table-sm border-top">
-          <thead>
-            <tr class="small text-muted">
-              <th>الوصف</th>
-              <th class="text-center">السعر</th>
+        <div class="client-data mb-3 fw-bold" style="font-size: 12px;">
+          <div><strong>العميل:</strong> {{ selectedReturn?.clientName || 'Walk-in' }}</div>
+          <div><strong>الهاتف:</strong> {{ selectedReturn?.clientNumber || '-' }}</div>
+          <div><strong>رقم الفاتورة الأصلية:</strong> {{ originalInvoiceNumber(selectedReturn) }}</div>
+          <div><strong>التاريخ:</strong> {{ (selectedReturn?.refundedAt | date:'yyyy/M/d - h:mm a') || '-' }}</div>
+          <div><strong>طريقة الدفع:</strong> {{ paymentLabel(selectedReturn?.refundMethod) }}</div>
+        </div>
+
+        <table class="table table-sm invoice-table mb-2" style="font-size: 12px;">
+          <thead class="border-bottom">
+            <tr>
+              <th class="text-end">البند</th>
+              <th class="text-center"></th>
+              <th class="text-center">سعر الوحدة</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let line of selectedReturn.lines">
-              <td>{{ line.description }}</td>
-              <td class="text-center">{{ line.unitPrice | number:'1.2-2' }} ج.م</td>
+            <tr *ngFor="let line of selectedReturn?.lines">
+              <td class="text-end">{{ line.description }}</td>
+              <td class="text-center"><span *ngIf="line.qty != null && line.qty !== undefined">x{{ line.qty }}</span></td>
+              <td class="text-center fw-bold">{{ line.unitPrice | number:'1.2-2' }} ج.م</td>
             </tr>
           </tbody>
         </table>
 
-        <div class="d-flex justify-content-between fw-bold text-danger border-top pt-2">
-          <span>الإجمالي المسترد:</span>
-          <span>{{ selectedReturn.total | number:'1.2-2' }} ج.م</span>
+        <hr class="my-2" style="border-top: 1px dashed #000;">
+
+        <div style="font-size: 13px; font-weight: bold;">
+          <div class="d-flex justify-content-between fw-bold mt-1 text-danger" style="font-size: 15px;">
+            <span>الإجمالي المسترد:</span>
+            <span>{{ selectedReturn?.total | number:'1.2-2' }} ج.م</span>
+          </div>
+        </div>
+
+        <div class="text-center mt-4" style="font-size: 11px;">
+          <div>شكراً لزيارتكم فورتو</div>
+          <div class="mt-1">نظام فورتو لإدارة المغاسل</div>
         </div>
       </div>
 
-      <div class="modal-footer border-0 bg-light">
-        <button type="button" class="btn btn-danger w-100 rounded-pill" (click)="downloadReturnInvoice()">
-          <i class="bi bi-printer me-2"></i>طباعة
+      <div class="modal-footer no-print justify-content-center bg-light">
+        <button type="button" class="btn btn-warning text-white px-5 rounded-pill shadow-sm fw-bold print-btn"
+          (click)="downloadReturnInvoice()">
+          <i class="bi bi-printer me-2"></i> طباعة الفاتورة
         </button>
       </div>
     </div>

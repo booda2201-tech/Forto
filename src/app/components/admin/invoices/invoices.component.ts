@@ -19,6 +19,8 @@ import { InvoicesRefreshService } from 'src/app/services/invoices-refresh.servic
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 type InvoiceLineUi = {
   lineId: number;
@@ -26,6 +28,17 @@ type InvoiceLineUi = {
   qty: number;
   unitPrice: number;
   total: number;
+};
+
+type RefundLineUi = {
+  lineId: number;
+  description: string;
+  qty: number;
+  unitPrice: number;
+  total: number;
+  selected: boolean;
+  refundQty: number;
+  isProduct: boolean; // <--- ضيف السطر ده هنا
 };
 
 /** status: 1 = Unpaid, 2 = Paid, 3 = Cancelled, 4 = Pending deletion, 5 = Deleted */
@@ -51,6 +64,7 @@ type InvoiceUi = {
   lines: InvoiceLineUi[];
 };
 
+
 @Component({
   selector: 'app-admin-invoices',
   templateUrl: './invoices.component.html',
@@ -58,18 +72,22 @@ type InvoiceUi = {
 })
 export class AdminInvoicesComponent implements OnInit, OnDestroy {
   selectedInvoice: InvoiceUi | null = null;
+  invoiceToRefund: InvoiceUi | null = null;
+  refundLines: RefundLineUi[] = [];
+  isProcessingRefund = false;
+  refundReason: string = '';
 
   private deletionHubSub: Subscription | null = null;
   private refreshSub: Subscription | null = null;
 
   branchId = 1;
-  categoryProductId=1;
   get cashierId(): number {
     return this.auth.getEmployeeId() ?? 0;
   }
 
   totalInvoicesCount = 0;
   totalDailyAmount = 0;
+  totalRefundedAmount = 0;
 
   /** تاريخ اليوم حسب التوقيت المحلي (ليس UTC) بصيغة YYYY-MM-DD */
   private static getLocalDateString(d?: Date): string {
@@ -103,11 +121,22 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
   private lastSummary: {
     totalCount?: number;
     totalRevenue?: number;
+    totalReturns?: number;
     totalCashAmount?: number;
     totalVisaAmount?: number;
     totalTips?: number;
     totalAmountIncludingTips?: number;
   } | null = null;
+
+get refundTotal(): number {
+  return this.refundLines
+    .filter(l => l.selected && (l as any).isProduct)
+    .reduce((sum, l) => sum + l.unitPrice * l.refundQty, 0);
+}
+
+get refundSelectedCount(): number {
+  return this.refundLines.filter(l => l.selected && (l as any).isProduct).length;
+}
 
   get currentPage(): number {
     return (this.page$ as any).value || 1;
@@ -144,6 +173,26 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
     return (this.lastSummary as any)?.totalTips ?? 0;
   }
 
+  // get totalRefundedAmountValue(): number {
+  //   return (this.lastSummary as any)?.totalRefundedAmount ?? 0;
+  //   // ملاحظة: تأكد من اسم الحقل اللي راجع من الـ API (غالباً بيكون totalRefundedAmount أو totalRefunded)
+  // }
+
+    get totalReturnsAmountValue(): number {
+    return (this.lastSummary as any)?.totalReturns ?? 0;
+    // ملاحظة: تأكد من اسم الحقل اللي راجع من الـ API (غالباً بيكون totalRefundedAmount أو totalRefunded)
+  }
+
+// تعديل الحسبة في الملف البرمجي (TS)
+get finalCash(): number {
+  const cash = this.lastSummary?.totalCashAmount ?? 0;
+  const refunded = (this.lastSummary as any)?.totalRefundedAmount ?? 0;
+  return Math.max(0, cash - refunded);
+}
+
+
+
+
   invoices$: Observable<InvoiceUi[]> = combineLatest([
     this.searchTerm$,
     this.from$,
@@ -177,6 +226,8 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
         this.lastSummary?.totalAmountIncludingTips ??
         this.lastSummary?.totalRevenue ??
         list.reduce((acc, inv) => acc + (inv.total || 0), 0);
+
+        this.totalRefundedAmount = (this.lastSummary as any)?.totalRefundedAmount ?? 0;
     }),
     shareReplay(1),
   );
@@ -336,6 +387,8 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
         subTotal: Number(x.subTotal ?? 0),
         discount: Number(x.discount ?? 0),
         total,
+        taxRate: Number(x.taxRate ),
+        taxAmount: Number(x.taxAmount ),
         cost,
         profit,
         customerName: String(x.customerName ?? ''),
@@ -343,8 +396,6 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
         plateNumber: x.plateNumber != null ? String(x.plateNumber) : undefined,
         itemsText: String(x.itemsText ?? ''),
         lines,
-        taxRate: Number(x.taxRate ?? 0),
-        taxAmount: Number(x.taxAmount ?? 0),
       } as InvoiceUi;
     });
   }
@@ -384,6 +435,146 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
     const cash = Number(this.payCustomCashAmount) || 0;
     return Math.max(0, this.payModalTotal - cash);
   }
+
+  // دالة مساعدة للتأكد من منطقية الكميات قبل التفعيل
+get isRefundValid(): boolean {
+  const selectedLines = this.refundLines.filter(l => l.selected);
+  if (selectedLines.length === 0) return false;
+
+  // التأكد أن كل صنف مختار كميته بين 1 والكمية الأصلية
+  return selectedLines.every(l => l.refundQty >= 1 && l.refundQty <= l.qty);
+}
+
+
+
+openRefundModal(invoice: InvoiceUi): void {
+  if (invoice.status !== 2) return; // فقط الفواتير المدفوعة
+  this.invoiceToRefund = invoice;
+
+this.refundLines = (invoice.lines ?? []).map(l => {
+  const description = (l.description ?? '').toLowerCase();
+
+  // المنع هنا: لو الوصف فيه كلمة "Service" أو "غسيل" بيعتبرها خدمة
+  const isService = description.includes('service') ||
+                    description.includes('غسيل');
+
+  return {
+    lineId: l.lineId,
+    description: l.description,
+    qty: l.qty,
+    unitPrice: l.unitPrice,
+    total: l.total,
+    selected: false,
+    refundQty: l.qty,
+    isProduct: !isService // لو مش خدمة يبقى منتج مسموح باسترجاعه
+  };
+});
+
+  const el = document.getElementById('adminRefundModal');
+  if (el) {
+    const modal = new (window as any).bootstrap.Modal(el);
+    modal.show();
+  }
+}
+closeRefundModal(): void {
+  this.invoiceToRefund = null;
+  this.refundLines = [];
+  this.refundReason = '';
+  const el = document.getElementById('adminRefundModal');
+  if (el) {
+    const inst = (window as any).bootstrap?.Modal?.getInstance(el);
+    if (inst) inst.hide();
+  }
+}
+toggleRefundLine(line: any): void {
+  // لو السطر ده مش منتج (خدمة)، اخرج فوراً وما تعملش حاجة
+  if (!line.isProduct) {
+    return;
+  }
+
+  line.selected = !line.selected;
+
+  if (line.selected) {
+    line.refundQty = line.qty; // تعيين الكمية الافتراضية عند التحديد
+  } else {
+    line.refundQty = 0;
+  }
+}
+
+clampRefundQty(line: RefundLineUi): void {
+  // إذا كان الحقل فارغاً، لا تفعل شيئاً حتى ينتهي المستخدم من الكتابة
+  if (line.refundQty === null || line.refundQty === undefined) return;
+
+  // التأكد من الحد الأدنى
+  if (line.refundQty < 1) {
+    line.refundQty = 1;
+  }
+
+  // التأكد من الحد الأقصى (الكمية الأصلية)
+  if (line.refundQty > line.qty) {
+    line.refundQty = line.qty;
+  }
+}
+
+onQtyInputChange(event: any, line: any): void {
+  // 1. الحصول على القيمة المكتوبة حالياً في الحقل
+  let value = parseInt(event.target.value);
+
+  // 2. تطبيق منطق التقييد (Clamping)
+  if (isNaN(value) || value < 1) {
+    value = 1;
+  } else if (value > line.qty) {
+    value = line.qty;
+  }
+
+  // 3. تحديث القيمة في الموديل وفي الحقل نفسه لمنع الأرقام الكبيرة
+  line.refundQty = value;
+  event.target.value = value;
+
+  // 4. (اختياري) إذا كان لديك دالة تحسب الإجمالي، استدعيها هنا
+  // this.calculateTotal();
+}
+
+confirmRefund(): void {
+const inv = this.invoiceToRefund;
+  if (!inv?.invoiceId) return;
+
+  const selectedLines = this.refundLines.filter(l => l.selected && l.refundQty > 0);
+
+  const payload = {
+    originalInvoiceId: inv.invoiceId,
+    refundMethod: 2,
+    createdByEmployeeId: this.cashierId,
+    // نرسل السبب المدخل من قبل المستخدم هنا
+    reason: this.refundReason || "لا يوجد سبب محدد",
+    items: selectedLines.map(l => ({
+      originalInvoiceLineId: l.lineId,
+      qty: l.refundQty
+    }))
+  };
+
+  this.isProcessingRefund = true;
+
+  // استدعاء الخدمة
+  this.api.createRefundInvoice(payload).subscribe({
+    next: (res) => {
+      this.isProcessingRefund = false;
+      this.closeRefundModal(); // إغلاق المودال عند النجاح
+      this.refreshInvoiceList(); // تحديث قائمة الفواتير لتعكس الحالة الجديدة
+      alert('تم إنشاء فاتورة المرتجع بنجاح ✓');
+    },
+    error: (err) => {
+      this.isProcessingRefund = false;
+      console.error('Refund Error:', err);
+      // إظهار رسالة الخطأ القادمة من الباك-إند إن وجدت
+      const errMsg = err?.error?.message || 'فشل إنشاء فاتورة المرتجع، تأكد من البيانات.';
+      alert(errMsg);
+    }
+  });
+}
+
+
+
 
   openPayModal(invoice: InvoiceUi): void {
     if (invoice.status !== 1) return;
@@ -648,15 +839,15 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
     });
   }
 
-  get subTotal(): number {
-    return Number(this.selectedInvoice?.subTotal ?? 0);
-  }
-  get taxAmount(): number {
-    return this.subTotal * 0;
-  }
-  get finalTotal(): number {
-    return Number(this.selectedInvoice?.total ?? 0);
-  }
+  // get subTotal(): number {
+  //   return Number(this.selectedInvoice?.subTotal ?? 0);
+  // }
+  // get taxAmount(): number {
+  //   return this.subTotal * 0;
+  // }
+  // get finalTotal(): number {
+  //   return Number(this.selectedInvoice?.total ?? 0);
+  // }
 
   downloadInvoice(): void {
     setTimeout(() => this.printInvoice.print('adminPrintableInvoice'), 100);
@@ -798,11 +989,12 @@ export class AdminInvoicesComponent implements OnInit, OnDestroy {
     let grandTotal = 0;
 
     const fetchNext = () => {
-      this.api.getSoldProductsReport(from, to, this.categoryProductId, page, pageSize).subscribe({
+      this.api.getSoldProductsReport(from, to, undefined, page, pageSize).subscribe({
         next: (res: any) => {
           const data = res?.data;
           const items = data?.items ?? [];
           allItems.push(...items);
+          const lastTotal = Number(data?.grandTotal ?? 0);
           if (items.length >= pageSize) {
             page++;
             fetchNext();

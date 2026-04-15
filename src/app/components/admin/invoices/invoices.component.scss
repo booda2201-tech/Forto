@@ -154,6 +154,59 @@
 
 
 
+/* منع قص القائمة داخل الجدول */
+.table-responsive {
+    overflow: visible !important;
+}
+
+/* ضبط مكان القائمة بالنسبة للزرار */
+.dropdown-menu {
+    display: none;
+    position: absolute !important;
+    top: 100% !important;   /* تحت الزرار بالظبط */
+    right: 0px !important;     /* محاذاة لليمين عشان إحنا عربي */
+    left: 0px !important;
+    margin-top: 5px !important;
+    margin-bottom: 10px !important;
+    z-index: 999 !important; /* فوق الكل */
+    background: #fff;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+    border: none !important;
+    min-width: 180px;
+}
+
+/* إظهار القائمة لما نضغط */
+.dropdown-menu.show {
+    display: block !important;
+}
+
+/* تعديل الـ Item عشان الأيقونة والكلام */
+.dropdown-item {
+    text-align: right;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+.dropdown-item i {
+    font-size: 16px;
+}
+
+/* أنيميشن الدخول */
+.animate.slideIn {
+    animation: dropdownSlide 0.2s ease-out;
+}
+
+@keyframes dropdownSlide {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
 
 
 
@@ -321,6 +374,11 @@
     display: none !important;
   }
 
+  // .btn-close {
+  //   display: flex !important;
+  //   justify-content: center !important;
+  //   align-items: start !important;
+  // }
 
   table {
     width: 100% !important;
