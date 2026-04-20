@@ -132,7 +132,7 @@
               </div>
               <div class="info-item fw-bold text-dark">
                 <i class="bi bi-cash-stack"></i>
-                <span>ر.ع {{ (partner.lastPaymentAmount || 0) | number:'1.2-2' }} </span>
+                <span>ج.م {{ (partner.lastPaymentAmount || 0) | number:'1.2-2' }} </span>
               </div>
             </div>
 
@@ -233,7 +233,7 @@
       <div class="mb-3">
         <label class="form-label small fw-bold gold-text-muted">رقم الهاتف</label>
         <input type="text" class="form-control luxury-input text-end" dir="ltr"
-               formControlName="phoneNumber" placeholder="+968 0000 0000">
+               formControlName="phoneNumber" placeholder="+201 0000 0000">
       </div>
 
       <button type="submit" class="btn btn-save w-100 mt-3 py-3 fw-bold shimmer-effect"
@@ -286,7 +286,7 @@
   
   <div class="info-item fw-bold text-dark">
     <span class="text-success">{{ (partner.lastPaymentAmount || 0) | number:'1.2-2' }}</span>
-    <small class="ms-1">ر.ع</small>
+    <small class="ms-1">ج.م</small>
   </div>
 </div> -->
 
@@ -338,7 +338,7 @@
 
         <form [formGroup]="paymentForm" (ngSubmit)="confirmPayment()">
           <div class="mb-3">
-            <label class="form-label fw-bold small">إجمالي المبلغ المطلوب دفعه (ر.ع)</label>
+            <label class="form-label fw-bold small">إجمالي المبلغ المطلوب دفعه (ج.م)</label>
             <input type="number" class="form-control custom-input py-2"
                     placeholder="0.00" formControlName="amount">
           </div>
@@ -507,19 +507,19 @@
           <div class="col-md-4">
             <div class="p-3 border rounded-3 bg-white shadow-sm">
               <small class="text-muted d-block mb-1">إجمالي الفاتورة</small>
-              <h5 class="fw-bold mb-0 text-dark">{{ selectedInvoiceData.total | number:'1.2-2' }} ر.ع</h5>
+              <h5 class="fw-bold mb-0 text-dark">{{ selectedInvoiceData.total | number:'1.2-2' }} ج.م</h5>
             </div>
           </div>
           <div class="col-md-4">
             <div class="p-3 border rounded-3 bg-white shadow-sm">
               <small class="text-muted d-block mb-1">المبلغ المدفوع</small>
-              <h5 class="fw-bold mb-0 text-success">{{ selectedInvoiceData.amountPaid | number:'1.2-2' }} ر.ع</h5>
+              <h5 class="fw-bold mb-0 text-success">{{ selectedInvoiceData.amountPaid | number:'1.2-2' }} ج.م</h5>
             </div>
           </div>
           <div class="col-md-4">
             <div class="p-3 border rounded-3 bg-white shadow-sm border-danger-subtle bg-danger-subtle">
               <small class="text-danger d-block mb-1">المتبقي</small>
-              <h5 class="fw-bold mb-0 text-danger">{{ (selectedInvoiceData.total - selectedInvoiceData.amountPaid) | number:'1.2-2' }} ر.ع</h5>
+              <h5 class="fw-bold mb-0 text-danger">{{ (selectedInvoiceData.total - selectedInvoiceData.amountPaid) | number:'1.2-2' }} ج.م</h5>
             </div>
           </div>
         </div>
@@ -544,7 +544,7 @@
             <tbody>
               <tr *ngFor="let payment of invoicePayments">
                 <td class="small">{{ payment.paidAt | date:'yyyy-MM-dd HH:mm' }}</td>
-                <td class="fw-bold">{{ payment.amount | number:'1.2-2' }} ر.ع</td>
+                <td class="fw-bold">{{ payment.amount | number:'1.2-2' }}ج.م</td>
                 <td>
                   <span class="badge bg-info text-dark">
                     {{ payment.paymentMethod === 1 ? 'نقدي' : 'فيزا/أخرى' }}
