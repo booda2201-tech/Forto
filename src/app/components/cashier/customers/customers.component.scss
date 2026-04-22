@@ -337,7 +337,14 @@
   border-top: 1px solid #000;
 }
 
-
+.custom-card {
+  transition: all 0.3s ease;
+  &:hover {
+    transform: translateY(-5px);
+    border-right: 4px solid #f9a825; // خط برتقالي خفيف عند الوقوف عليه
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+  }
+}
 
 
 

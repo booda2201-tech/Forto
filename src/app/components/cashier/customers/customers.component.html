@@ -252,6 +252,9 @@
     </div>
   </div>
 </div> -->
+
+
+
 <div class="contt">
   <div class="container-fluid pt-4 m-auto" dir="rtl">
     <div class="row mb-4 p-3 g-2 search-section shadow-sm align-items-center mx-1">
@@ -274,7 +277,7 @@
       العملاء ({{ filteredCarRequests.length }})
     </h4>
 
-    <div *ngFor="let customer of filteredCarRequests" class="custom-card mb-4 shadow-sm mx-1">
+    <div *ngFor="let customer of filteredCarRequests" class="custom-card mb-4 shadow-sm mx-1"  [routerLink]="['/cashier/client-details', customer.id]" style="cursor: pointer;">
       <div class="row align-items-center">
         <div class="col-md-4 mb-3 mb-md-0">
           <div class="d-flex align-items-center">
@@ -305,12 +308,12 @@
 
         <div class="col-md-4 text-md-start text-center">
           <button
-            class="btn btn-success btn-sm rounded-3 px-4 py-2 fw-bold shadow-sm"
+            class="btn btn-success btn-sm ..."
+            (click)="$event.stopPropagation(); prepareNewCar(customer)"
             data-bs-toggle="modal"
             data-bs-target="#addCarModal"
-            (click)="prepareNewCar(customer)"
           >
-            <i class="bi bi-plus-circle me-1"></i> إضافة سيارة جديدة
+            إضافة سيارة جديدة
           </button>
         </div>
       </div>
@@ -364,6 +367,9 @@
     </div>
   </div>
 </div>
+
+
+
 <!-- 
 ✅ مودال الحجز (متعدل لتشغيل APIs)
 <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">

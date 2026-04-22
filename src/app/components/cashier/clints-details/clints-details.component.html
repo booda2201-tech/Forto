@@ -1,0 +1,437 @@
+
+
+<div class="customer-details-container" dir="rtl">
+
+  <!-- <main class="main-content">
+    <section class="card header-card" dir="ltr">
+      <div class="header-top">
+        <div class="phone-box">
+          <span class="phone-number">01001432158</span>
+          <div class="icon-circle-small">
+            <i class="bi bi-telephone-fill"></i>
+          </div>
+        </div>
+    
+        <div class="user-main-info">
+          <div class="user-text">
+            <h1>محمود علي</h1>
+            <span class="user-id">#1</span>
+          </div>
+          <div class="avatar-box">
+            <i class="bi bi-person-fill"></i>
+          </div>
+        </div>
+      </div>
+        <div class="divider"></div>
+      <div class="stats-grid">
+        <div class="stat-card color-purple">
+          <div class="stat-icon"><i class="bi bi-calendar-event"></i></div>
+          <div class="stat-content">
+            <p>تاريخ آخر زيارة</p>
+            <strong>12 أكتوبر 2023</strong>
+          </div>
+        </div>
+    
+        <div class="stat-card color-green">
+          <div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
+          <div class="stat-content">
+            <p>إجمالي المدفوعات</p>
+            <strong>4,500 ج.م</strong>
+          </div>
+        </div>
+    
+        <div class="stat-card color-blue">
+          <div class="stat-icon"><i class="bi bi-arrow-repeat"></i></div>
+          <div class="stat-content">
+            <p>إجمالي الزيارات</p>
+            <strong>24 زيارة</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+<section class="vehicles-section" dir="ltr">
+  <div class="section-header">
+    <span class="count-badge">{{ vehicles.length }} سيارات</span>
+    <h3 class="title-with-bar">سيارات العميل</h3>
+  </div>
+
+  <div class="vehicles-grid">
+    <div class="card vehicle-card" *ngFor="let car of vehicles">
+      <div class="vehicle-main-info">
+        <div class="model-details">
+          <strong>{{ car.model }}</strong>
+          <small>{{ car.color }} - {{ car.year }}</small>
+        </div>
+        <div class="icon-circle">
+          <i class="bi bi-car-front-fill"></i> </div>
+      </div>
+
+      <div class="vehicle-details-box">
+        <div class="detail-item text-start">
+          <small>اللوحة</small>
+          <div class="plate-value">
+            <span class="country">KSA</span>
+            <span class="number">{{ car.plate }}</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="detail-item text-end">
+          <small>آخر غسيل</small>
+          <strong>قبل شهر</strong> </div>
+      </div>
+
+      <button class="btn-book-full">
+        <i class="bi bi-plus-lg"></i> حجز غسيل جديد
+      </button>
+    </div>
+  </div>
+</section>
+
+<section class="history-section" dir="ltr">
+  <div class="table-header">
+    <div class="filters-actions">
+      <button class="btn-action"><i class="bi bi-download"></i> تصدير</button>
+      <button class="btn-action"><i class="bi bi-funnel"></i> تصفية <i class="bi bi-chevron-down"></i></button>
+    </div>
+    <h3 class="title-with-bar">سجل الخدمات</h3>
+  </div>
+
+  <div class="card table-card">
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="text-center">#</th> <th class="text-center">الحالة</th>
+          <th class="text-center">المبلغ</th>
+          <th class="text-center">نوع الخدمة</th>
+          <th>السيارة</th>
+          <th>التاريخ والوقت</th>
+          <th>رقم الفاتورة</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let service of services">
+          <td class="text-center">
+            <button class="btn-view"><i class="bi bi-eye"></i></button>
+          </td>
+
+          <td class="text-center">
+            <span class="status-badge completed">
+              <i class="bi bi-check-circle-fill"></i> مكتمل
+            </span>
+          </td>
+
+          <td class="text-center price-text">{{ service.price }} ر.س</td>
+
+          <td class="text-center">
+            <span class="service-badge" [ngClass]="getServiceClass(service.type)">
+              <i [class]="getServiceIcon(service.type)"></i> {{ service.type }}
+            </span>
+          </td>
+
+          <td class="car-info">{{ service.vehicle }}</td>
+
+          <td>
+            <div class="main-date">{{ service.date }}</div>
+            <div class="sub-time">{{ service.time }}</div>
+          </td>
+
+          <td class="invoice-num">{{ service.invoiceNo }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+  </main> -->
+
+
+<main class="main-content" *ngIf="customer">
+  <section class="card header-card" dir="rtl">
+    <div class="header-top">
+      <div class="user-main-info">
+        <div class="avatar-box">
+          <i class="bi bi-person-fill"></i>
+        </div>
+        <div class="user-text">
+          <h1>{{ customer.name }}</h1>
+          <span class="user-id">#{{ customer.id }}</span>
+        </div>
+      </div>
+
+      <div class="phone-box">
+        <div class="icon-circle-small">
+          <i class="bi bi-telephone-fill"></i>
+        </div>
+        <span class="phone-number">{{ customer.phone }}</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="stats-grid">
+      <div class="stat-card color-blue">
+        <div class="stat-icon"><i class="bi bi-arrow-repeat"></i></div>
+        <div class="stat-content">
+          <p>إجمالي الزيارات</p>
+          <strong>{{ customer.totalVisits }} زيارة</strong>
+        </div>
+      </div>
+
+      <div class="stat-card color-green">
+        <div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
+        <div class="stat-content">
+          <p>إجمالي المدفوعات</p>
+          <strong>{{ customer.totalSpent | number }} ج.م</strong>
+        </div>
+      </div>
+
+      <div class="stat-card color-purple">
+        <div class="stat-icon"><i class="bi bi-calendar-event"></i></div>
+        <div class="stat-content">
+          <p>تاريخ آخر زيارة</p>
+          <strong>{{ customer.lastVisit | date:'dd MMMM yyyy' }}</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="vehicles-section" dir="rtl">
+    <div class="section-header">
+      <h3 class="title-with-bar">المركبات المسجلة</h3>
+      <span class="count-badge">{{ vehicles.length }} سيارات</span>
+    </div>
+
+    <div class="vehicles-grid">
+      <div class="card vehicle-card" *ngFor="let car of vehicles">
+        <button class="btn-menu"><i class="bi bi-three-dots-vertical"></i></button>
+
+        <div class="vehicle-main-info">
+          <div class="icon-circle">
+            <i class="bi bi-car-front-fill"></i>
+          </div>
+          <div class="model-details">
+            <strong>{{ car.model }}</strong>
+            <small>{{ car.color }} - {{ car.year }}</small>
+          </div>
+        </div>
+
+        <div class="vehicle-details-box">
+          <div class="detail-item text-end">
+            <small>آخر غسيل</small>
+            <strong>{{ car.lastService }}</strong>
+          </div>
+          <div class="divider"></div>
+          <div class="detail-item text-start">
+            <small>رقم اللوحة</small>
+            <div class="plate-value">
+              <span class="number">{{ car.plate }}</span>
+              <span class="country">KSA</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-book-full">
+          حجز موعد جديد <i class="bi bi-calendar-check"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="history-section" dir="rtl">
+    <div class="table-header">
+      <h3 class="title-with-bar">سجل الخدمات</h3>
+      <div class="filters-actions">
+        <button class="btn-action"><i class="bi bi-funnel"></i> تصفية <i class="bi bi-chevron-down"></i></button>
+        <button class="btn-action"><i class="bi bi-download"></i> تصدير</button>
+      </div>
+    </div>
+
+    <div class="card table-card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>رقم الفاتورة</th>
+            <th>التاريخ والوقت</th>
+            <th>السيارة</th>
+            <th class="text-center">نوع الخدمة</th>
+            <th class="text-center">المبلغ</th>
+            <th class="text-center">الحالة</th>
+            <th class="text-center">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let service of services">
+            <td class="invoice-num">{{ service.invoiceNo }}</td>
+            <td>
+              <div class="main-date">{{ service.date | date:'dd MMMM yyyy' }}</div>
+              <div class="sub-time text-muted">{{ service.date | date:'shortTime' }}</div>
+            </td>
+            <td class="car-info">
+              {{ service.vehicle || 'مركبة مسجلة' }}
+            </td>
+            <td class="text-center">
+              <span class="service-type-text">{{ service.type }}</span>
+            </td>
+            <td class="text-center price-text">{{ service.price | number }} ج.م</td>
+            <td class="text-center">
+              <span class="status-badge" [ngClass]="service.status === 'مكتمل' ? 'completed' : 'pending'">
+                <i class="bi" [ngClass]="service.status === 'مكتمل' ? 'bi-check-circle-fill' : 'bi-clock-history'"></i>
+                {{ service.status }}
+              </span>
+            </td>
+            <td class="text-center">
+              <button class="btn-view"><i class="bi bi-eye"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<div *ngIf="isLoading" class="loading-container">
+  <div class="spinner-border text-orange"></div>
+  <p>جاري جلب بيانات العميل...</p>
+</div>
+
+
+<aside class="sidebar  d-flex flex-column shadow" dir="rtl">
+  <h3>إجراءات سريعة</h3>
+  
+  <div class="actions-group">
+    <button class="btn btn-green"
+            (click)="$event.stopPropagation(); prepareNewCar(customer)"
+            data-bs-toggle="modal"
+            data-bs-target="#addCarModal"
+          
+    >
+      إضافة سيارة جديدة <i class="bi bi-plus-lg"></i>
+    </button>
+    
+    <button class="btn btn-orange">
+      حجز موعد جديد <i class="bi bi-calendar-event"></i>
+    </button>
+  </div>
+
+  <hr class="separator">
+
+  <div class="actions-group">
+    <button class="btn btn-outline">
+      تعديل الملف الشخصي <i class="bi bi-pencil-square"></i>
+    </button>
+    
+    <button class="btn btn-outline">
+      طباعة كشف حساب <i class="bi bi-printer"></i>
+    </button>
+  </div>
+</aside>
+</div>
+
+
+
+<!-- ✅ مودال إضافة سيارة (كما هو عندك) -->
+<div class="modal fade" id="addCarModal" tabindex="-1" aria-hidden="true" dir="rtl">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header bg-success text-white rounded-top-4">
+        <h5 class="modal-title fw-bold">
+          إضافة سيارة لـ {{ currentCustomer?.customerName }}
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white ms-0 me-auto"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body p-4 text-end">
+        <div class="mb-3">
+          <label class="form-label fw-bold">نوع الهيكل</label>
+          <select class="form-control" [(ngModel)]="newCarData.bodyType">
+            <option *ngFor="let t of bodyTypes" [ngValue]="t.value">
+              {{ t.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">الماركة (Brand)</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="مثال: Toyota"
+            [(ngModel)]="newCarData.brand"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">الموديل (Model)</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="مثال: Camry / C200"
+            [(ngModel)]="newCarData.model"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">رقم اللوحة</label>
+          <input
+            type="text"
+            class="form-control"     
+            placeholder="مثال: أ ب ج 123"
+            [(ngModel)]="newCarData.plateNumber"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">اللون</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="مثال: أسود"
+            [(ngModel)]="newCarData.color"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">السنة</label>
+          <input
+            type="number"
+            class="form-control"
+            placeholder="مثال: 2024"
+            [(ngModel)]="newCarData.year"
+          />
+        </div>
+
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="isDefault"
+            [(ngModel)]="newCarData.isDefault"
+          />
+          <label class="form-check-label fw-bold" for="isDefault">
+            Default
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
+          إلغاء
+        </button>
+        <button
+          type="button"
+          class="btn btn-success px-4 fw-bold"
+          (click)="confirmAddNewCar()"
+          data-bs-dismiss="modal"
+        >
+          حفظ السيارة
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

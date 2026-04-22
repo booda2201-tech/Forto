@@ -58,6 +58,11 @@ export class ApiService {
     return this.http.get(url);
   }
 
+  // src/app/services/api.service.ts
+  getClientDetails(id:  number): Observable<any> {
+    return this.http.get(`${this.baseUrl}/api/clients/GetById/${id}`);
+  }
+
   lookupClientByPhone(phoneNumber: string, take = 10): Observable<any> {
     let params = new HttpParams().set('phone', phoneNumber);
     if (take) params = params.set('take', String(take));

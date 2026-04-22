@@ -29,6 +29,7 @@ import { AdminInvoicesComponent } from './components/admin/invoices/invoices.com
 import { PurchaseInvoiceComponent } from './components/admin/purchase-invoice/purchase-invoice.component';
 import { SuppliersComponent } from './components/admin/suppliers/suppliers.component';
 import { ReturnsComponent } from './components/cashier/returns/returns.component';
+import { ClintsDetailsComponent } from './components/cashier/clints-details/clints-details.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent, data: { title: 'تسجيل الدخول' } },
@@ -72,6 +73,7 @@ const routes: Routes = [
       { path: 'messages', component: MessagesComponent, canActivate: [CashierShiftGuard], data: { title: 'الرسائل' } },
       { path: 'test', component: TestComponent, canActivate: [CashierShiftGuard], data: { title: 'اختبار' } },
       { path: 'returns', component: ReturnsComponent, canActivate: [CashierShiftGuard], data: { title: 'المرتجعات' } },
+      { path: 'client-details/:id', component: ClintsDetailsComponent, canActivate: [CashierShiftGuard], data: { title: 'تفاصيل العميل' } },
 
       { path: '', redirectTo: 'reservations', pathMatch: 'full' },
     ],

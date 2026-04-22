@@ -45,6 +45,7 @@ import { AdminInvoicesComponent } from './components/admin/invoices/invoices.com
 import { PurchaseInvoiceComponent } from './components/admin/purchase-invoice/purchase-invoice.component';
 import { SuppliersComponent } from './components/admin/suppliers/suppliers.component';
 import { ReturnsComponent } from './components/cashier/returns/returns.component';
+import { ClintsDetailsComponent } from './components/cashier/clints-details/clints-details.component';
 
 @NgModule({
   declarations: [
@@ -74,7 +75,8 @@ import { ReturnsComponent } from './components/cashier/returns/returns.component
     SuppliersComponent,
     ReturnsComponent,
     TestComponent,
-    InvoicesComponent
+    InvoicesComponent,
+    ClintsDetailsComponent
   ],
   // imports: [
   //   BrowserModule,
