@@ -24,6 +24,110 @@ $orange-main: #f9a825;
   h3 { color: $text-dark; margin-bottom: 15px; font-size: 1.1rem; }
 }
 
+/* الحاوية الكبيرة */
+.customer-details-container {
+    display: flex;
+    flex-direction: column; /* يخلي العناصر تحت بعض (البار فوق، وبعدين المحتوى) */
+    gap: 20px;
+    padding: 20px;
+}
+
+/* بار الزرار العلوي */
+.top-actions-bar {
+    width: 100%; /* ياخد العرض كله */
+    display: flex;
+    justify-content: flex-start; /* يثبته على اليمين في الـ RTL */
+    margin-bottom: 10px;
+}
+
+/* تنسيق الزرار عشان يبان "شيك" وفوق الكل */
+.btn-back {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid #eee;
+    padding: 10px 20px;
+    border-radius: 12px;
+    color: #666;
+    font-weight: 600;
+    transition: 0.3s;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05); /* ظل خفيف عشان يبان إنه "فوق" */
+}
+
+.btn-back:hover {
+    background: #fdfdfd;
+    color: #ff7e3e; /* يقلب برتقالي زي هوية التطبيق عند الهوفر */
+    border-color: #ff7e3e;
+    transform: translateY(-2px); /* حركة خفيفة للفوق */
+}
+
+/* حاوية المحتوى (الـ main والـ sidebar) */
+.content-wrapper {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+/* بار الإجراءات العلوي */
+.top-actions-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* لضمان وجوده على اليمين في الـ RTL */
+}
+
+/* زر الرجوع */
+.btn-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 10px;
+    color: #4a5568;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.btn-back i {
+    font-size: 1.1rem;
+    transition: transform 0.2s ease;
+}
+
+/* تأثير عند الوقوف بالماوس */
+.btn-back:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e0;
+    color: #2d3748;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.btn-back:hover i {
+    transform: translateX(4px); /* حركة خفيفة للسهم عند الهوفر */
+}
+
+/* في الشاشات الصغيرة */
+@media (max-width: 576px) {
+    .btn-back span {
+        display: none; /* إخفاء النص والاكتفاء بالسهم في الموبايل */
+    }
+    .btn-back {
+        padding: 8px 12px;
+    }
+}
+
+
+
+
+
+
+
+
+
 $primary-green: #198754; // لون أخضر مطابق للصورة
 $primary-orange: #f9a825; // لون برتقالي مطابق للصورة
 $text-dark: #333;
@@ -475,3 +579,171 @@ $text-muted: #999;
 .main-date { font-weight: 500; }
 .sub-time { color: $text-muted; font-size: 0.75rem; }
 .price-text { font-weight: bold; color: #333; }
+
+
+/* تنسيق الجدول العام */
+.custom-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.custom-table thead th {
+    background-color: #f8f9fa;
+    color: #333;
+    font-weight: 600;
+    padding: 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Zebra Striping - صف رمادي وصف أبيض */
+.custom-table tbody tr:nth-of-type(even) {
+    background-color: #fcfcfc;
+}
+
+.custom-table tbody td {
+    padding: 12px 15px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+/* تنسيق رقم الفاتورة باللون البرتقالي */
+.invoice-num {
+    color: #ff7e3e !important;
+    font-weight: bold;
+}
+
+/* تنسيق السعر باللون الأخضر */
+.price-text {
+    color: #28a745 !important;
+    font-weight: bold;
+}
+
+/* زر الإجراءات مثل الصورة الثانية */
+.btn-table-action {
+    background: white;
+    border: 1px solid #dee2e6;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #555;
+}
+
+/* بادج الحالة المدفوعة */
+.status-badge.paid {
+    background-color: #e6f4ea;
+    color: #1e7e34;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+
+/* تنسيق الحاوية السفلية */
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: #ffffff;
+    border-top: 1px solid #edf2f7; /* خط فاصل خفيف جداً */
+    border-bottom-left-radius: 12px; /* لتناسب استدارة الكارد */
+    border-bottom-right-radius: 12px;
+}
+
+/* معلومات الترقيم (الجزء الأيمن) */
+.pagination-info {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #718096; /* لون رمادي هادئ */
+    font-weight: 500;
+}
+
+/* تنسيق قائمة اختيار عدد العناصر */
+.pagination-info .form-select-sm {
+    width: auto;
+    display: inline-block;
+    margin-right: 10px;
+    padding: 2px 25px 2px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background-color: #f8fafc;
+    color: #4a5568;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.pagination-info .form-select-sm:focus {
+    border-color: #ff7e3e;
+    box-shadow: 0 0 0 2px rgba(255, 126, 62, 0.1);
+    outline: none;
+}
+
+/* أزرار التنقل (الجزء الأيسر) */
+.pagination {
+    gap: 5px; /* مسافة بين الأرقام */
+}
+
+.pagination .page-item .page-link {
+    border: 1px solid #e2e8f0;
+    color: #4a5568;
+    padding: 6px 12px;
+    border-radius: 8px !important; /* زوايا دائرية ناعمة */
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+    background-color: #fff;
+}
+
+/* تأثير عند الوقوف بالماوس */
+.pagination .page-item .page-link:hover {
+    background-color: #f7fafc;
+    border-color: #cbd5e0;
+    color: #2d3748;
+}
+
+/* الصفحة النشطة (Active) */
+.pagination .page-item.active .page-link {
+    background-color: #ff7e3e; /* البرتقالي الخاص بالهوية */
+    border-color: #ff7e3e;
+    color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(255, 126, 62, 0.2);
+}
+
+/* الأزرار المعطلة (مثل زر السابق في أول صفحة) */
+.pagination .page-item.disabled .page-link {
+    background-color: #f8fafc;
+    color: #a0aec0;
+    border-color: #edf2f7;
+    cursor: not-allowed;
+}
+
+/* تعديل أيقونات الـ Chevron لتكون أصغر وأوضح */
+.pagination .page-link i {
+    font-size: 0.75rem;
+    vertical-align: middle;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

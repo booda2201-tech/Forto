@@ -1,151 +1,18 @@
 
 
+
+
 <div class="customer-details-container" dir="rtl">
 
-  <!-- <main class="main-content">
-    <section class="card header-card" dir="ltr">
-      <div class="header-top">
-        <div class="phone-box">
-          <span class="phone-number">01001432158</span>
-          <div class="icon-circle-small">
-            <i class="bi bi-telephone-fill"></i>
-          </div>
-        </div>
-    
-        <div class="user-main-info">
-          <div class="user-text">
-            <h1>محمود علي</h1>
-            <span class="user-id">#1</span>
-          </div>
-          <div class="avatar-box">
-            <i class="bi bi-person-fill"></i>
-          </div>
-        </div>
-      </div>
-        <div class="divider"></div>
-      <div class="stats-grid">
-        <div class="stat-card color-purple">
-          <div class="stat-icon"><i class="bi bi-calendar-event"></i></div>
-          <div class="stat-content">
-            <p>تاريخ آخر زيارة</p>
-            <strong>12 أكتوبر 2023</strong>
-          </div>
-        </div>
-    
-        <div class="stat-card color-green">
-          <div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
-          <div class="stat-content">
-            <p>إجمالي المدفوعات</p>
-            <strong>4,500 ج.م</strong>
-          </div>
-        </div>
-    
-        <div class="stat-card color-blue">
-          <div class="stat-icon"><i class="bi bi-arrow-repeat"></i></div>
-          <div class="stat-content">
-            <p>إجمالي الزيارات</p>
-            <strong>24 زيارة</strong>
-          </div>
-        </div>
-      </div>
-    </section>
 
-<section class="vehicles-section" dir="ltr">
-  <div class="section-header">
-    <span class="count-badge">{{ vehicles.length }} سيارات</span>
-    <h3 class="title-with-bar">سيارات العميل</h3>
+<div class="top-actions-bar">
+    <button class="btn-back" (click)="goBack()">
+      <i class="bi bi-arrow-right"></i>
+      <span>العودة لقائمة العملاء</span>
+    </button>
   </div>
 
-  <div class="vehicles-grid">
-    <div class="card vehicle-card" *ngFor="let car of vehicles">
-      <div class="vehicle-main-info">
-        <div class="model-details">
-          <strong>{{ car.model }}</strong>
-          <small>{{ car.color }} - {{ car.year }}</small>
-        </div>
-        <div class="icon-circle">
-          <i class="bi bi-car-front-fill"></i> </div>
-      </div>
-
-      <div class="vehicle-details-box">
-        <div class="detail-item text-start">
-          <small>اللوحة</small>
-          <div class="plate-value">
-            <span class="country">KSA</span>
-            <span class="number">{{ car.plate }}</span>
-          </div>
-        </div>
-        <div class="divider"></div>
-        <div class="detail-item text-end">
-          <small>آخر غسيل</small>
-          <strong>قبل شهر</strong> </div>
-      </div>
-
-      <button class="btn-book-full">
-        <i class="bi bi-plus-lg"></i> حجز غسيل جديد
-      </button>
-    </div>
-  </div>
-</section>
-
-<section class="history-section" dir="ltr">
-  <div class="table-header">
-    <div class="filters-actions">
-      <button class="btn-action"><i class="bi bi-download"></i> تصدير</button>
-      <button class="btn-action"><i class="bi bi-funnel"></i> تصفية <i class="bi bi-chevron-down"></i></button>
-    </div>
-    <h3 class="title-with-bar">سجل الخدمات</h3>
-  </div>
-
-  <div class="card table-card">
-    <table class="table">
-      <thead>
-        <tr>
-          <th class="text-center">#</th> <th class="text-center">الحالة</th>
-          <th class="text-center">المبلغ</th>
-          <th class="text-center">نوع الخدمة</th>
-          <th>السيارة</th>
-          <th>التاريخ والوقت</th>
-          <th>رقم الفاتورة</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let service of services">
-          <td class="text-center">
-            <button class="btn-view"><i class="bi bi-eye"></i></button>
-          </td>
-
-          <td class="text-center">
-            <span class="status-badge completed">
-              <i class="bi bi-check-circle-fill"></i> مكتمل
-            </span>
-          </td>
-
-          <td class="text-center price-text">{{ service.price }} ر.س</td>
-
-          <td class="text-center">
-            <span class="service-badge" [ngClass]="getServiceClass(service.type)">
-              <i [class]="getServiceIcon(service.type)"></i> {{ service.type }}
-            </span>
-          </td>
-
-          <td class="car-info">{{ service.vehicle }}</td>
-
-          <td>
-            <div class="main-date">{{ service.date }}</div>
-            <div class="sub-time">{{ service.time }}</div>
-          </td>
-
-          <td class="invoice-num">{{ service.invoiceNo }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-  </main> -->
-
-
+<div class="content-wrapper d-flex">
 <main class="main-content" *ngIf="customer">
   <section class="card header-card" dir="rtl">
     <div class="header-top">
@@ -206,13 +73,13 @@
       <div class="card vehicle-card" *ngFor="let car of vehicles">
         <button class="btn-menu"><i class="bi bi-three-dots-vertical"></i></button>
 
-        <div class="vehicle-main-info">
-          <div class="icon-circle">
-            <i class="bi bi-car-front-fill"></i>
-          </div>
+        <div class="vehicle-main-info" dir="ltr">
           <div class="model-details">
             <strong>{{ car.model }}</strong>
             <small>{{ car.color }} - {{ car.year }}</small>
+          </div> 
+          <div class="icon-circle">
+            <i class="bi bi-car-front-fill"></i>
           </div>
         </div>
 
@@ -222,7 +89,7 @@
             <strong>{{ car.lastService }}</strong>
           </div>
           <div class="divider"></div>
-          <div class="detail-item text-start">
+          <div class="detail-item text-end">
             <small>رقم اللوحة</small>
             <div class="plate-value">
               <span class="number">{{ car.plate }}</span>
@@ -261,7 +128,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let service of services">
+          <tr *ngFor="let service of pagedServices">
             <td class="invoice-num">{{ service.invoiceNo }}</td>
             <td>
               <div class="main-date">{{ service.date | date:'dd MMMM yyyy' }}</div>
@@ -286,6 +153,39 @@
           </tr>
         </tbody>
       </table>
+
+       <div class="table-footer">
+         <div class="pagination-info">
+           عرض {{ (currentPage - 1) * pageSize + 1 }} - 
+           {{ Math.min(currentPage * pageSize, services.length) }} 
+           من {{ services.length }} فاتورة
+           
+           <select class="form-select-sm ms-2" (change)="onPageSizeChange($event)">
+             <option [value]="10">10</option>
+             <option [value]="20">20</option>
+           </select>
+         </div>
+       
+         <nav>
+           <ul class="pagination mb-0">
+             <li class="page-item" [class.disabled]="currentPage === 1">
+               <a class="page-link" (click)="goToPage(currentPage - 1)" style="cursor: pointer;">
+                 <i class="bi bi-chevron-right"></i>
+               </a>
+             </li>
+       
+             <li class="page-item" *ngFor="let page of pages" [class.active]="page === currentPage">
+               <a class="page-link" (click)="goToPage(page)" style="cursor: pointer;">{{ page }}</a>
+             </li>
+       
+             <li class="page-item" [class.disabled]="currentPage === totalPages">
+               <a class="page-link" (click)="goToPage(currentPage + 1)" style="cursor: pointer;">
+                 <i class="bi bi-chevron-left"></i>
+               </a>
+             </li>
+           </ul>
+         </nav>
+       </div>
     </div>
   </section>
 </main>
@@ -327,6 +227,28 @@
   </div>
 </aside>
 </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

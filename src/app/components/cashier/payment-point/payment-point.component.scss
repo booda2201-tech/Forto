@@ -1,5 +1,104 @@
 :host { display: block; }
 
+
+
+.loyalty-card {
+  padding: 25px;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border: none;
+}
+
+.steps-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 30px;
+  position: relative;
+  padding: 0 20px;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  z-index: 1;
+
+  .step-icon {
+    width: 60px;
+    height: 60px;
+    background: #f0f0f0;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #ccc;
+    transition: all 0.4s ease;
+    border: 4px solid #fff; /* إطار أبيض عشان يفصل الخط عن المربع بشكل جمالي */
+    position: relative;
+    z-index: 2; /* الأيقونة فوق الخط */
+  }
+
+  .step-line {
+    position: absolute;
+    top: 30px; /* نص المربع */
+    right: 50%; /* يبدأ من نص المربع الأول */
+    width: 100%; /* يوصل للمربع اللي بعده */
+    height: 4px;
+    background: #f0f0f0;
+    z-index: 1; /* الخط تحت الأيقونة */
+    transition: background 0.4s ease;
+  }
+
+  /* أهم حتة: نخفي الخط اللي طالع من آخر مربع بس */
+  &:last-child .step-line {
+    display: none;
+  }
+
+  /* تلوين الخط لما المرحلة تكون خلصت أو شغالة */
+  &.active .step-line, &.completed .step-line {
+    background: #ff7e3e;
+  }
+
+  &.active {
+    .step-icon {
+      background: #ff7e3e;
+      color: white;
+      box-shadow: 0 4px 10px rgba(255, 126, 62, 0.3);
+    }
+    .step-label { color: #ff7e3e; }
+  }
+
+  &.completed .step-icon {
+    background: #ff7e3e;
+    color: white;
+  }
+
+  &.last-free-step.ready-for-free {
+    .step-icon {
+      background: #28a745;
+      color: white;
+      animation: pulse-green 2s infinite;
+    }
+    .step-label { color: #28a745; font-weight: bold; }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 .contt {
 
   min-height: 100vh;

@@ -32,6 +32,7 @@ type ServiceCardVm = {
   styleUrls: ['./payment-point.component.scss'],
 })
 export class PaymentPointComponent implements OnInit {
+  customerVisits: number = 1;
   // Config
   activeTab: 'new-order' | 'quick-booking' = 'quick-booking';
   branchId = 1;
@@ -70,7 +71,8 @@ export class PaymentPointComponent implements OnInit {
   isLoadingGifts = false;
 
   // Adjusted Total: normal | free (0) | custom
-  adjustTotalMode: 'normal' | 'free' | 'custom' = 'normal';
+  adjustTotalMode: 'normal' | 'free' | 'custom' | 'discount' = 'normal';
+  discountPercentage: number = 0;
   adjustCustomAmount = 0;
 
   // Payment method: 1 = cash, 2 = visa, 3 = custom (split)
@@ -655,15 +657,35 @@ export class PaymentPointComponent implements OnInit {
   }
 
   /** الإجمالي النهائي للدفع (المجموع + 14% ضريبة) */
-  get finalTotalForPayment(): number {
-    const base =
-      this.adjustTotalMode === 'free'
-        ? 0
-        : this.adjustTotalMode === 'custom'
-          ? Number(this.adjustCustomAmount) || 0
-          : this.total;
-    return base ;
+get finalTotalForPayment(): number {
+  let base: number;
+
+  switch (this.adjustTotalMode) {
+    case 'free':
+      base = 0;
+      break;
+
+    case 'custom':
+      // التعديل اليدوي للمبلغ
+      base = Number(this.adjustCustomAmount) || 0;
+      break;
+
+    case 'discount':
+      // حساب الخصم المئوي: الإجمالي - (الإجمالي * النسبة / 100)
+      const percentage = Number(this.discountPercentage) || 0;
+      const discountValue = (this.total * percentage) / 100;
+      base = this.total - discountValue;
+      break;
+
+    default:
+      // الوضع العادي (normal)
+      base = this.total;
+      break;
   }
+
+  // استخدام Math.max لضمان أن السعر لا يقل عن الصفر أبداً
+  return Math.max(0, base);
+}
 
   /** في وضع مخصص: الباقي فيزا = الإجمالي النهائي - الكاش المدخل */
   get computedVisaAmount(): number {

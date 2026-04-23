@@ -250,6 +250,48 @@
         </div>
       </div>
 
+        <div class="card loyalty-card mt-4 mb-4">
+          <div class="loyalty-header text-end">
+            <h5><i class="bi bi-gift-fill me-2 text-orange"></i> عرض فو: اغسل 3 والرابعة مجاناً!</h5>
+          </div>
+          
+          <div class="steps-wrapper">
+            <div class="step-item" [class.active]="customerVisits >= 1" [class.completed]="customerVisits > 1">
+              <div class="step-icon">
+                <i class="bi bi-car-front-fill" *ngIf="customerVisits <= 1"></i>
+                <i class="bi bi-check-lg" *ngIf="customerVisits > 1"></i>
+              </div>
+              <div class="step-label">الغسلة الأولى</div>
+              <div class="step-line"></div>
+            </div>
+        
+            <div class="step-item" [class.active]="customerVisits >= 2" [class.completed]="customerVisits > 2">
+              <div class="step-icon">
+                <i class="bi bi-car-front-fill" *ngIf="customerVisits <= 2"></i>
+                <i class="bi bi-check-lg" *ngIf="customerVisits > 2"></i>
+              </div>
+              <div class="step-label">الغسلة الثانية</div>
+              <div class="step-line"></div>
+            </div>
+        
+            <div class="step-item" [class.active]="customerVisits >= 3" [class.completed]="customerVisits > 3">
+              <div class="step-icon">
+                <i class="bi bi-car-front-fill" *ngIf="customerVisits <= 3"></i>
+                <i class="bi bi-check-lg" *ngIf="customerVisits > 3"></i>
+              </div>
+              <div class="step-label">الغسلة الثالثة</div>
+              <div class="step-line"></div>
+            </div>
+        
+            <div class="step-item last-free-step" [class.ready-for-free]="customerVisits >= 3">
+              <div class="step-icon">
+                <i class="bi bi-stars"></i>
+              </div>
+              <div class="step-label">الرابعة مجاناً!</div>
+            </div>
+          </div>
+        </div>
+
       <div class="form-section">
         <div class="form-group mb-3">
           <label><i class="bi bi-person-badge mx-1"></i> المشرف

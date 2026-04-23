@@ -57,6 +57,10 @@ type InvoiceUi = {
   styleUrls: ['./test.component.scss']
 })
 export class TestComponent {
+
+  adjustTotalMode: 'normal' | 'free' | 'custom' | 'discount' = 'normal';
+  discountPercentage: number = 0;
+
   selectedInvoice: InvoiceUi | null = null;
 
   branchId = 1;
@@ -93,6 +97,16 @@ export class TestComponent {
   private lastSummary: { totalCount: number; totalRevenue: number } | null =
     null;
 
+
+
+
+
+
+
+
+
+
+    
   // pagination computed values
   get currentPage(): number {
     return (this.page$ as any).value || 1;

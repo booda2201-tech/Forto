@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
 import { ToastrService } from 'ngx-toastr';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-clints-details',
@@ -14,11 +15,29 @@ export class ClintsDetailsComponent implements OnInit {
   services: any[] = [];
   isLoading = true;
 
+
+  pagedServices: any[] = []; // دي اللي هتتعرض فعلياً في الجدول
+    currentPage: number = 1;
+    pageSize: number = 10;
+    totalPages: number = 0;
+    pages: number[] = [];
+    Math = Math;
+
+
+
+
+
+
   constructor(
+    private location: Location,
     private apiService: ApiService,
     private route: ActivatedRoute,
     private toastr: ToastrService // أضف هذا السطر هنا
   ) {}
+
+  goBack() {
+    this.location.back();
+  }
 
   ngOnInit(): void {
     // 1. الحصول على الـ ID من الـ URL (مثلاً: /clients/1)
@@ -135,6 +154,8 @@ fetchData(id: string) {
           status: inv.status === 2 ? 'مكتمل' : 'قيد الانتظار',
           type: (inv.lines && inv.lines.length > 0) ? inv.lines[0].description : 'خدمة غسيل'
         }));
+
+        this.calculatePagination();
       }
       this.isLoading = false;
     },
@@ -144,6 +165,33 @@ fetchData(id: string) {
     }
   });
 }
+
+calculatePagination() {
+    this.totalPages = Math.ceil(this.services.length / this.pageSize);
+    this.pages = Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    this.updatePage();
+  }
+
+  updatePage() {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.pagedServices = this.services.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePage();
+    }
+  }
+
+  onPageSizeChange(event: any) {
+    this.pageSize = +event.target.value;
+    this.currentPage = 1;
+    this.calculatePagination();
+  }
+
+
 
   // الدوال المساعدة اللي عملناها للألوان والأيقونات تفضل موجودة هنا
   getServiceClass(type: string) { /* ... */ }
