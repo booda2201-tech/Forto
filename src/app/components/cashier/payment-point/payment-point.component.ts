@@ -36,7 +36,7 @@ export class PaymentPointComponent implements OnInit {
   customerVisits: number = 0;
   /** لو المستخدم غيّر فئة السيارة يدويًا، لا نعيد كتابتها من lookup */
   private isCarCategoryManuallyEdited = false;
-  externalWashServiceId = 1;
+  externalWashServiceId = 2;
   isWashCycleLoading = false;
   // Config
   activeTab: 'new-order' | 'quick-booking' = 'quick-booking';
