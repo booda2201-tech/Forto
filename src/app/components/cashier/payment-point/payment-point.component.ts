@@ -6,7 +6,8 @@ import { ApiService } from 'src/app/services/api.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { CashierShiftService } from 'src/app/services/cashier-shift.service';
 import { PrintInvoiceService } from 'src/app/services/print-invoice.service';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 
 // --- Types Definitions ---
 type ProductVm = {
@@ -32,7 +33,11 @@ type ServiceCardVm = {
   styleUrls: ['./payment-point.component.scss'],
 })
 export class PaymentPointComponent implements OnInit {
-  customerVisits: number = 1;
+  customerVisits: number = 0;
+  /** لو المستخدم غيّر فئة السيارة يدويًا، لا نعيد كتابتها من lookup */
+  private isCarCategoryManuallyEdited = false;
+  externalWashServiceId = 1;
+  isWashCycleLoading = false;
   // Config
   activeTab: 'new-order' | 'quick-booking' = 'quick-booking';
   branchId = 1;
@@ -234,6 +239,37 @@ export class PaymentPointComponent implements OnInit {
           this.isLookingUpClient = false;
         }
       });
+
+    // دورة الغسيل حسب رقم اللوحة (عرض اغسل 3 والرابعة مجانا)
+    this.customerForm
+      .get('carNumber')!
+      .valueChanges.pipe(debounceTime(350), distinctUntilChanged())
+      .subscribe((plate) => {
+        const plateStr = String(plate || '').trim();
+        if (!plateStr) {
+          this.customerVisits = 0;
+          return;
+        }
+        this.loadWashCycleForPlate(plateStr);
+      });
+  }
+
+  private loadWashCycleForPlate(plateNumber: string): void {
+    this.isWashCycleLoading = true;
+    this.api.getCarWashCycle(plateNumber, this.externalWashServiceId).subscribe({
+      next: (res: any) => {
+        const data = res?.data ?? {};
+        // nextWashNumberInCycle = رقم الغسلة الحالية داخل الدورة
+        const currentWashNumber = Number(data?.nextWashNumberInCycle ?? 0);
+        // حماية من القيم الخارجة (0..4)
+        this.customerVisits = Math.min(4, Math.max(0, Number.isNaN(currentWashNumber) ? 0 : currentWashNumber));
+        this.isWashCycleLoading = false;
+      },
+      error: () => {
+        this.customerVisits = 0;
+        this.isWashCycleLoading = false;
+      },
+    });
   }
 
   // --- Cart Helpers ---
@@ -532,12 +568,7 @@ export class PaymentPointComponent implements OnInit {
     payload.supervisorId = this.selectedSupervisorId;
 
     // adjustedTotal: لو مجاني = 0، لو تعديل = القيمة، لو عادي = الإجمالي المحسوب
-    const adjTotal =
-      this.adjustTotalMode === 'free'
-        ? 0
-        : this.adjustTotalMode === 'custom'
-          ? Number(this.adjustCustomAmount)
-          : this.total;
+    const adjTotal = this.finalTotalForPayment;
     console.log(this.adjustTotalMode);
     console.log(adjTotal);
     console.log(this.adjustCustomAmount);
@@ -570,8 +601,7 @@ export class PaymentPointComponent implements OnInit {
     };
     console.log('------->', payload);
 
-    this.isSubmitting = true;
-    this.api.cashierCheckout(payload).subscribe({
+    const submitCheckout = () => this.api.cashierCheckout(payload).subscribe({
       next: (res: any) => {
         console.log("res : ",res);
 
@@ -593,6 +623,22 @@ export class PaymentPointComponent implements OnInit {
             this.invoiceData.clientNumber  ||
             this.customerFormData.phone;
         }
+        // Fallbacks لبيانات العربية لو الـ API ما رجّعتهاش بنفس المفاتيح
+        const payloadCar = payload?.car ?? {};
+        const typedCarType = String(v.carType ?? '').trim();
+        this.invoiceData.brand =
+          this.invoiceData.brand ??
+          this.invoiceData.carBrand ??
+          this.invoiceData.car?.brand ??
+          payloadCar.brand ??
+          typedCarType ??
+          '-';
+        this.invoiceData.plateNumber =
+          this.invoiceData.plateNumber ??
+          this.invoiceData.carPlateNumber ??
+          this.invoiceData.car?.plateNumber ??
+          payloadCar.plateNumber ??
+          '-';
         // المجموع والإجمالي من adjustedTotal: المجموع = adjTotal， الضريبة 14% عليه， الإجمالي = adjTotal + ضريبة
         this.invoiceData.subTotal = this.invoiceData.subTotal;
         this.invoiceData.total = this.invoiceData.total;
@@ -609,6 +655,7 @@ export class PaymentPointComponent implements OnInit {
         this.selectedSupervisorId = null;
         this.showSupervisorError = false;
         this.adjustTotalMode = 'normal';
+        this.discountPercentage = 0;
         this.adjustCustomAmount = 0;
         this.paymentType = 'cash';
         this.customCashAmount = 0;
@@ -620,6 +667,44 @@ export class PaymentPointComponent implements OnInit {
         // الخطأ يُعرض من ErrorInterceptor (رسالة الباك إند)
       },
     });
+
+    // قبل الإرسال: نتأكد أن لكل خدمة وصفة (Recipe) لنوع العربية المختار
+    if (this.selectedServices.length > 0) {
+      this.isSubmitting = true;
+      forkJoin(
+        this.selectedServices.map((s) =>
+          this.api.getServiceRecipes(s.id, bodyType).pipe(
+            map((res: any) => {
+              const materials = res?.data?.materials ?? res?.data ?? [];
+              const hasRecipe = Array.isArray(materials) && materials.length > 0;
+              return { serviceName: s.name, hasRecipe };
+            }),
+            catchError(() => of({ serviceName: s.name, hasRecipe: false }))
+          )
+        )
+      ).subscribe({
+        next: (checks) => {
+          const missing = checks.filter((x) => !x.hasRecipe).map((x) => x.serviceName);
+          if (missing.length > 0) {
+            this.isSubmitting = false;
+            this.toastr.error(
+              `لا توجد recipe للخدمات التالية مع فئة السيارة المختارة: ${missing.join('، ')}`,
+              'بيانات الخدمة غير مكتملة'
+            );
+            return;
+          }
+          submitCheckout();
+        },
+        error: () => {
+          this.isSubmitting = false;
+          this.toastr.error('تعذر التحقق من وصفات الخدمات قبل الحفظ', 'خطأ');
+        },
+      });
+      return;
+    }
+
+    this.isSubmitting = true;
+    submitCheckout();
   }
 
   isServiceSelected(service: ServiceCardVm) {
@@ -977,12 +1062,20 @@ get finalTotalForPayment(): number {
   fillCarData(car: any) {
     const carType =
       [car.brand, car.model, car.year].filter(Boolean).join(' ') || '';
+    const currentCategory = this.customerForm.value.carCategory;
+    const incomingCategory = car.bodyType != null ? Number(car.bodyType) : null;
 
     this.customerForm.patchValue({
       carType: carType,
       carNumber: car.plateNumber || '',
-      carCategory: car.bodyType || null,
+      carCategory: this.isCarCategoryManuallyEdited
+        ? (currentCategory ?? null)
+        : incomingCategory,
     });
+  }
+
+  onCarCategoryChangedByUser(): void {
+    this.isCarCategoryManuallyEdited = true;
   }
 
   /** استدعاء من القالب مع منع انتشار النقر حتى لا يُغلق المودال */
@@ -1004,6 +1097,7 @@ get finalTotalForPayment(): number {
 
   resetQuickBookingForm() {
     this.customerForm.reset({ appointmentDate: this.todayYYYYMMDD() });
+    this.isCarCategoryManuallyEdited = false;
     this.currentClientIsPremium = false;
     this.foundClients = [];
     this.selectedClient = null;

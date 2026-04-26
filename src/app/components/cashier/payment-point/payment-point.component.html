@@ -240,7 +240,7 @@
           </div>
           <div class="form-group mt-1">
             <label><i class="bi bi-car-front mx-1"></i> فئة السيارة </label>
-            <select class="form-select custom-select" formControlName="carCategory">
+            <select class="form-select custom-select" formControlName="carCategory" (change)="onCarCategoryChangedByUser()">
               <option [ngValue]="null" disabled>اختر فئة السيارة</option>
               <option *ngFor="let cat of carCategories" [ngValue]="cat.id">
                 {{ cat.nameAr }}
@@ -252,7 +252,8 @@
 
         <div class="card loyalty-card mt-4 mb-4">
           <div class="loyalty-header text-end">
-            <h5><i class="bi bi-gift-fill me-2 text-orange"></i> عرض فو: اغسل 3 والرابعة مجاناً!</h5>
+            <!-- <h5><i class="bi bi-gift-fill me-2 text-orange"></i> عرض فو: اغسل 3 والرابعة مجاناً!</h5> -->
+            <small class="text-muted" *ngIf="isWashCycleLoading">جاري فحص دورة الغسيل...</small>
           </div>
           
           <div class="steps-wrapper">
@@ -283,7 +284,7 @@
               <div class="step-line"></div>
             </div>
         
-            <div class="step-item last-free-step" [class.ready-for-free]="customerVisits >= 3">
+            <div class="step-item last-free-step" [class.ready-for-free]="customerVisits === 4">
               <div class="step-icon">
                 <i class="bi bi-stars"></i>
               </div>
@@ -487,6 +488,32 @@
                   (click)="adjustTotalMode = 'free'">
                   <i class="bi bi-gift"></i> مجاني
                 </button>
+                <div class="adjust-opt-custom" [class.active]="adjustTotalMode === 'discount'">
+                  <button type="button" class="btn-trigger-edit" (click)="adjustTotalMode = 'discount'">
+                    <i class="bi bi-percent"></i> خصم
+                  </button>
+                  <select
+                    class="discount-select"
+                    [ngModel]="discountPercentage"
+                    (ngModelChange)="discountPercentage = +$event; adjustTotalMode = 'discount'"
+                    [ngModelOptions]="{ standalone: true }"
+                  >
+                    <option [ngValue]="0">0%</option>
+                    <option [ngValue]="5">5%</option>
+                    <option [ngValue]="10">10%</option>
+                    <option [ngValue]="15">15%</option>
+                    <option [ngValue]="20">20%</option>
+                    <option [ngValue]="25">25%</option>
+                    <option [ngValue]="30">30%</option>
+                    <option [ngValue]="40">40%</option>
+                    <option [ngValue]="50">50%</option>
+                    <option [ngValue]="60">60%</option>
+                    <option [ngValue]="70">70%</option>
+                    <option [ngValue]="80">80%</option>
+                    <option [ngValue]="90">90%</option>
+                    <option [ngValue]="100">100%</option>
+                  </select>
+                </div>
                 <div class="adjust-opt-custom" [class.active]="adjustTotalMode === 'custom'">
                   <button type="button" class="btn-trigger-edit" (click)="adjustTotalMode = 'custom'">
                     <i class="bi bi-pencil-square"></i> تعديل
@@ -592,7 +619,7 @@
             }}
           </div>
           <div>
-            <strong>نوع العربية:</strong> {{ invoiceData.brand || "-" }}
+            <strong>نوع العربية:</strong> {{ invoiceData.brand || invoiceData.carBrand || invoiceData.car?.brand || "-" }}
           </div>
           <div>
             <strong>رقم العربية:</strong> {{ invoiceData.plateNumber || "-" }}

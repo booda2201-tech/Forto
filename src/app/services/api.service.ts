@@ -7,8 +7,8 @@ import { Observable } from 'rxjs';
 })
 export class ApiService {
   /** استخدم server أو local حسب أين شغّال الباك — الـ API و SignalR هيستخدموا نفس الـ base */
-  // private baseUrl = 'https://api.fortolaundry.com';   // سيرفر
-  private baseUrl = 'https://localhost:7179';      // local (للتطوير لو الباك على نفس الجهاز)
+  private baseUrl = 'https://api.fortolaundry.com';   // سيرفر
+  // private baseUrl = 'https://localhost:7179';      // local (للتطوير لو الباك على نفس الجهاز)
 
   constructor(private http: HttpClient) {}
 
@@ -78,6 +78,26 @@ export class ApiService {
     return this.http.get(
       `${this.baseUrl}/api/bookings/available-slots?branchId=${branchId}&date=${date}&serviceIds=${serviceIdsParam}`
     );
+  }
+
+  /** دورة غسيل السيارة (عرض 3+1) حسب رقم اللوحة */
+  getCarWashCycle(plateNumber: string, externalWashServiceId: number) {
+    const params = new HttpParams()
+      .set('plateNumber', plateNumber)
+      .set('externalWashServiceId', String(externalWashServiceId));
+    return this.http.get<{
+      success: boolean;
+      message?: string;
+      data?: {
+        carId?: number;
+        plateNumber?: string;
+        qualitativeExternalWashInvoicesCount?: number;
+        nextWashIndexInCycle?: number;
+        nextWashNumberInCycle?: number;
+        isNextWashFree?: boolean;
+      };
+      errors?: any;
+    }>(`${this.baseUrl}/api/cars/wash-cycle`, { params });
   }
 
   createBooking(payload: any) {

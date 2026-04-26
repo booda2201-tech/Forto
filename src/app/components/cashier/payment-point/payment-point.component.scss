@@ -3,12 +3,15 @@
 
 
 .loyalty-card {
-  padding: 25px;
+  padding: 40px 25px;
+  padding-top: 12px!important;
   border-radius: 15px;
   background: #fff;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   border: none;
 }
+
+
 
 .steps-wrapper {
   display: flex;
@@ -18,6 +21,8 @@
   position: relative;
   padding: 0 20px;
 }
+
+
 
 .step-item {
   display: flex;
@@ -61,22 +66,23 @@
 
   /* تلوين الخط لما المرحلة تكون خلصت أو شغالة */
   &.active .step-line, &.completed .step-line {
-    background: #ff7e3e;
+    background: #ffa500;
   }
 
   &.active {
     .step-icon {
-      background: #ff7e3e;
+      background: #ffa500;
       color: white;
       box-shadow: 0 4px 10px rgba(255, 126, 62, 0.3);
     }
-    .step-label { color: #ff7e3e; }
+    .step-label { color: #ffa500; }
   }
 
   &.completed .step-icon {
-    background: #ff7e3e;
+    background: #ffa500;
     color: white;
   }
+
 
   &.last-free-step.ready-for-free {
     .step-icon {
@@ -87,15 +93,6 @@
     .step-label { color: #28a745; font-weight: bold; }
   }
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -393,6 +390,7 @@
 }
 
 
+
 .sub-tabs-container {
   display: flex;
   justify-content: center;
@@ -436,11 +434,14 @@
   }
 }
 
+
+
 // تعديل بسيط على الـ Bottom Bar عشان ميبقاش ثابت لو مش عايزه يغطي المحتوى
 .bottom-bar {
   margin-top: 20px;
   // باقي استايلاتك زي ما هي
 }
+
 
 
 .header-wrapper {
@@ -455,6 +456,8 @@
   }
 }
 
+
+
 .page-title {
   .title {
     font-size: 1.5rem; // تصغير الخط شوية عشان يكفي السطر
@@ -463,6 +466,8 @@
     font-size: 0.85rem;
   }
 }
+
+
 
 .sub-tabs-container {
   .sub-tabs {
@@ -477,20 +482,6 @@
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -714,20 +705,26 @@
 }
 
 
+
 .form-group label i {
   margin-left: 8px;
   color: #f39c12;
   font-size: 0.9em;
 }
 
+
+
 .actions button i {
   margin-left: 5px;
 }
+
+
 
 .service-item span i {
   margin-left: 5px;
   color: #7f8c8d;
 }
+
 
 
 .custom-select {
@@ -753,12 +750,16 @@
     }
 }
 
+
+
 .car-card-btn {
     border: 1px solid #dee2e6;
     background: white;
     &:hover { background-color: #f8f9fa !important; }
     &:focus { outline: none; box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.3); }
 }
+
+
 
 /* مودال اختيار السيارة - overlay نتحكم فيه بالكامل */
 .car-selection-overlay {
@@ -787,15 +788,6 @@
   background: #fff;
   border-radius: 0.5rem;
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1218,12 +1210,29 @@
         &::-webkit-inner-spin-button { -webkit-appearance: none; }
       }
 
+      .discount-select {
+        min-width: 72px;
+        height: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        background: #fff;
+        color: #000;
+        text-align: center;
+        font-weight: 700;
+        outline: none;
+      }
+      .discount-select option {
+        color: #000;
+        background: #fff;
+      }
+
       .adjust-currency { font-size: 0.7rem; color: #9ca3af; }
 
       &.active {
         background: #fff;
         border-color: #ffa500;
-        .btn-trigger-edit, .adjust-input, .adjust-currency { color: #000; }
+        .btn-trigger-edit, .adjust-input, .adjust-currency, .discount-select { color: #000; }
+        .discount-select { border-color: rgba(0, 0, 0, 0.2); }
       }
     }
   }
