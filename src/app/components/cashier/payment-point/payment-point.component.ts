@@ -261,12 +261,18 @@ export class PaymentPointComponent implements OnInit {
         const data = res?.data ?? {};
         // nextWashNumberInCycle = رقم الغسلة الحالية داخل الدورة
         const currentWashNumber = Number(data?.nextWashNumberInCycle ?? 0);
-        // حماية من القيم الخارجة (0..4)
-        this.customerVisits = Math.min(4, Math.max(0, Number.isNaN(currentWashNumber) ? 0 : currentWashNumber));
+        // لو العربية غير موجودة/لا يوجد رقم دورة -> اعتبرها الغسلة الأولى
+        const normalizedWashNumber =
+          Number.isNaN(currentWashNumber) || currentWashNumber <= 0
+            ? 1
+            : currentWashNumber;
+        // حماية من القيم الخارجة (1..4)
+        this.customerVisits = Math.min(4, Math.max(1, normalizedWashNumber));
         this.isWashCycleLoading = false;
       },
       error: () => {
-        this.customerVisits = 0;
+        // في حالة عدم العثور على العربية أو خطأ من الـ API: الغسلة الأولى
+        this.customerVisits = 1;
         this.isWashCycleLoading = false;
       },
     });

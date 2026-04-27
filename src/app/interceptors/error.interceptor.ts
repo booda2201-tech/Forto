@@ -44,9 +44,16 @@ export class ErrorInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError((err: HttpErrorResponse) => {
         const msg = getBackendErrorMessage(err);
-        // استثناء صفحة تسجيل الدخول (تعرض الخطأ في النموذج)
+        // استثناءات:
+        // - صفحة تسجيل الدخول (تعرض الخطأ في النموذج)
+        // - فحص دورة غسيل السيارة عند "car not found" لأننا نتعامل معها كغسلة أولى بدون تنبيه
         const url = request.url?.toLowerCase() || '';
-        if (!url.includes('/auth/signin')) {
+        const isSignin = url.includes('/auth/signin');
+        const isWashCycle = url.includes('/api/cars/wash-cycle');
+        const isCarNotFound =
+          String(msg || '').toLowerCase().includes('car not found');
+
+        if (!isSignin && !(isWashCycle && isCarNotFound)) {
           this.toastr.error(msg, 'خطأ', { timeOut: 5000 });
         }
         return throwError(() => err);
