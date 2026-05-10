@@ -98,29 +98,36 @@
   <div class="dashboard-container">
 
     <!-- Filters -->
-    <div class="filter-card forto-card mb-4 p-3 d-flex align-items-center gap-3">
-      <input
-        type="date"
-        class="form-control custom-input"
-        [(ngModel)]="fromDate"
-        placeholder="من تاريخ"
-      />
-
+<div class="forto-card filter-card mb-4">
+  <div class="row g-3 align-items-center">
+    <div class="col-md-4">
       <input
         type="date"
         class="form-control custom-input"
         [(ngModel)]="toDate"
-        placeholder="إلى تاريخ"
       />
+    </div>
 
+    <div class="col-md-4">
+      <input
+        type="date"
+        class="form-control custom-input"
+        [(ngModel)]="fromDate"
+      />
+    </div>
+
+    <div class="col-md-4">
       <button
-        class="btn-submit-order w-50 py-2 fw-bold rounded-3"
+        class="btn-submit-order w-100 py-2 fw-bold"
         (click)="loadSummary()"
         [disabled]="isLoading || !fromDate || !toDate"
       >
-        {{ isLoading ? 'جاري التحديث...' : 'تحديث التقارير' }}
+        <span *ngIf="!isLoading">تحديث التقارير</span>
+        <span *ngIf="isLoading">جاري التحديث...</span>
       </button>
     </div>
+  </div>
+</div>
 
     <!-- Error -->
     <div *ngIf="errorMsg" class="alert alert-danger">
@@ -151,7 +158,7 @@
     </div>
 
     <!-- أداء العمال والخدمات من API -->
-    <div class="main-content-grid">
+    <!-- <div class="main-content-grid">
       <div class="forto-card">
         <h3 class="section-title">أداء العمال</h3>
         <p class="text-muted small mb-2" *ngIf="totalDoneItemsEmployees > 0">
@@ -207,7 +214,7 @@
       </div>
     </div>
 
-    <!-- Optional: show summary breakdown if you want -->
+
     <div class="sacand-content-grid mt-3" *ngIf="summary">
           <div class="forto-card p-4 text-center">
             <h5 class="section-title mb-3">تفاصيل التكاليف</h5>
@@ -226,7 +233,150 @@
               </span>
             </div>
           </div>
+    </div> -->
+
+<div class="dashboard-grid" *ngIf="!isLoading">
+
+  <div class="forto-card">
+    <div class="card-header">
+      <h3 class="section-title">الخدمات الأكثر طلباً</h3>
+      <p class="sacund text-muted small" *ngIf="totalDoneItemsServices > 0">
+        إجمالي الخدمات المنفذة: <span class="fw-bold text-dark">{{ totalDoneItemsServices }}</span>
+      </p>
     </div>
+    <div class="chart-area py-2">
+      <div *ngFor="let service of dashboardServices; let i = index" class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fw-bold text-dark fs-6">{{ service.name }}</span>
+          <div class="d-flex align-items-center gap-2">
+            <span class="text-muted small">({{ service.percent | number:'1.1-1' }}%)</span>
+            <span class="fw-bold text-dark">{{ service.count }}</span>
+          </div>
+        </div>
+        <div class="progress" style="height: 8px; border-radius: 4px; background-color: #f0f0f0;">
+          <div class="progress-bar" role="progressbar"
+            [style.width.%]="service.percent"
+            [style.background-color]="getServiceColor(i)">
+          </div>
+        </div>
+      </div>
+      <div *ngIf="dashboardServices.length === 0" class="text-center text-muted py-3">لا توجد بيانات للفترة المحددة</div>
+    </div>
+  </div>
+
+<div class="forto-card">
+  <div class="card-header align-items-center mb-3">
+    <h3 class="section-title">المنتجات الأكثر طلباً</h3>
+    <div class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="productSearchQuery"
+        placeholder="بحث عن منتج..."
+        class="form-control form-control-sm search-input mt-3"
+      />
+    </div>
+  </div>
+
+  <div class="chart-area py-2 custom-scrollbar" style="max-height: 400px; overflow-y: auto;">
+    <div *ngFor="let product of filteredProducts; let i = index" class="mb-4 px-2">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="fw-bold text-dark fs-6">{{ product.name }}</span>
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">({{ product.percent | number:'1.1-1' }}%)</span>
+          <span class="fw-bold text-dark">{{ product.count }}</span>
+        </div>
+      </div>
+      <div class="progress" style="height: 8px; border-radius: 4px; background-color: #f0f0f0;">
+        <div class="progress-bar" role="progressbar"
+          [style.width.%]="product.percent"
+          [style.background-color]="getServiceColor(i + 5)"> </div>
+      </div>
+    </div>
+
+    <div *ngIf="filteredProducts.length === 0" class="text-center text-muted py-5">
+      <p>لا توجد منتجات تطابق بحثك</p>
+    </div>
+  </div>
+</div>
+
+  <div class="forto-card">
+    <div class="card-header">
+      <h3 class="section-title">أداء العمال</h3>
+      <p class="text-muted small" *ngIf="totalDoneItemsEmployees > 0">
+        إجمالي الخدمات المنفذة: <span class="fw-bold text-dark">{{ totalDoneItemsEmployees }}</span>
+      </p>
+    </div>
+    <div class="workers-list py-2">
+      <div class="worker-item mb-3 p-3 rounded-3 border" *ngFor="let emp of dashboardEmployees">
+        <div class="d-flex align-items-center justify-content-between w-100">
+          <div class="d-flex align-items-center gap-3">
+            <div class="worker-icon bg-orange-light text-orange rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            <div>
+              <h6 class="mb-1 fw-bold text-dark">{{ emp.name }}</h6>
+              <span class="text-muted small">{{ emp.count }} خدمة منفذة</span>
+            </div>
+          </div>
+          <div class="circular-progress" [style.--value]="emp.percent">
+            <span class="progress-text">{{ emp.percent | number:'1.0-1' }}%</span>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="dashboardEmployees.length === 0" class="text-center text-muted py-3">لا توجد بيانات للفترة المحددة</div>
+    </div>
+  </div>
+
+  <div class="forto-card" *ngIf="summary">
+    <div class="card-header mb-4">
+      <h3 class="section-title">تفاصيل التكاليف</h3>
+    </div>
+    <div class="costs-list">
+      <div class="cost-item d-flex justify-content-between align-items-center mb-3 p-3 rounded-3 border">
+        <div class="d-flex align-items-center gap-3">
+          <div class="cost-icon bg-orange-light text-orange rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          </div>
+          <span class="fw-bold text-dark">مواد مستهلكة</span>
+        </div>
+        <span class="fw-bold text-dark">{{ summary.materialsConsumeCost | number:'1.2-2' }} <span class="text-muted small">ج.م</span></span>
+      </div>
+
+      <div class="cost-item d-flex justify-content-between align-items-center mb-3 p-3 rounded-3 border">
+        <div class="d-flex align-items-center gap-3">
+          <div class="cost-icon bg-danger-light text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </div>
+          <span class="fw-bold text-dark">مواد تالفة</span>
+        </div>
+        <span class="fw-bold text-dark">{{ summary.materialsWasteCost | number:'1.2-2' }} <span class="text-muted small">ج.م</span></span>
+      </div>
+
+      <div class="cost-item d-flex justify-content-between align-items-center mb-3 p-3 rounded-3 border">
+        <div class="d-flex align-items-center gap-3">
+          <div class="cost-icon bg-primary-light text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          </div>
+          <span class="fw-bold text-dark">ضمانات</span>
+        </div>
+        <span class="fw-bold text-dark">0.00 <span class="text-muted small">ج.م</span></span>
+      </div>
+
+      <div class="cost-item d-flex justify-content-between align-items-center mb-3 p-3 rounded-3 border">
+        <div class="d-flex align-items-center gap-3">
+          <div class="cost-icon bg-purple-light text-purple rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
+          </div>
+          <span class="fw-bold text-dark">هدايا</span>
+        </div>
+        <span class="fw-bold text-dark">{{ summary.giftsCost | number:'1.2-2' }} <span class="text-muted small">ج.م</span></span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
 
   </div>
 </div>

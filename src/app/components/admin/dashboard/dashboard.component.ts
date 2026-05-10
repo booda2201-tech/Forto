@@ -50,6 +50,10 @@ export class DashboardComponent implements OnInit {
   // ألوان للخدمات في الـ progress
   serviceColors = ['#ff9800', '#2196f3', '#4caf50', '#9c27b0', '#00bcd4', '#ff5722'];
 
+dashboardProducts: { id: number; name: string; count: number; percent: number }[] = [];
+totalDoneItemsProducts = 0;
+productSearchQuery: string = '';
+
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
@@ -111,6 +115,18 @@ export class DashboardComponent implements OnInit {
       }
     });
 
+    // this.api.getDashboardProducts(params).subscribe({
+    //     next: (res: any) => {
+    //       const data = res?.data;
+    //       this.dashboardProducts = data?.items ?? [];
+    //       this.totalDoneItemsProducts = data?.totalDoneItems ?? 0;
+    //     },
+    //     error: () => {
+    //       this.dashboardProducts = [];
+    //       this.totalDoneItemsProducts = 0;
+    //     }
+    //   });
+
   }
 
   // KPIs for UI — إجمالي الدخل = paidRevenueIncludingTips من الـ API
@@ -149,4 +165,16 @@ export class DashboardComponent implements OnInit {
     const pad = (n: number) => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
+
+
+  get filteredProducts() {
+    if (!this.productSearchQuery) {
+      return this.dashboardProducts;
+    }
+    return this.dashboardProducts.filter(p =>
+      p.name.toLowerCase().includes(this.productSearchQuery.toLowerCase())
+    );
+  }
+
+
 }
